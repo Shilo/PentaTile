@@ -83,6 +83,7 @@ The demo includes:
 - generated visual-layer collisions enabled
 - hidden logic-layer collisions disabled
 - a `CharacterBody2D` using Godot's `icon.svg`, a capsule collision shape, gravity, arrow-key movement, and jump with Up/Space
+- runtime editing: left click places the default logic tile, right click erases a logic tile
 
 ## Implementation Notes
 
