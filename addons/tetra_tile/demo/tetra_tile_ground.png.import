@@ -10,7 +10,7 @@ metadata={
 
 [deps]
 
-source_file="res://tetra_tile_ground.png"
+source_file="res://addons/tetra_tile/demo/tetra_tile_ground.png"
 dest_files=["res://.godot/imported/tetra_tile_ground.png-d6c93bc47275f7971fd37f35e0a97855.ctex"]
 
 [params]

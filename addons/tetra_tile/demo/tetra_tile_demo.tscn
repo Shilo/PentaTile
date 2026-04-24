@@ -1,6 +1,6 @@
 [gd_scene format=4]
 
-[ext_resource type="Texture2D" path="res://tetra_tile_ground.png" id="1_et3gv"]
+[ext_resource type="Texture2D" path="res://addons/tetra_tile/demo/tetra_tile_ground.png" id="1_et3gv"]
 [ext_resource type="Script" path="res://addons/tetra_tile/tetra_tile_map_layer.gd" id="2_0q8hf"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_t6276"]
