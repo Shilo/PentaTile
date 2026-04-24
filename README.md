@@ -77,3 +77,9 @@ To truly understand the power of why we use a Dual Grid system to turn a few til
 
 - **[The Dual Grid Concept](https://www.youtube.com/watch?v=jEWFSv3ivTg)** – A brilliant deep dive into how the offset grid math works to solve the 47-tile problem.
 - **[Drawing Only 5 Tiles](https://www.youtube.com/watch?v=aWcCNGen0cM)** – The inspiration for TetraTile's minimalism, showing how to achieve high-end results with a tiny asset footprint.
+
+---
+
+## 🙏 Attributions
+
+- `tetra_tile_ground.png` – derived from Kenney's [Pico-8 Platformer](https://kenney.nl/assets/pico-8-platformer) asset pack (CC0).
