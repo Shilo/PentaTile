@@ -75,7 +75,7 @@ The template inspection showed `tetra_tile_template.png` is 64x16. Per 16x16 til
 
 | File | Changes | Rationale |
 |------|---------|-----------|
-| C:\Programming_Files\Shilocity\TetraTile\.claude\handoffs\2026-04-24-141534-tetratile-mvp-research.md | Created handoff | Preserve research and continuation context. |
+| C:\Programming_Files\Shilocity\TetraTile\.claude\handoffs\2026-04-24-141534-tetra_tile-mvp-research.md | Created handoff | Preserve research and continuation context. |
 
 ## Decisions Made
 
