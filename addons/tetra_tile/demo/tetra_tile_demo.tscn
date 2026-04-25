@@ -37,7 +37,7 @@ navigation_enabled = false
 script = ExtResource("2_yi4p3")
 
 [node name="Player" type="CharacterBody2D" parent="." unique_id=1507627229]
-position = Vector2(160, 72)
+position = Vector2(216, 121)
 script = ExtResource("3_ojcmv")
 
 [node name="Icon" type="Sprite2D" parent="Player" unique_id=764645308]
