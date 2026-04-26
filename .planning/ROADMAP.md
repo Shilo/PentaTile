@@ -44,7 +44,13 @@ The original v0.2 feature pillars (Y-axis variation, top tiles, non-rotating til
 5. The TetraTileLayout base class can be subclassed; instances of `TetraTileLayoutTetraHorizontal` / `Vertical` appear correctly in the inspector picker for the contract's `layout` slot.
 6. End-of-Phase-1 LOC checkpoint: `addons/tetra_tile/` total stays well under TileMapDual's surface area; logged in the phase summary.
 
-**Plans**: TBD
+**Plans**: 5 plans
+Plans:
+- [ ] 01-01-PLAN.md — Wave 0: capture v0.1 baselines + LOC snapshot + _rebuild_count instrumentation + ROADMAP/REQUIREMENTS expansion (D-27)
+- [ ] 01-02-PLAN.md — Wave 1: Resource skeleton (TetraTileAtlasSlot + TetraTileLayout base + TetraTileAtlasContract with locked D-08 setter)
+- [ ] 01-03-PLAN.md — Wave 2: Concrete layout subclasses (TetraTileLayoutTetraHorizontal with relocated 16-state match + TetraTileLayoutTetraVertical axis-swap subclass)
+- [ ] 01-04-PLAN.md — Wave 3: Layer dispatcher rewrite (hard-remove enum + atlas_layout export, add atlas_contract setter, _resolve_layout lazy singleton, dual+single grid pipeline branch)
+- [ ] 01-05-PLAN.md — Wave 4: Bundled .tres files + demo wiring + visual regression + idempotence/storm test + LOC checkpoint
 
 ### Phase 2: Native Layouts
 
