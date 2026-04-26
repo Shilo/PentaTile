@@ -117,6 +117,8 @@ Future ideas remain intentionally separate from the V1 API:
 ## External Resources
 
 - [Godot 4 autotilling documentation](https://github.com/dandeliondino/godot-4-tileset-terrains-docs) - A detailed guide and starter project for understanding Godot 4's native terrain system.
+- [The Dual Grid Concept](https://www.youtube.com/watch?v=jEWFSv3ivTg) - A brilliant deep dive into how offset grid math solves the 47-tile problem.
+- [Drawing Only 5 Tiles](https://www.youtube.com/watch?v=aWcCNGen0cM) - The inspiration for TetraTile's minimalism, showing how to achieve high-end results with a tiny asset footprint.
 
 ## Attributions
 
