@@ -21,6 +21,7 @@ The original v0.2 feature pillars (Y-axis variation, top tiles, non-rotating til
 - Decimal phases (e.g. 3.5): Reserved for inserts that extend an adjacent integer phase without renumbering. Currently in use: 3.5 (PixelLab layouts, extends Phase 3). Phase 2.1 was inserted 2026-04-26 then **collapsed into Phase 2** on 2026-04-26 when the Tetra layout absorbed Single-Tile mode via auto-detect.
 
 - [x] **Phase 1: Contract Skeleton + Tetra Layouts** — Introduce `PentaTileAtlasContract` + `PentaTileLayout` base + `AtlasSlot`. Ship Tetra Horizontal + Tetra Vertical as the first two layout subclasses. v0.1 visuals continue unchanged via the bundled default contract OR the null-fallback path.
+- [x] **Phase 1.1: PentaTile Rename + Penta Codename Establishment** — Project-wide rename to `PentaTile` (source code, saved resources, planning + project docs, GitHub repo, local clone, Claude memory) before Phase 2 ships new files under the old name. "Penta" coined as the 5-archetype tileset codename via canonical README anchor + CLAUDE.md project invariant. CHANGELOG.md ships the v0.2 BREAKING entry.
 - [ ] **Phase 2: Native Layouts + Tetra Synthesis (1/4/5 auto-detect)** — Ship DualGrid16, Wang2Edge, Wang2Corner, Min3x3 subclasses. Plus the architectural pivot: existing `PentaTileLayoutPentaHorizontal`/`Vertical` gain load-time synthesis with auto-detect of three modes per strip — PENTA1 (1 source tile → 5 archetypes synthesized), PENTA4 (4 sources → 5th synthesized), PENTA5 (5 authored, no synthesis). Runtime overlay layer DELETED entirely (single-layer dispatch only). `TileCountMode` enum on the layout for explicit override. Companion artifact: `.planning/research/layouts/RPG_MAKER.md` documents the deferred RPG Maker family for v0.3+.
 - [ ] **Phase 3: TileBitTools-Decoded Layouts** — Transcribe slot tables from TBT's MIT-licensed `tilesetter_blob.tres`, `tilesetter_wang.tres`, and the matching Godot blob template `.tres`. Ship Blob47Godot, TilesetterWang15, TilesetterBlob47. Generate the 3 missing template PNGs from the slot tables. Add `ATTRIBUTION.md`.
 - [ ] **Phase 3.5: PixelLab Layouts + Variation-Seed Wiring** — Ship `PentaTileLayoutPixelLabTopDown` and `PentaTileLayoutPixelLabSideScroller` (8×8 atlas, single-grid, 4-bit corner mask, variation-bank). Wire `variation_seed` deterministic-hash bucket-pick. Add `PentaTileLayoutMinimal3x3` if not already shipped in Phase 2.
@@ -58,12 +59,13 @@ Plans:
 **Goal:** Project-wide rename PentaTile → PentaTile (source code, saved Godot resources, planning + project docs, GitHub repo, local clone directory, Claude memory directory) BEFORE Phase 2 ships new files under the old name. Coin "Penta" as the canonical codename for the 5-archetype tileset format via a load-bearing README definition ("What is a Penta tileset?") + a CLAUDE.md project invariant ("Coined-Term Discipline"). No backwards-compat shims per the no-compat policy; CHANGELOG documents the breakage.
 **Requirements**: NONE — rename phase, no formal REQ-IDs (success measured by CONTEXT.md scope items and goal-backward must_haves in each plan)
 **Depends on:** Phase 1
-**Plans:** 3 plans
+**Plans:** 3 plans complete (3/3)
+**Completed:** 2026-04-26
 
 Plans:
-- [ ] 01.1-01-source-and-resources-PLAN.md — Rename addons/penta_tile/ folder + GDScript classes + saved Godot resources (.tscn / .tres / .png.import) + project.godot in one atomic commit; Godot opens + demo paints under new name
-- [ ] 01.1-02-docs-and-codename-anchors-PLAN.md — Sweep .planning/ docs + root .md files (token rename) + add README "What is a Penta tileset?" section with labeled diagram + add CLAUDE.md "Coined-Term Discipline" section + create CHANGELOG.md with v0.2 BREAKING entry; protected scope (archived 01-* + spikes 001..003) preserved as historical record
-- [ ] 01.1-03-repo-git-memory-and-verify-PLAN.md — User renames GitHub repo (manual gate) → git remote set-url + verify tracking → user closes IDE + renames local directory (manual gate) → migrate Claude memory directory → final Godot/git verification → close-out commit + STATE/ROADMAP update
+- [x] 01.1-01-source-and-resources-PLAN.md — Source code + saved Godot resources rename (atomic across two consecutive commits)
+- [x] 01.1-02-docs-and-codename-anchors-PLAN.md — Planning + project docs sweep + README "What is a Penta tileset?" + CLAUDE.md "Coined-Term Discipline" + CHANGELOG.md
+- [x] 01.1-03-repo-git-memory-and-verify-PLAN.md — GitHub rename + git remote retarget + local dir + Claude memory migration + final verification
 
 ### Phase 2: Native Layouts + Architectural Simplification
 
@@ -181,6 +183,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 3.5 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Contract Skeleton + Tetra Layouts | 5/5 | Complete (substantially superseded by Phase 2 architectural sweep) | 2026-04-26 |
+| 1.1. PentaTile Rename + Penta Codename Establishment | 3/3 | Complete | 2026-04-26 |
 | 2. Native Layouts + Architectural Simplification | 0/TBD | Not started | - |
 | 3. TileBitTools-Decoded Layouts | 0/TBD | Not started | - |
 | 3.5. PixelLab Layouts (variation-bank pick deferred to v2) | 0/TBD | Not started | - |

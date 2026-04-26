@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 2 context gathered (Penta5 append + overlay-skip refactor)
-last_updated: "2026-04-26T14:55:29.790Z"
-last_activity: 2026-04-26 -- Phase 01.1 execution started
+stopped_at: Phase 1.1 complete; Phase 2 ready to plan
+last_updated: "2026-04-26T18:00:00.000Z"
+last_activity: 2026-04-26 -- Phase 01.1 complete (PentaTile rename + Penta codename established)
 progress:
   total_phases: 7
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 8
-  completed_plans: 5
-  percent: 63
+  completed_plans: 8
+  percent: 100
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-25 after v0.2 pivot to layout library)
 
 **Core value:** Painting tiles with the native `TileMapLayer` API produces correct dual-grid autotiled visuals — without the user maintaining caches, terrain metadata, or 16-tile blob sets.
-**Current focus:** Phase 01.1 — pentatile-rename-penta-codename-establishment
+**Current focus:** Phase 2 — Native Layouts + Architectural Simplification
 
 ## Current Position
 
-Phase: 01.1 (pentatile-rename-penta-codename-establishment) — EXECUTING
-Plan: 1 of 3
-Status: Executing Phase 01.1
-Last activity: 2026-04-26 -- Phase 01.1 execution started
+Phase: 2 (Native Layouts + Architectural Simplification) — READY TO PLAN
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-04-26 -- Phase 01.1 complete (PentaTile rename + Penta codename established)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██████████] 100% of currently-planned plans (Phase 2+ plans not yet authored)
 
 > Out-of-band progress: 5 of 8 greyboxed template PNGs + the generator script shipped in commit e86036f as part of the discovery pass. Counted as TEMPLATE-01 + TEMPLATE-03 covered. The remaining 3 templates (Blob47Godot, TilesetterWang15, TilesetterBlob47) ship in Phase 3 once their slot tables are transcribed from TileBitTools.
 
@@ -64,6 +64,7 @@ Progress: [░░░░░░░░░░] 0%
 - 2026-04-26 (later): **User policy update — breaking changes always allowed.** Recorded as feedback memory + CLAUDE.md "Breaking Changes Policy (HARD RULE)" + PROJECT.md constraint update. Never write backwards-compat shims. Never defer features for compat reasons. CHANGELOG entries are the only acceptable compat work.
 - 2026-04-26 (later): **Phase 2.1 collapsed back into Phase 2 — TETRA1 mode folded into the Tetra layout via auto-detect.** The unified `PentaTileLayoutPentaHorizontal`/`Vertical` classes now handle three modes (TETRA1 / TETRA4 / TETRA5) via auto-detection of the source atlas strip-axis tile count. `TileCountMode` enum (`AUTO` / `TETRA1` / `TETRA4` / `TETRA5`) provides explicit override. Single class per axis covers all modes; SINGLE-01..05 retired and PENTA-SYNTH-* expanded from 6 to 9 requirements. Phase 2.1 directory removed (was empty). Coverage 56 → 54. Total phases 7 → 6. Naming convention: enum members use `TETRA1`/`TETRA4`/`TETRA5` (UPPER_SNAKE_CASE per GDScript style); requirement IDs remain `PENTA-SYNTH-*`. Full algorithm + edge-case handling captured in Phase 2 DISCUSSION-LOG D-53..D-55.
 - 2026-04-26 (later): **Phase 1.1 inserted after Phase 1: PentaTile Rename + Penta Codename Establishment (URGENT).** Project-wide rename `Tetra` → `Penta` / `penta` → `penta` (~2,398 occurrences across 86 files) before Phase 2 ships new files under the old name. Coins "Penta" as the project's tileset codename (Blob/Wang style) — a descriptive, unowned label propagated through a canonical "What is a Penta tileset?" README definition. Driver: v0.2 pivot adds a 5th archetype (OppositeCorners) and TileCountMode FIVE — the project's identity is shifting from "4-tile autotiler" to "5-archetype autotiler," so the name follows the identity. Scope (in): source code (classes, file/folder names, plugin.cfg), saved resources (.tscn/.tres/.uid + custom data layer keys `penta_role`/`penta_lock_rotation`), planning docs (.planning/**, CLAUDE.md, ROADMAP.md, README), coined-terms discipline appended to CLAUDE.md as a project invariant, **AND repo rename + git tracking** — GitHub repo rename (manual user action via UI), local origin URL update via `git remote set-url`, local directory rename `c:\Programming_Files\Shilocity\PentaTile\` → `...\PentaTile\`, paired with Claude memory directory migration `mv c--Programming-Files-Shilocity-PentaTile c--Programming-Files-Shilocity-PentaTile`. Per the no-compat policy, no deprecation aliases — clean rename, CHANGELOG the breakage. Native flexible-count layout class is `PentaTileLayoutPenta` (matches `PentaTileLayout<FormatName>` pattern). Roadmap convention: user-facing text unpadded (`Phase 1.1`, `Phase 3.5`); directory + filenames zero-padded (`01.1-...`, `01.1-CONTEXT.md`). Memory: see `project_pentatile_rename.md`. Full scope + 6-wave structure in `.planning/phases/01.1-pentatile-rename-penta-codename-establishment/01.1-CONTEXT.md`.
+- 2026-04-26 (later): **Phase 1.1 (PentaTile Rename + Penta Codename Establishment) complete.** Project renamed end-to-end: GDScript classes (`PentaTile*`), addon folder (`addons/penta_tile/`), plugin.cfg, project.godot, all .tscn/.tres/.import resources, all .planning/** docs, requirement IDs (`PENTA-*` / `PENTA-SYNTH-*`), GitHub repo (`PentaTile`), local working directory, Claude memory directory. Coined "Penta" as the 5-archetype tileset codename via canonical README section ("What is a Penta tileset?") + CLAUDE.md "Coined-Term Discipline" project invariant. CHANGELOG.md created with v0.2 BREAKING entry. Phase 2 next.
 
 ### Decisions
 
@@ -125,6 +126,5 @@ Stopped at: Phase 2 context gathered (Penta5 append + overlay-skip refactor)
 Resume file: --resume-file
 
 **Completed Phase:** 01 (Contract Skeleton + Tetra Layouts) — 5/5 plans, 14/14 requirements, 26/26 automated tests PASS — 2026-04-26
+**Completed Phase:** 01.1 (PentaTile Rename + Penta Codename Establishment) — 3/3 plans, 0 formal REQ-IDs (rename phase), demo loads cleanly under new name, git remote tracks PentaTile origin — 2026-04-26
 **Next Phase:** 02 (Native Layouts) — DualGrid16, Wang2Edge, Wang2Corner, Minimal3x3 (subclass adds; single-grid pipeline already wired by Phase 1's D-06)
-
-**Planned Phase:** 1.1 (PentaTile Rename + Penta Codename Establishment) — 3 plans — 2026-04-26T14:53:07.443Z
