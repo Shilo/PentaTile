@@ -4,9 +4,7 @@ Lightweight **autotiling addon** for Godot designed to simplify tileset creation
 
 By utilizing the Dual Grid concept, TetraTile takes four base tiles, **Fill, Inner Corner, Border, and Outer Corner**, and expands them into a complete tileset with the same visual coverage as a traditional 47-tile set, but with significantly reduced asset requirements.
 
-![Tetra Horizontal Tileset Template](addons/tetra_tile/templates/tetra_horizontal.png)
-
----
+<img src="addons/tetra_tile/templates/tetra_horizontal.png" height="64" alt="Tetra Horizontal Tileset Template" style="image-rendering: pixelated;">
 
 ## 📑 Table of Contents
 
@@ -21,15 +19,11 @@ By utilizing the Dual Grid concept, TetraTile takes four base tiles, **Fill, Inn
 9. [Roadmap](#-roadmap)
 10. [External Resources](#-external-resources)
 
----
-
 ## 🚀 Why TetraTile?
 
 - **Reduced Tile Requirements:** Creating 47 tiles for a single terrain type is a time-consuming task. TetraTile reduces this requirement to just four tiles, lowering the barrier for creating custom game art while maintaining professional results.
 - **Efficient Visual Variation:** Managing only **four base tiles** allows for easier creation of **multiple variations**. Instead of redrawing dozens of tiles for a single alternative set, you can quickly iterate on the core four tiles to add organic variety and reduce repetitive patterns.
 - **Native Integration:** Built as a single-class subclass of `TileMapLayer`, TetraTile hooks directly into Godot's native API. It listens to standard drawing commands and updates the visual layers in real-time without requiring a custom drawing interface.
-
----
 
 ## 🎨 The Tetra-System Template
 
@@ -41,8 +35,6 @@ To use the system, your atlas needs these four essential components arranged hor
 4.  **Outer Corner** (The finishing touch)
 
 The two disconnected diagonal states are handled by composing two transformed outer corners on an internal overlay layer. This preserves the four-tile source template without requiring unique tiles for diagonal connections.
-
----
 
 ## ⚔️ TetraTile vs. TileMapDual API
 
@@ -62,8 +54,6 @@ While [TileMapDual](https://github.com/pablogila/TileMapDual) is a established s
 
 TetraTile is smaller because it focuses on a specific subset of the multi-terrain/general-grid flexibility offered by TileMapDual.
 
----
-
 ## ⚖️ Choosing the Right Tool
 
 ### Why choose TetraTile?
@@ -76,8 +66,6 @@ TetraTile is smaller because it focuses on a specific subset of the multi-terrai
 
 - **Complex Transitions:** For projects requiring complex "Grass-to-Sand-to-Rock" multi-terrain blending, TileMapDual is designed to handle that specific complexity.
 - **Standard Templates:** If you are already working with 16-tile Dual Grid (Wang) tilesets, TileMapDual provides a direct solution for those templates.
-
----
 
 ## 🛠️ Addon Layout
 
@@ -94,8 +82,6 @@ addons/tetra_tile/
 ```
 
 `tetra_tile_template.png` is the blank 4-tile template. `demo/tetra_tile_ground.png` and `demo/tetra_tile_ground.tres` are the demo atlas/TileSet.
-
----
 
 ## 🔌 Current API
 
@@ -126,8 +112,6 @@ Public helper:
 | ----------- | --------------------------------------------------------------------- |
 | `rebuild()` | Clears and regenerates all visual cells from the current logic cells. |
 
----
-
 ## 🧪 Demo
 
 Open `res://addons/tetra_tile/demo/tetra_tile_demo.tscn`.
@@ -140,8 +124,6 @@ The demo includes:
 - hidden logic-layer collisions disabled
 - a `CharacterBody2D` using Godot's `icon.svg`, a capsule collision shape, gravity, arrow-key movement, and jump with Up/Space
 - runtime editing: left click places the default logic tile, right click erases a logic tile
-
----
 
 ## 📝 Implementation Notes
 
@@ -158,8 +140,6 @@ The diagonal masks are `6` and `9`. They are drawn by placing one outer corner o
 
 The logic layer is hidden with `self_modulate.a`, not `visible = false`, because Godot may force cleanup behavior when a `TileMapLayer` is disabled, hidden, removed, or missing a TileSet.
 
----
-
 ## 🗺️ Roadmap
 
 Future ideas remain intentionally separate from the V1 API:
@@ -174,15 +154,11 @@ Future ideas remain intentionally separate from the V1 API:
 - **MkDocs:** fuller documentation inspired by TileMapDual's docs.
 - **Tileset converter:** convert Wang/blob tilesets or single-tile inputs into TetraTile-compatible atlases.
 
----
-
 ## 🔗 External Resources
 
 - [Godot 4 Autotilling Documentation](https://github.com/dandeliondino/godot-4-tileset-terrains-docs) - A detailed guide and starter project for understanding Godot 4's native terrain system.
 - [The Dual Grid Concept](https://www.youtube.com/watch?v=jEWFSv3ivTg) - A brilliant deep dive into how offset grid math solves the 47-tile problem.
 - [Drawing Only 5 Tiles](https://www.youtube.com/watch?v=aWcCNGen0cM) - The inspiration for TetraTile's minimalism, showing how to achieve high-end results with a tiny asset footprint.
-
----
 
 ## 🙏 Attributions
 
