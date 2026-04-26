@@ -206,6 +206,122 @@ func _make_slot(slot_index: int, transform_flags: int) -> PentaTileAtlasSlot:
 	return slot
 
 
+# ---------------------------------------------------------------------------
+# Wave 6: AUTO/AUTO_STRIP detection + configuration warnings
+# ---------------------------------------------------------------------------
+
+# PENTA-SYNTH-02: AUTO-mode dimension-only detection. O(1).
+# Returns the active TileCountMode for this layout given the current source TileSet.
+# When tile_count is explicit (ONE..FIVE), returns it directly (skips detection).
+# When AUTO, reads atlas axis size and maps 1→ONE/2→TWO/.../5→FIVE; 0/6+ → AUTO (caller
+# treats as malformed and renders nothing).
+# AUTO_STRIP returns AUTO_STRIP itself; strip-by-strip resolution lives in resolve_strip_modes.
+func resolve_active_mode(tile_set: TileSet, source_id: int) -> TileCountMode:
+	if tile_count != TileCountMode.AUTO and tile_count != TileCountMode.AUTO_STRIP:
+		return tile_count
+	if tile_count == TileCountMode.AUTO_STRIP:
+		return TileCountMode.AUTO_STRIP
+	if tile_set == null or source_id < 0:
+		return TileCountMode.AUTO       # caller renders nothing
+	var src := tile_set.get_source(source_id) as TileSetAtlasSource
+	if src == null:
+		return TileCountMode.AUTO
+	var grid_size := src.get_atlas_grid_size()
+	var axis_size: int = grid_size.x if axis == Axis.HORIZONTAL else grid_size.y
+	match axis_size:
+		1: return TileCountMode.ONE
+		2: return TileCountMode.TWO
+		3: return TileCountMode.THREE
+		4: return TileCountMode.FOUR
+		5: return TileCountMode.FIVE
+		_: return TileCountMode.AUTO    # 0 or 6+ → unresolved; caller renders nothing
+
+
+# PENTA-SYNTH-03: AUTO_STRIP per-strip detection. O(strips × axis_size).
+# Returns one TileCountMode per strip in source-axis order. Strip indices match
+# the OPPOSITE axis from `axis` (HORIZONTAL strips run along X within a Y-row;
+# so for HORIZONTAL there are atlas_grid_size.y strips, each of length .x).
+func resolve_strip_modes(tile_set: TileSet, source_id: int) -> Array:
+	var modes: Array = []
+	if tile_set == null or source_id < 0:
+		return modes
+	var src := tile_set.get_source(source_id) as TileSetAtlasSource
+	if src == null:
+		return modes
+	var grid_size := src.get_atlas_grid_size()
+	var strip_axis_size: int = grid_size.x if axis == Axis.HORIZONTAL else grid_size.y
+	var strip_count: int = grid_size.y if axis == Axis.HORIZONTAL else grid_size.x
+	for strip_index in range(strip_count):
+		var populated_count := 0
+		var gap_detected := false
+		for slot in range(strip_axis_size):
+			var atlas_coords: Vector2i = (
+				Vector2i(slot, strip_index) if axis == Axis.HORIZONTAL
+				else Vector2i(strip_index, slot)
+			)
+			if src.has_tile(atlas_coords):
+				populated_count += 1
+			elif populated_count > 0:
+				# Gap detected — strip is malformed. Record AUTO (== 0; caller treats as malformed).
+				gap_detected = true
+				break
+		if gap_detected:
+			modes.append(TileCountMode.AUTO)
+		else:
+			match populated_count:
+				1: modes.append(TileCountMode.ONE)
+				2: modes.append(TileCountMode.TWO)
+				3: modes.append(TileCountMode.THREE)
+				4: modes.append(TileCountMode.FOUR)
+				5: modes.append(TileCountMode.FIVE)
+				_: modes.append(TileCountMode.AUTO)    # 0 / 6+ → unresolved
+	return modes
+
+
+# PENTA-SYNTH-08: emit configuration warnings. Called by PentaTileMapLayer's
+# _get_configuration_warnings hook to surface issues in the inspector's warning panel.
+# Returns one PackedStringArray of human-readable warnings covering three failure modes:
+#   A — atlas axis size 0 or 6+ in AUTO / AUTO_STRIP (cannot detect; will not render)
+#   B — explicit tile_count and atlas axis size disagree (mismatch; partial render)
+#   C — AUTO_STRIP gap (slot N populated but slot N-1 empty; strip renders empty)
+func get_configuration_warnings_for(tile_set: TileSet, source_id: int) -> PackedStringArray:
+	var out := PackedStringArray()
+	if tile_set == null or source_id < 0:
+		return out
+	var src := tile_set.get_source(source_id) as TileSetAtlasSource
+	if src == null:
+		return out
+	var grid_size := src.get_atlas_grid_size()
+	var axis_size: int = grid_size.x if axis == Axis.HORIZONTAL else grid_size.y
+
+	# Warning A — atlas axis size out of supported range in AUTO / AUTO_STRIP
+	if tile_count == TileCountMode.AUTO or tile_count == TileCountMode.AUTO_STRIP:
+		if axis_size == 0 or axis_size >= 6:
+			out.append("PentaTileLayoutPenta: atlas %s-axis size is %d; AUTO/AUTO_STRIP supports 1..5. Atlas will not render." % ["X" if axis == Axis.HORIZONTAL else "Y", axis_size])
+
+	# Warning B — explicit tile_count and atlas axis size disagree
+	if tile_count >= TileCountMode.ONE and tile_count <= TileCountMode.FIVE:
+		if axis_size != int(tile_count):
+			out.append("PentaTileLayoutPenta: explicit tile_count = %d but atlas %s-axis size is %d. Atlas slots beyond the tile_count will be ignored; missing archetypes synthesized from slot 0." % [int(tile_count), "X" if axis == Axis.HORIZONTAL else "Y", axis_size])
+
+	# Warning C — AUTO_STRIP gappy strip
+	if tile_count == TileCountMode.AUTO_STRIP:
+		var strip_count: int = grid_size.y if axis == Axis.HORIZONTAL else grid_size.x
+		for strip_index in range(strip_count):
+			var prev_populated := true
+			for slot in range(axis_size):
+				var atlas_coords: Vector2i = (
+					Vector2i(slot, strip_index) if axis == Axis.HORIZONTAL
+					else Vector2i(strip_index, slot)
+				)
+				var populated := src.has_tile(atlas_coords)
+				if not prev_populated and populated:
+					out.append("PentaTileLayoutPenta: AUTO_STRIP detected gap in strip %d (slot %d empty but slot %d populated). Strip will render empty." % [strip_index, slot - 1, slot])
+					break
+				prev_populated = populated
+	return out
+
+
 # PENTA-SYNTH-09: hide bitmask_template from inspector. Auto-resolved per axis × mode
 # via _BITMASK_TEMPLATE_LOOKUP at fallback-TileSet construction time.
 func _validate_property(property: Dictionary) -> void:

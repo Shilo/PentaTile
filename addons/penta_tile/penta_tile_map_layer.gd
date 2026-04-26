@@ -23,6 +23,7 @@ const _PRIMARY_LAYER_NAME := "_PentaTileVisual"
 		if layout != null:
 			layout.changed.connect(_on_layout_changed)
 		_queue_rebuild()
+		update_configuration_warnings()                                            # H-3 trigger
 
 @export_range(0.0, 1.0, 0.01) var logic_layer_opacity: float = 0.0:
 	set(value):
@@ -285,16 +286,18 @@ func _queue_rebuild() -> void:
 		rebuild.call_deferred()
 
 
-# PENTA-SYNTH-06: Build (or rebuild) the synthesized TileSet for a Penta layout.
-# Re-runs only when the cache signature changes — same inputs produce bit-identical
-# output. The user's source `tile_set` is never mutated.
+# PENTA-SYNTH-02 / 03 / 06: Build (or rebuild) the synthesized TileSet for a Penta layout.
+# Re-runs only when the cache signature changes — same inputs produce bit-identical output.
+# The user's source `tile_set` is never mutated.
 #
-# Wave 2 scope: handles EXPLICIT tile_count modes (ONE..FIVE) only.
-# Wave 6 extends this method to call penta.resolve_active_mode for AUTO/AUTO_STRIP
-# resolution; the dispatch + cache invariant remains the same.
+# Wave 6 extension over Wave 2: AUTO and AUTO_STRIP resolve to a concrete int 1..5 via
+# penta.resolve_active_mode (added in Task 6.1 step A) before invoking synthesize_strip.
+# Explicit ONE..FIVE pass through unchanged.
+#
+# Forward-type note: penta is typed as PentaTileLayout (base); axis/tile_count accessed
+# via dynamic get() (same Wave 2 pattern). resolve_active_mode called via has_method check.
 func _ensure_synthesized_tile_set(penta: PentaTileLayout, source_id: int) -> void:
-	# Access axis/tile_count via dynamic get() — PentaTileLayoutPenta doesn't exist
-	# until Wave 3. needs_synthesis() virtual guarantees these properties exist at call time.
+	# Access axis/tile_count via dynamic get() — avoids forward type reference to PentaTileLayoutPenta.
 	var penta_axis: int = penta.get("axis") if penta.get("axis") != null else 0
 	var penta_tile_count: int = penta.get("tile_count") if penta.get("tile_count") != null else 0
 	var source_tile_set_id := tile_set.get_instance_id() if tile_set != null else 0
@@ -309,13 +312,19 @@ func _ensure_synthesized_tile_set(penta: PentaTileLayout, source_id: int) -> voi
 		return   # cache hit — PENTA-SYNTH-06 deterministic re-run guard
 	_synthesis_signature = sig
 	_synthesized_tile_set = null
-	# Wave 2 scope: handle explicit tile_count modes (ONE..FIVE) only.
-	# Wave 6 extends this with AUTO/AUTO_STRIP resolution via penta.resolve_active_mode.
-	var mode := penta_tile_count
-	if mode < 1 or mode > 5:
-		return   # non-explicit mode (AUTO/AUTO_STRIP); Wave 6 wires resolution
 	if tile_set == null or source_id < 0:
 		return   # no source — Phase 4 fallback path (PREVIEW-03/04) handles null tile_set
+	# Wave 6 extension over Wave 2: resolve AUTO/AUTO_STRIP to a concrete int via the new
+	# resolve_active_mode method on PentaTileLayoutPenta. Explicit ONE..FIVE pass through unchanged.
+	var mode := penta_tile_count
+	if penta.has_method("resolve_active_mode"):
+		var active_mode_enum = penta.call("resolve_active_mode", tile_set, source_id)
+		mode = int(active_mode_enum)
+	if mode < 1 or mode > 5:
+		# Unresolved (AUTO with axis_size 0 or 6+; or AUTO_STRIP returns AUTO_STRIP itself —
+		# per-strip dispatch is a future expansion; for now AUTO_STRIP renders empty until per-strip
+		# dispatch lands. NO stub fallback to user tile_set — caller renders nothing.)
+		return
 	var result: Dictionary = PentaTileSynthesis.synthesize_strip(tile_set, source_id, penta_axis, 0, mode)
 	if result.is_empty() or not result.has("slots"):
 		push_warning("PentaTileMapLayer: synthesize_strip returned no slots for mode=%d axis=%d" % [mode, penta_axis])
@@ -335,3 +344,28 @@ func _on_layout_changed() -> void:
 	_synthesized_tile_set = null
 	_synthesis_signature = 0
 	_queue_rebuild()
+	update_configuration_warnings()                                                # H-3 trigger
+
+
+# PENTA-SYNTH-08: Inspector warning panel hook (@tool). Forwards layout-side warnings
+# to the layer's inspector panel so they are visible directly on the node.
+# H-3: this is the OVERRIDE (returns the warning strings). update_configuration_warnings()
+# is the TRIGGER (asks Godot to refresh); it is called from the layout setter and
+# _on_layout_changed, not here.
+# Forward-type note: PentaTileLayoutPenta is resolved dynamically via needs_synthesis() +
+# has_method("get_configuration_warnings_for") to avoid a class-level forward reference
+# (same pattern as _ensure_synthesized_tile_set in Wave 2 Task 2.3).
+func _get_configuration_warnings() -> PackedStringArray:
+	var warnings := PackedStringArray()
+	if layout == null:
+		return warnings   # null layout is a valid intermediate state (renders nothing); no warning
+	if tile_set == null:
+		return warnings   # tile_set null is also valid (Phase 4 wires fallback path)
+	var source_id := _resolve_source_id()
+	if source_id < 0:
+		return warnings
+	if layout.needs_synthesis() and layout.has_method("get_configuration_warnings_for"):
+		var result = layout.call("get_configuration_warnings_for", tile_set, source_id)
+		if result is PackedStringArray:
+			warnings.append_array(result)
+	return warnings
