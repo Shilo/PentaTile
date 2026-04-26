@@ -1,0 +1,123 @@
+# Spike 001 — template-decoder-feasibility — report
+Python: 3.14.2
+Pillow: 12.0.0
+
+## Correctness on shipped greybox templates
+
+=== tetra_horizontal.png (4x1, corner mask) ===
+  topology auto-detect: corner (OK)
+  decode time: 64.6 us  (16.15 us/slot)
+  slots: 4/4 match expected
+    [OK  ] slot (0,0)  decoded=15  expected=15
+    [OK  ] slot (1,0)  decoded= 7  expected= 7
+    [OK  ] slot (2,0)  decoded= 3  expected= 3
+    [OK  ] slot (3,0)  decoded= 1  expected= 1
+  visualization: .planning\spikes\001-template-decoder-feasibility\out\decode_tetra_horizontal.png
+
+=== tetra_vertical.png (1x4, corner mask) ===
+  topology auto-detect: corner (OK)
+  decode time: 63.5 us  (15.88 us/slot)
+  slots: 4/4 match expected
+    [OK  ] slot (0,0)  decoded=15  expected=15
+    [OK  ] slot (0,1)  decoded= 7  expected= 7
+    [OK  ] slot (0,2)  decoded= 3  expected= 3
+    [OK  ] slot (0,3)  decoded= 1  expected= 1
+  visualization: .planning\spikes\001-template-decoder-feasibility\out\decode_tetra_vertical.png
+
+=== dual_grid_16.png (4x4, corner mask) ===
+  topology auto-detect: corner (OK)
+  decode time: 253.7 us  (15.86 us/slot)
+  slots: 16/16 match expected
+    [OK  ] slot (0,0)  decoded= 0  expected= 0
+    [OK  ] slot (1,0)  decoded= 1  expected= 1
+    [OK  ] slot (2,0)  decoded= 2  expected= 2
+    [OK  ] slot (3,0)  decoded= 3  expected= 3
+    [OK  ] slot (0,1)  decoded= 4  expected= 4
+    [OK  ] slot (1,1)  decoded= 5  expected= 5
+    [OK  ] slot (2,1)  decoded= 6  expected= 6
+    [OK  ] slot (3,1)  decoded= 7  expected= 7
+    [OK  ] slot (0,2)  decoded= 8  expected= 8
+    [OK  ] slot (1,2)  decoded= 9  expected= 9
+    [OK  ] slot (2,2)  decoded=10  expected=10
+    [OK  ] slot (3,2)  decoded=11  expected=11
+    [OK  ] slot (0,3)  decoded=12  expected=12
+    [OK  ] slot (1,3)  decoded=13  expected=13
+    [OK  ] slot (2,3)  decoded=14  expected=14
+    [OK  ] slot (3,3)  decoded=15  expected=15
+  visualization: .planning\spikes\001-template-decoder-feasibility\out\decode_dual_grid_16.png
+
+=== wang_2corner.png (4x4, corner mask) ===
+  topology auto-detect: corner (OK)
+  decode time: 252.8 us  (15.80 us/slot)
+  slots: 16/16 match expected
+    [OK  ] slot (0,0)  decoded= 0  expected= 0
+    [OK  ] slot (1,0)  decoded= 1  expected= 1
+    [OK  ] slot (2,0)  decoded= 2  expected= 2
+    [OK  ] slot (3,0)  decoded= 3  expected= 3
+    [OK  ] slot (0,1)  decoded= 4  expected= 4
+    [OK  ] slot (1,1)  decoded= 5  expected= 5
+    [OK  ] slot (2,1)  decoded= 6  expected= 6
+    [OK  ] slot (3,1)  decoded= 7  expected= 7
+    [OK  ] slot (0,2)  decoded= 8  expected= 8
+    [OK  ] slot (1,2)  decoded= 9  expected= 9
+    [OK  ] slot (2,2)  decoded=10  expected=10
+    [OK  ] slot (3,2)  decoded=11  expected=11
+    [OK  ] slot (0,3)  decoded=12  expected=12
+    [OK  ] slot (1,3)  decoded=13  expected=13
+    [OK  ] slot (2,3)  decoded=14  expected=14
+    [OK  ] slot (3,3)  decoded=15  expected=15
+  visualization: .planning\spikes\001-template-decoder-feasibility\out\decode_wang_2corner.png
+
+=== wang_2edge.png (4x4, edge mask) ===
+  topology auto-detect: edge (OK)
+  decode time: 247.7 us  (15.48 us/slot)
+  slots: 16/16 match expected
+    [OK  ] slot (0,0)  decoded= 0  expected= 0
+    [OK  ] slot (1,0)  decoded= 1  expected= 1
+    [OK  ] slot (2,0)  decoded= 2  expected= 2
+    [OK  ] slot (3,0)  decoded= 3  expected= 3
+    [OK  ] slot (0,1)  decoded= 4  expected= 4
+    [OK  ] slot (1,1)  decoded= 5  expected= 5
+    [OK  ] slot (2,1)  decoded= 6  expected= 6
+    [OK  ] slot (3,1)  decoded= 7  expected= 7
+    [OK  ] slot (0,2)  decoded= 8  expected= 8
+    [OK  ] slot (1,2)  decoded= 9  expected= 9
+    [OK  ] slot (2,2)  decoded=10  expected=10
+    [OK  ] slot (3,2)  decoded=11  expected=11
+    [OK  ] slot (0,3)  decoded=12  expected=12
+    [OK  ] slot (1,3)  decoded=13  expected=13
+    [OK  ] slot (2,3)  decoded=14  expected=14
+    [OK  ] slot (3,3)  decoded=15  expected=15
+  visualization: .planning\spikes\001-template-decoder-feasibility\out\decode_wang_2edge.png
+
+## Failure-mode probes
+
+=== Probe: anti-aliased painted template ===
+  PASS — decoded matches expected for all 16 slots after AA blur
+  visualization: .planning\spikes\001-template-decoder-feasibility\out\probe_anti_aliased.png
+
+=== Probe: ambiguous slots (two slots, same mask) ===
+  PASS — detected duplicate masks: {15: [0, 1]}
+
+=== Probe: missing masks (Tetra Horizontal — only 4 archetypes) ===
+  PASS — detected 12 missing masks: [0, 2, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14]
+  (4 of 16 corner-mask states present)
+  NOTE: this is EXPECTED for Tetra layouts — they synthesize the
+        other 12 states from the 4 archetypes via TRANSFORM_FLIP_*.
+
+=== Probe: topology auto-detect (edge template) ===
+  PASS — auto-detected as 'edge'
+
+=== Probe: outline-only slot (no fill) — should be mask 0 ===
+  PASS — outline pixels not sampled (geometric placement: anchor 4px inside)
+
+============================================================
+## Summary
+  shipped templates: 56/56 slots match expected
+  anti-aliased painted template: PASS
+  ambiguous_detection: PASS
+  missing_detection: PASS
+  topology_detection: PASS
+  outline_rejection: PASS
+  decode timing: avg 176.5 us per atlas
+               : min 63.5 us / max 253.7 us
