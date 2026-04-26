@@ -33,11 +33,70 @@ Renamed surface:
 - `README.md` § **What is a Penta tileset?** — canonical labeled-diagram section defining the 5 archetypes (IsolatedCell, Fill, Border, InnerCorner, OppositeCorners) and "Penta" as a coined term alongside Wang and Blob.
 - `CLAUDE.md` § **Coined-Term Discipline** — project invariant reserving "Penta" exclusively for the 5-archetype format; prohibits `PentaCache`, `PentaDecoder`, or any unrelated "Penta" prefix.
 
+### BREAKING — Phase 2: Architectural Simplification + Native Layout Library
+
+**`PentaTileAtlasContract` deleted.** `layout: PentaTileLayout` lives directly on `PentaTileMapLayer` — no contract wrapper, no `version: int` speculative field. Per the no-forward-compat policy.
+
+**Phase 1's `PentaTileLayoutPentaHorizontal` + `PentaTileLayoutPentaVertical` merged into a single `PentaTileLayoutPenta` class** with two enums:
+- `axis: Axis { HORIZONTAL, VERTICAL }`
+- `tile_count: TileCountMode { AUTO, AUTO_STRIP, ONE, TWO, THREE, FOUR, FIVE }` — five progressive synthesis modes per strip plus AUTO (dimension-only detection) and AUTO_STRIP (per-strip detection).
+
+**New slot ordering** for the 5 Penta archetypes: `0=IsolatedCell, 1=Fill, 2=Border, 3=InnerCorner, 4=OppositeCorners`. **OuterCorner is implicit** — synthesized from slot 0 with rotation across all modes; never has a dedicated slot (Path B).
+
+**Runtime overlay layer DELETED entirely.** All v0.2 layouts render via single-layer 5-archetype dispatch. Removed: `PentaTileMapLayer._overlay_layer`, `_OVERLAY_LAYER_NAME`, `_paint_overlay_for_slot()`, `AtlasSlot.diagonal_complement_atlas_coords`. `PentaTileMapLayer` now has exactly ONE child visual layer.
+
+**`template_image` renamed to `bitmask_template`** on `PentaTileLayout` base class. Single image serves as inspector preview AND fallback `TileSet` source — no atlas/bitmask split. **`fallback_tile_set` `@export` removed**; replaced by `get_fallback_tile_set()` virtual method that builds a `TileSet` from `bitmask_template` at runtime. **`decoder_image` deleted** (was speculative).
+
+**Bundled bitmask PNGs co-located** next to layout `.gd` files. The old `templates/` folder is deleted entirely. Penta has 10 PNGs in `addons/penta_tile/layouts/penta_tile_layout_penta/{one,two,three,four,five}_{horizontal,vertical}.png`. Single-variant layouts use flat siblings: `penta_tile_layout_dual_grid_16.png`, `penta_tile_layout_wang_2_edge.png`, `penta_tile_layout_wang_2_corner.png`, `penta_tile_layout_minimal_3x3.png`. Original v0.1 `penta_tile_template.png` deleted.
+
+### Added — Phase 2: Native Layout Subclasses
+
+Four hand-authored layouts ship in this milestone:
+
+- **`PentaTileLayoutDualGrid16`** — 4×4 atlas with 16 explicit tiles for every dual-grid corner mask (TL=1/TR=2/BL=4/BR=8). No rotation reuse; every state maps to a unique authored tile. Uses `mask % 4 = col, mask / 4 = row`.
+- **`PentaTileLayoutWang2Edge`** — single-grid 4×4 atlas, edge mask N=1/E=2/S=4/W=8 (also known as Marching Squares / Cellular Automata 2-Edge). Edges form lines and paths.
+- **`PentaTileLayoutWang2Corner`** — single-grid 4×4 atlas, corner mask sampling diagonal neighbors NE=1/SE=2/SW=4/NW=8. Same `mask%4 / mask/4` formula as DualGrid16 but semantically different bit-to-neighbor mapping.
+- **`PentaTileLayoutMinimal3x3`** — single-grid 3×3 9-tile atlas with open-side collapse rule (col/row = 0 if that side is exclusively open, 2 if exclusively closed on opposite, 1 (center) otherwise). Masks 5 (T+B) and 10 (E+W) and all isolated-diagonal states collapse to the center tile (accepted visual loss for the 9-tile minimum).
+
+### Added — Phase 2: Synthesis Engine
+
+- **`PentaTileSynthesis`** (`addons/penta_tile/penta_tile_synthesis.gd`) — load-time synthesis engine that generates missing archetypes for ONE/TWO/THREE/FOUR modes from the explicit slots present in the source atlas. Includes:
+  - **`synthesize_strip()`** — main entry point; dispatches per `TileCountMode`.
+  - **`clip_polygon_to_subrect()`** — Sutherland-Hodgman polygon clipper for collision/occlusion/navigation polygon transfer to synthesized sub-region tiles.
+  - **`transform_vertex()`** — locked Gate 2 transform order: `TRANSPOSE → FLIP_H → FLIP_V`.
+  - **`build_tile_set_from_synthesis()`** — wires synthesized slots to a `TileSetAtlasSource` for the layer to consume.
+  - **Signature-based idempotence** — synthesis re-runs only when `(instance_id, axis, tile_count, source_id, resolved_mode)` changes; `rebuild()` is safe to call repeatedly.
+  - **Polygon transfer** — collision/occlusion/navigation polygons are copied with appropriate transforms. Animation/custom-data/probability/y-sort are NOT copied (documented as a layout-choice tradeoff).
+
+### Added — Phase 2: Auto-Detection + Configuration Warnings
+
+- **AUTO mode** — `PentaTileLayoutPenta.resolve_active_mode()` reads atlas axis dimension (1/2/3/4/5 → ONE/TWO/THREE/FOUR/FIVE). Atlas axis size 0 or 6+ disables rendering and emits a configuration warning.
+- **AUTO_STRIP mode** — `PentaTileLayoutPenta.resolve_strip_modes()` independently detects each strip's tile count via `TileSetAtlasSource.has_tile()` checks. Different strips can use different modes within a single atlas.
+- **`get_configuration_warnings_for(layer)`** virtual on `PentaTileLayoutPenta` — duck-typed delegation from `PentaTileMapLayer._get_configuration_warnings()` surfaces atlas-size / mode-mismatch warnings in the Godot inspector.
+
+### Added — Phase 2: Determinism Test Harness
+
+- **`addons/penta_tile/tests/determinism_test.gd`** — headless Godot regression script with 4 sub-tests:
+  - Sub-test (a): `transform_vertex` worked example (all 8 flag combinations against locked Gate 2 truth table).
+  - Sub-test (b): `clip_polygon_to_subrect` hash determinism (10 invocations).
+  - Main test: 11 `rebuild()` runs; asserts all hashes identical AND match `BASELINE_HASH=2986698704`.
+  - Sub-test (c): VERTICAL-axis structural coverage (WR-07 regression net) — asserts cell count matches `BASELINE_CELLS=46` from HORIZONTAL AND every painted atlas coord resolves in the synthesized atlas via `source.has_tile()`.
+- **`addons/penta_tile/tests/_capture_baseline.gd`** — baseline capture utility with optional `--layout-path=<res_path>` CLI flag for capturing baselines against alternative layouts (e.g., `penta_layout_four_vertical.tres`).
+
+Run via:
+```
+Godot_v4.6.2-stable_win64_console.exe --headless --path . --script addons/penta_tile/tests/determinism_test.gd
+```
+
 ### Migration notes for v0.1.x consumers
 
 1. Replace all references to `TetraTileMapLayer` with `PentaTileMapLayer` in your scenes and scripts.
 2. Move your `addons/tetra_tile/` folder to `addons/penta_tile/` and re-enable the plugin in Project Settings → Plugins.
 3. If you stored the addon path in any tool scripts or CI configs (`res://addons/tetra_tile/`), update those to `res://addons/penta_tile/`.
+4. Replace `atlas_contract = ...` on your `PentaTileMapLayer` instances with `layout = PentaTileLayoutPenta(axis=..., tile_count=...)` (or any other layout subclass). The `PentaTileAtlasContract` class is deleted.
+5. If you authored against `PentaTileLayoutPentaHorizontal` / `PentaTileLayoutPentaVertical`, swap to `PentaTileLayoutPenta` with the appropriate `axis: Axis` enum value. Your atlas tile counts (1/2/3/4/5 along the strip axis) auto-detect under `tile_count = AUTO`.
+6. If you reference `template_image` anywhere, rename to `bitmask_template`.
+7. If you bind `fallback_tile_set` directly on a layout, remove it — `get_fallback_tile_set()` builds one from `bitmask_template` automatically.
 
 ---
 

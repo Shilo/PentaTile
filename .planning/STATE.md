@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-07-PLAN.md (Wave 7 closeout — LOC gate fired; determinism PASS; Phase 2 ROADMAP NOT marked complete pending design review)
-last_updated: "2026-04-26T20:36:20.861Z"
+stopped_at: Phase 2 code-complete + clean code review (3 passes); awaiting human visual UAT (4 items in 02-HUMAN-UAT.md) before approval
+last_updated: "2026-04-26T23:00:00.000Z"
 last_activity: 2026-04-26
 progress:
   total_phases: 7
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-04-25 after v0.2 pivot to layout library
 
 ## Current Position
 
-Phase: 02 (native-layouts) — EXECUTING
-Plan: 7 of 7
-Status: Ready to execute
+Phase: 02 (native-layouts) — CODE-COMPLETE; AWAITING HUMAN UAT
+Plan: 7 of 7 executed
+Status: All plans done. Code review passed cleanly across 3 passes (initial → re-review after WR fixes → third pass after VERTICAL baseline + IN fixes). 7 Critical/Warning findings (WR-01..WR-07) all fixed and verified. 3 new Info findings (IN-11/12/13) fixed in commit c9a6aa9. Phase 2 entry remains `[ ]` in ROADMAP.md per user instruction (LOC overage + visual UAT both unresolved).
 Last activity: 2026-04-26
 
-Progress: [██████████] 100%
+Progress: [██████████] 100% (plans executed) | UAT: 0/4
 
 > Out-of-band progress: 5 of 8 greyboxed template PNGs + the generator script shipped in commit e86036f as part of the discovery pass. Counted as TEMPLATE-01 + TEMPLATE-03 covered. The remaining 3 templates (Blob47Godot, TilesetterWang15, TilesetterBlob47) ship in Phase 3 once their slot tables are transcribed from TileBitTools.
 
@@ -72,6 +72,13 @@ Progress: [██████████] 100%
 - 2026-04-26 (later): **Phase 2.1 collapsed back into Phase 2 — TETRA1 mode folded into the Tetra layout via auto-detect.** The unified `PentaTileLayoutPentaHorizontal`/`Vertical` classes now handle three modes (TETRA1 / TETRA4 / TETRA5) via auto-detection of the source atlas strip-axis tile count. `TileCountMode` enum (`AUTO` / `TETRA1` / `TETRA4` / `TETRA5`) provides explicit override. Single class per axis covers all modes; SINGLE-01..05 retired and PENTA-SYNTH-* expanded from 6 to 9 requirements. Phase 2.1 directory removed (was empty). Coverage 56 → 54. Total phases 7 → 6. Naming convention: enum members use `TETRA1`/`TETRA4`/`TETRA5` (UPPER_SNAKE_CASE per GDScript style); requirement IDs remain `PENTA-SYNTH-*`. Full algorithm + edge-case handling captured in Phase 2 DISCUSSION-LOG D-53..D-55.
 - 2026-04-26 (later): **Phase 1.1 inserted after Phase 1: PentaTile Rename + Penta Codename Establishment (URGENT).** Project-wide rename `Tetra` → `Penta` / `penta` → `penta` (~2,398 occurrences across 86 files) before Phase 2 ships new files under the old name. Coins "Penta" as the project's tileset codename (Blob/Wang style) — a descriptive, unowned label propagated through a canonical "What is a Penta tileset?" README definition. Driver: v0.2 pivot adds a 5th archetype (OppositeCorners) and TileCountMode FIVE — the project's identity is shifting from "4-tile autotiler" to "5-archetype autotiler," so the name follows the identity. Scope (in): source code (classes, file/folder names, plugin.cfg), saved resources (.tscn/.tres/.uid + custom data layer keys `penta_role`/`penta_lock_rotation`), planning docs (.planning/**, CLAUDE.md, ROADMAP.md, README), coined-terms discipline appended to CLAUDE.md as a project invariant, **AND repo rename + git tracking** — GitHub repo rename (manual user action via UI), local origin URL update via `git remote set-url`, local directory rename `c:\Programming_Files\Shilocity\PentaTile\` → `...\PentaTile\`, paired with Claude memory directory migration `mv c--Programming-Files-Shilocity-PentaTile c--Programming-Files-Shilocity-PentaTile`. Per the no-compat policy, no deprecation aliases — clean rename, CHANGELOG the breakage. Native flexible-count layout class is `PentaTileLayoutPenta` (matches `PentaTileLayout<FormatName>` pattern). Roadmap convention: user-facing text unpadded (`Phase 1.1`, `Phase 3.5`); directory + filenames zero-padded (`01.1-...`, `01.1-CONTEXT.md`). Memory: see `project_pentatile_rename.md`. Full scope + 6-wave structure in `.planning/phases/01.1-pentatile-rename-penta-codename-establishment/01.1-CONTEXT.md`.
 - 2026-04-26 (later): **Phase 1.1 (PentaTile Rename + Penta Codename Establishment) complete.** Project renamed end-to-end: GDScript classes (`PentaTile*`), addon folder (`addons/penta_tile/`), plugin.cfg, project.godot, all .tscn/.tres/.import resources, all .planning/** docs, requirement IDs (`PENTA-*` / `PENTA-SYNTH-*`), GitHub repo (`PentaTile`), local working directory, Claude memory directory. Coined "Penta" as the 5-archetype tileset codename via canonical README section ("What is a Penta tileset?") + CLAUDE.md "Coined-Term Discipline" project invariant. CHANGELOG.md created with v0.2 BREAKING entry. Phase 2 next.
+- 2026-04-26 (Phase 2 execution): **All 7 Phase 2 waves shipped.** Wave 0: verification migration spec. Wave 1: AtlasSlot trim + bitmask_template rename + get_fallback_tile_set virtual stub. Wave 2: PentaTileSynthesis engine (Liang-Barsky polygon clipper, Gate 1 Path B OuterCorner, Gate 2 transform order, signature-based idempotence). Wave 3: PentaTileLayoutPenta merged class (axis × tile_count enums, AUTO_STRIP=-1 sentinel, H-1 + H-4 fixes). Wave 4: 4 native layouts (DualGrid16, Wang2Edge, Wang2Corner, Min3x3) committed atomically (91f69a2). Wave 5: bundled bitmask PNGs co-located + _generate_bitmasks.py rewritten + README retargeted. Wave 6: AUTO/AUTO_STRIP detection + configuration warnings + FOUR-mode demo binding. Wave 7: LOC checkpoint (1827 runtime LOC, 31% over ~1500 trigger; AT RISK noted for Phase 5 final audit) + determinism test PASS (BASELINE_HASH=2986698704). 30/30 Phase 2 requirements satisfied per programmatic verification.
+- 2026-04-26 (post-execution review pass 1): **Initial code review.** Spawned `/gsd-code-review 2`; produced 02-REVIEW.md with 6 Warning findings (WR-01..WR-06) + 9 Info findings (IN-01..IN-09). Commit `eec027d`.
+- 2026-04-26 (post-execution audit): **Independent third-party audit by codex-rescue subagent.** Surfaced WR-07 — latent BLOCKER in `PentaTileLayoutPenta._make_slot()`: VERTICAL axis returned `Vector2i(0, slot_index)` but synthesizer always builds horizontal strip with tiles at `(0..N, 0)` — every VERTICAL paint would have produced empty cells in production. Documented in 02-REVIEW.md as 7th Warning. Commit `8113ea1`.
+- 2026-04-26 (code-review-fix): **All 7 WR fixes landed atomically across 7 commits.** WR-07 `ea0ba23` (axis-invariant `_make_slot`), WR-01 `ae5d787` (canonical Sutherland-Hodgman replacement), WR-02 `9ca342e` (mode-resolution before cache signature), WR-03 `d74df0e` (`strip_origin` sentinel param), WR-04 `2ca04e0` (typed `_bundled_png_path` accessor with mode assert), WR-05 `720f017` (`fill_rect` for SLOT_INNER_CORNER quadrant), WR-06 `79af1e3` (README refresh to match Phase 2 architecture). All 9 prior Info items left at their original dispositions per their Phase 3.5 / cosmetic / accepted-tradeoff classifications.
+- 2026-04-26 (re-review): **Second code review pass after WR fixes.** Verified all 7 WR fixes correct; added IN-10 (WR-02 fix covers AUTO mode drift but not in-place TileSet pixel mutations under explicit modes — Phase 3.5 territory). Status: clean. Commit `49852b9`.
+- 2026-04-26 (VERTICAL baseline addition): **WR-07 regression net.** User-authored test commit `673ace0` adds `addons/penta_tile/demo/penta_layout_four_vertical.tres` (axis=1, tile_count=4 mirror of horizontal demo layout), `--layout-path=<res_path>` CLI flag in `_capture_baseline.gd`, and Sub-test (c) in `determinism_test.gd` that asserts (1) painted cell count matches `BASELINE_CELLS=46` from HORIZONTAL, (2) every painted cell's atlas coord exists in synthesized atlas via `source.has_tile()`. Catches WR-07's two failure modes (cell-drop AND unrenderable-coord) without requiring a per-axis pixel-hash baseline (post-WR-07 both axes produce identical `tile_map_data` hashes). All 4 sub-tests pass.
+- 2026-04-26 (third review pass): **Third code review pass after VERTICAL baseline.** Re-verified all 7 WR fixes once more; surfaced 3 new cosmetic Info items in test scaffolding: IN-11 (`--layout-path` parse loop never `break`s on duplicate flags), IN-12 (`LAYOUT_OVERRIDE` print silently emits `axis=0` for non-Penta layouts via `int(null)`), IN-13 (header doc-comment doesn't list sub-test (c)). All 3 fixed atomically in commit `c9a6aa9`. Third-pass review report committed at `aa07ac1`. Final REVIEW.md status: clean (0 Critical, 0 Warning, 13 Info — IN-01..IN-13).
 
 ### Decisions
 
@@ -147,12 +154,13 @@ Items acknowledged and carried forward as v2 requirements (see REQUIREMENTS.md v
 
 ## Session Continuity
 
-Last session: 2026-04-26T20:36:17.854Z
-Stopped at: Completed 02-07-PLAN.md (Wave 7 closeout — LOC gate fired; determinism PASS; Phase 2 ROADMAP NOT marked complete pending design review)
+Last session: 2026-04-26T23:00:00.000Z
+Stopped at: Phase 2 code-complete; 3 review passes clean; awaiting human visual UAT (4 items) before approval
 Resume file: None
 
 **Completed Phase:** 01 (Contract Skeleton + Penta Layouts) — 5/5 plans, 14/14 requirements, 26/26 automated tests PASS — 2026-04-26
 **Completed Phase:** 01.1 (PentaTile Rename + Penta Codename Establishment) — 3/3 plans, 0 formal REQ-IDs (rename phase), demo loads cleanly under new name, git remote tracks PentaTile origin — 2026-04-26
-**Next Phase:** 02 (Native Layouts) — DualGrid16, Wang2Edge, Wang2Corner, Minimal3x3 (subclass adds; single-grid pipeline already wired by Phase 1's D-06)
+**In-progress Phase:** 02 (Native Layouts + Architectural Simplification) — 7/7 plans executed, 30/30 requirements satisfied programmatically, 3 code review passes clean (status: clean; 0 Critical / 0 Warning / 13 Info), 4 determinism sub-tests pass (BASELINE_HASH=2986698704, BASELINE_CELLS=46), VERTICAL regression net active. **Outstanding gates:** (1) human visual UAT — 4 items in `02-HUMAN-UAT.md` (DualGrid16/Wang2*/Min3x3 visual correctness, Min3x3 collapse, Penta synthesis seam quality, AUTO/AUTO_STRIP detection), (2) LOC overage decision — 1827 runtime LOC vs ~1500 trigger (informational at Phase 2; formal gate is Phase 5 final audit). ROADMAP Phase 2 entry intentionally `[ ]` until both gates resolved.
+**Next Phase:** 03 (TileBitTools-Decoded Layouts) — Blob47Godot, TilesetterWang15, TilesetterBlob47 + ATTRIBUTION.md (chains automatically once Phase 2 approved in --auto mode)
 
 **Planned Phase:** 02 (native-layouts) — 7 plans — 2026-04-26T18:54:39.523Z

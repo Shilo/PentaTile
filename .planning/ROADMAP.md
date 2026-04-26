@@ -105,7 +105,17 @@ This phase supersedes Phase 1's CONTRACT-* (deleted), separate Penta H/V classes
 16. **Demo scene loads cleanly after Wave 2** (LAYER-04). `addons/penta_tile/demo/penta_tile_demo.tscn` is rebound from `atlas_contract = ExtResource(default_horizontal.tres)` to the new `layout: PentaTileLayout` API atomically with the contract deletion. Wave 2 acceptance criterion — non-skippable.
 17. **Phase 1 verification suite migrated** (LAYER-05). The 26/26 tests at `.planning/phases/01-contract-skeleton-penta-layouts/01-VERIFICATION.md` reference `atlas_contract` and the deleted `PentaTileLayoutPentaHorizontal` / `Vertical` class names. Phase 2 Wave 1 migrates them to the new API; new tests added for TWO/THREE/FIVE modes + AUTO_STRIP. Don't let the planner assume Phase 1 tests just keep passing.
 
-**Plans**: TBD
+**Plans**: 7 plans complete (7/7) — code-complete, awaiting visual UAT
+Plans:
+- [x] 02-01-PLAN.md — Wave 0/1: AtlasSlot trim + bitmask_template rename + LAYER-05 verification migration spec + get_fallback_tile_set virtual stub
+- [x] 02-02-PLAN.md — Wave 2: PentaTileSynthesis engine (Liang-Barsky polygon clipper, Gate 1 Path B OuterCorner-from-slot-0, Gate 2 transform order TRANSPOSE→FLIP_H→FLIP_V, signature-based idempotence, build_tile_set_from_synthesis)
+- [x] 02-03-PLAN.md — Wave 3: PentaTileLayoutPenta merged class (axis × tile_count enums, AUTO_STRIP=-1 sentinel, _BITMASK_TEMPLATE_LOOKUP with Vector2i keys [H-4 fix], _validate_property hides bitmask_template via bitwise-clear [H-1 fix], _make_slot)
+- [x] 02-04-PLAN.md — Wave 4: 4 native layouts atomic (DualGrid16, Wang2Edge, Wang2Corner, Min3x3) committed in 91f69a2
+- [x] 02-05-PLAN.md — Wave 5: bundled bitmask PNGs co-located (10 Penta + 4 flat siblings) + _generate_bitmasks.py rewritten + README image retargets
+- [x] 02-06-PLAN.md — Wave 6: AUTO/AUTO_STRIP detection + configuration warnings delegation + FOUR-mode demo binding + FOUR-mode regression baseline
+- [x] 02-07-PLAN.md — Wave 7: LOC checkpoint (1827 runtime LOC, 31% over ~1500 trigger; AT RISK noted for Phase 5 final audit) + determinism test PASS (BASELINE_HASH=2986698704)
+
+**Post-execution review** (3 passes, all clean): initial review (commit `eec027d`) found 6 Warnings (WR-01..WR-06); independent third-party audit added WR-07 (latent VERTICAL BLOCKER — `_make_slot` returned wrong axis); all 7 WR fixes landed across commits `ea0ba23` `ae5d787` `9ca342e` `d74df0e` `2ca04e0` `720f017` `79af1e3`. VERTICAL regression net + sub-test (c) added in commit `673ace0`. Re-review (`49852b9`) added IN-10. Third pass (`aa07ac1`) added IN-11/12/13, all 3 fixed in `c9a6aa9`. **Final review status:** 0 Critical / 0 Warning / 13 Info. **Outstanding gates:** (1) human visual UAT — 4 items in `02-HUMAN-UAT.md`, (2) LOC overage acceptance decision (informational at Phase 2; formal gate is Phase 5).
 
 ### Phase 3: TileBitTools-Decoded Layouts
 
@@ -184,7 +194,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 3.5 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Contract Skeleton + Penta Layouts | 5/5 | Complete (substantially superseded by Phase 2 architectural sweep) | 2026-04-26 |
 | 1.1. PentaTile Rename + Penta Codename Establishment | 3/3 | Complete | 2026-04-26 |
-| 2. Native Layouts + Architectural Simplification | 0/TBD | Not started | - |
+| 2. Native Layouts + Architectural Simplification | 7/7 | Code-complete; 3 review passes clean (0 Critical, 0 Warning, 13 Info); awaiting human visual UAT (4 items) + LOC overage decision | - |
 | 3. TileBitTools-Decoded Layouts | 0/TBD | Not started | - |
 | 3.5. PixelLab Layouts (variation-bank pick deferred to v2) | 0/TBD | Not started | - |
 | 4. Fallback Routing | 0/TBD | Not started | - |
