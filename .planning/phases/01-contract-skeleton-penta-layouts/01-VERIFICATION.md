@@ -1,3 +1,7 @@
+> **HISTORICAL — superseded by `.planning/phases/02-native-layouts/02-01-VERIFICATION-MIGRATION.md` (Phase 2 Wave 1, 2026-04-26).** The verification described below targets the deleted API surface (`atlas_contract`, `PentaTileLayoutPentaHorizontal/Vertical`, `template_image`, `_overlay_layer`). Slot ordering changed in Phase 2 (slot 3 was OuterCorner, is now InnerCorner; slot 0 was Fill, is now IsolatedCell), so v0.1 bit-equivalence claims below no longer hold. This file is preserved as a historical record of Phase 1's close but is no longer authoritative. See LAYER-05 + the migration map above.
+
+---
+
 ---
 phase: 01-contract-skeleton-tetra-layouts
 verified: 2026-04-25T00:00:00Z
