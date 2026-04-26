@@ -55,7 +55,7 @@ A **Penta tileset** is a 5-archetype autotile format. The five archetypes, **lis
 
 Already have tiles in a different format? No problem. PentaTile ships with a library of layouts covering virtually every popular autotiling convention out of the box:
 
-- **[Penta](#-the-penta-system-template)** (horizontal & vertical): the signature 4-tile minimum
+- **[Penta](#-the-penta-system-template)** (horizontal & vertical): the signature 1–5 tile authoring scale (modes ONE through FIVE)
 - **<a href="https://www.youtube.com/watch?v=jEWFSv3ivTg" target="_blank" rel="noopener">Dual Grid ↗︎</a>**: the popular 16-tile corner-mask format
 - **<a href="https://www.boristhebrave.com/permanent/24/06/cr31/stagecast/wang/intro.html" target="_blank" rel="noopener">Wang ↗︎</a>** (2-edge & 2-corner): the classic edge/corner-color system
 - **<a href="https://www.boristhebrave.com/2021/11/14/classification-of-tilesets/" target="_blank" rel="noopener">47-tile Blob ↗︎</a>**: the full Godot/Wang blob set
@@ -67,16 +67,17 @@ Whatever convention your art was drawn for, PentaTile can paint with it. And if 
 
 ## 🎨 The Penta-System Template
 
-<img src="addons/penta_tile/layouts/penta_tile_layout_penta/four_horizontal.png" width="256" alt="Penta Horizontal Tileset Template">
+<img src="addons/penta_tile/layouts/penta_tile_layout_penta/five_horizontal.png" width="256" alt="Penta Horizontal Tileset Template">
 
-To use the system, your atlas needs these four essential components arranged horizontally or vertically:
+A **Penta** atlas is a horizontal or vertical strip of 1–5 tiles (the 5-mode authoring scale: ONE, TWO, THREE, FOUR, FIVE). The slots, in canonical order:
 
-1.  **Fill** (The solid core)
-2.  **Inner Corner** (For internal nooks)
-3.  **Border** (Straight edges)
-4.  **Outer Corner** (The finishing touch)
+1.  **IsolatedCell** (slot 0, always authored — also the source for synthesizing OuterCorner via render-time rotation)
+2.  **Fill** (slot 1, authored at TWO mode and above)
+3.  **Border** (slot 2, authored at THREE mode and above)
+4.  **InnerCorner** (slot 3, authored at FOUR mode and above)
+5.  **OppositeCorners** (slot 4, authored at FIVE mode)
 
-The two disconnected diagonal states are handled by composing two transformed outer corners on an internal overlay layer. This preserves the four-tile source template without requiring unique tiles for diagonal connections.
+Modes ONE through FOUR synthesize the missing archetypes from slot 0 at load time via `PentaTileSynthesis`. The two disconnected diagonal states (masks 6 and 9) resolve to the **OppositeCorners** archetype — synthesized in modes ONE..FOUR or hand-authored in mode FIVE. Single-layer dispatch only; no internal overlay layer (Phase 2 deleted that path in favor of the synthesized OppositeCorners archetype).
 
 ## ⚔️ PentaTile vs. TileMapDual API
 
@@ -114,16 +115,33 @@ PentaTile is smaller because it focuses on a specific subset of the multi-terrai
 ```text
 addons/penta_tile/
   plugin.cfg
-  penta_tile_map_layer.gd
-  penta_tile_template.png
+  penta_tile_map_layer.gd                  # core PentaTileMapLayer node
+  penta_tile_synthesis.gd                  # synthesis machinery for Penta layouts
+  penta_tile_atlas_slot.gd                 # slot resource (atlas_coords + transform_flags)
+  penta_tile_template.png                  # blank reference template
+  _generate_bitmasks.py                    # internal tooling — regenerates bundled bitmask PNGs
+  layouts/
+    penta_tile_layout.gd                   # base PentaTileLayout
+    penta_tile_layout_penta.gd             # Penta family (1–5 modes, horizontal & vertical)
+    penta_tile_layout_dual_grid_16.gd      # Dual-grid 16-tile corner-mask
+    penta_tile_layout_wang_2_edge.gd       # Wang 2-edge
+    penta_tile_layout_wang_2_corner.gd     # Wang 2-corner
+    penta_tile_layout_minimal_3x3.gd       # Minimal 3x3
+    penta_tile_layout_penta/               # bundled per-mode PNGs (one_horizontal.png … five_vertical.png)
+  tests/
+    determinism_test.gd                    # PENTA-SYNTH-06 baseline check
+    _capture_baseline.gd                   # baseline regeneration utility
+    baselines/                             # captured hash + tile-map data
   demo/
-    demo_player.gd
     penta_tile_demo.tscn
+    demo_player.gd
+    demo_runtime_painter.gd
     penta_tile_ground.png
     penta_tile_ground.tres
+    penta_layout_*_horizontal.tres         # demo Penta layout resources
 ```
 
-`penta_tile_template.png` is the blank 4-tile **Penta** template. `demo/penta_tile_ground.png` and `demo/penta_tile_ground.tres` are the demo atlas/TileSet.
+`demo/penta_tile_ground.png` and `demo/penta_tile_ground.tres` are the demo atlas/TileSet. The `layouts/penta_tile_layout_penta/` PNG bundle ships the canonical Penta templates for each axis × mode combination.
 
 ## 🔌 Current API
 
@@ -139,14 +157,21 @@ Use the native TileMapLayer API:
 
 Additional exported properties:
 
-| Property                      | Purpose                                                                                                |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `atlas_source_id`             | Atlas source to read from. `-1` uses the first source in the TileSet.                                  |
-| `atlas_layout`                | Supports horizontal 4x1 or vertical 1x4 atlas layouts.                                                 |
-| `logic_layer_opacity`         | Opacity for the hidden/editable logic layer. Defaults to `0.0`.                                        |
-| `visual_z_index_offset`       | Z index applied to generated internal visual layers.                                                   |
-| `generated_collision_enabled` | Enables collisions on generated visual layers when the TileSet tiles have physics polygons.            |
-| `logic_collision_enabled`     | Enables collisions on the source logic layer. Defaults to `false` to avoid hidden full-cell colliders. |
+| Property                      | Purpose                                                                                                                          |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `layout`                      | A `PentaTileLayout` resource — pick one of the bundled subclasses (Penta, DualGrid16, Wang2Edge, Wang2Corner, Min3x3) or a custom. |
+| `atlas_source_id`             | Atlas source to read from. `-1` uses the first source in the TileSet.                                                            |
+| `logic_layer_opacity`         | Opacity for the hidden/editable logic layer. Defaults to `0.0`.                                                                  |
+| `visual_z_index_offset`       | Z index applied to generated internal visual layers.                                                                             |
+| `generated_collision_enabled` | Enables collisions on generated visual layers when the TileSet tiles have physics polygons.                                      |
+| `logic_collision_enabled`     | Enables collisions on the source logic layer. Defaults to `false` to avoid hidden full-cell colliders.                           |
+
+**Penta-specific layout properties** (on `PentaTileLayoutPenta`):
+
+| Property       | Purpose                                                                                                       |
+| -------------- | ------------------------------------------------------------------------------------------------------------- |
+| `axis`         | `HORIZONTAL` (slots along X) or `VERTICAL` (slots along Y).                                                    |
+| `tile_count`   | `AUTO` / `AUTO_STRIP` / `ONE..FIVE`. AUTO detects from atlas size; explicit modes pin the authoring scale.   |
 
 Public helper:
 
@@ -178,7 +203,7 @@ Mask bits use:
 | `4` | Bottom-left  |
 | `8` | Bottom-right |
 
-The diagonal masks are `6` and `9`. They are drawn by placing one outer corner on the primary visual layer and the other on the internal overlay layer.
+The diagonal masks are `6` and `9`. Both resolve to the **OppositeCorners** archetype (slot 4 in a Penta atlas). PentaTile anchors mask 9 (`TL+BR`, "\\" diagonal) as the unrotated case (`_ROTATE_0`) and mask 6 (`TR+BL`, "/" diagonal) as `TRANSFORM_FLIP_H` of the same archetype. In modes ONE through FOUR the OppositeCorners art is synthesized from slot 0 corners by `PentaTileSynthesis`; in mode FIVE it is hand-authored. Single-layer dispatch only — no internal overlay layer.
 
 The logic layer is hidden with `self_modulate.a`, not `visible = false`, because Godot may force cleanup behavior when a `TileMapLayer` is disabled, hidden, removed, or missing a TileSet.
 
