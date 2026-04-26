@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
-status: planning
+status: executing
 stopped_at: Phase 2 context gathered (Tetra5 append + overlay-skip refactor)
-last_updated: "2026-04-26T14:53:07.448Z"
-last_activity: 2026-04-26
+last_updated: "2026-04-26T14:55:29.790Z"
+last_activity: 2026-04-26 -- Phase 01.1 execution started
 progress:
   total_phases: 7
   completed_phases: 1
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-25 after v0.2 pivot to layout library)
 
 **Core value:** Painting tiles with the native `TileMapLayer` API produces correct dual-grid autotiled visuals — without the user maintaining caches, terrain metadata, or 16-tile blob sets.
-**Current focus:** Phase 2 — Native Layouts (DualGrid16, Wang2Edge, Wang2Corner, Minimal3x3)
+**Current focus:** Phase 01.1 — pentatile-rename-penta-codename-establishment
 
 ## Current Position
 
-Phase: 2
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-04-26
+Phase: 01.1 (pentatile-rename-penta-codename-establishment) — EXECUTING
+Plan: 1 of 3
+Status: Executing Phase 01.1
+Last activity: 2026-04-26 -- Phase 01.1 execution started
 
 Progress: [░░░░░░░░░░] 0%
 
