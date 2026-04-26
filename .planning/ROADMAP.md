@@ -53,6 +53,16 @@ Plans:
 - [x] 01-04-PLAN.md — Wave 3: Layer dispatcher rewrite (hard-remove enum + atlas_layout export, add atlas_contract setter, _resolve_layout lazy singleton, dual+single grid pipeline branch)
 - [x] 01-05-PLAN.md — Wave 4: Bundled .tres files + demo wiring + visual regression + idempotence/storm test + LOC checkpoint
 
+### Phase 1.1: PentaTile Rename + Penta Codename Establishment (INSERTED)
+
+**Goal:** [Urgent work - to be planned]
+**Requirements**: TBD
+**Depends on:** Phase 1
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 1.1 to break down)
+
 ### Phase 2: Native Layouts + Architectural Simplification
 
 **Goal**: Four native layout subclasses (DualGrid16, Wang2Edge, Wang2Corner, Min3x3) ship with hand-authored slot tables. **Plus a sweeping architectural simplification** locked in 2026-04-26 after four iterations of design refinement:
