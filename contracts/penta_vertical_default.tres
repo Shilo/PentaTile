@@ -1,9 +1,0 @@
-[gd_resource type="Resource" script_class="PentaTileLayoutPentaVertical" format=3]
-
-[ext_resource type="Script" path="res://addons/penta_tile/layouts/penta_tile_layout_penta_vertical.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://dqm0wtrvreo5i" path="res://addons/penta_tile/templates/penta_vertical.png" id="2_template"]
-
-[resource]
-script = ExtResource("1_script")
-template_image = ExtResource("2_template")
-description = "PentaTile 4-tile vertical layout (Fill / Inner Corner / Border / Outer Corner stacked top-to-bottom). Dual-grid; matches v0.1 vertical output."

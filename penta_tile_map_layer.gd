@@ -4,22 +4,24 @@ class_name PentaTileMapLayer
 extends TileMapLayer
 
 const _PRIMARY_LAYER_NAME := "_PentaTileVisual"
-const _OVERLAY_LAYER_NAME := "_PentaTileDiagonalOverlay"
 
 @export var atlas_source_id: int = -1:
 	set(value):
 		atlas_source_id = value
 		_queue_rebuild()
 
-@export var atlas_contract: PentaTileAtlasContract:
+# LAYER-01: layout lives directly on PentaTileMapLayer (no PentaTileAtlasContract wrapper).
+# Setter: idempotence guard first, then disconnect-before-reconnect on layout.changed.
+# PITFALLS §5 — no signal-storm risk; _queue_rebuild coalesces via call_deferred.
+@export var layout: PentaTileLayout:
 	set(value):
-		if atlas_contract == value:
-			return                                                                  # idempotence guard (D-08, PITFALLS §5)
-		if atlas_contract != null and atlas_contract.changed.is_connected(_on_contract_changed):
-			atlas_contract.changed.disconnect(_on_contract_changed)
-		atlas_contract = value
-		if atlas_contract != null:
-			atlas_contract.changed.connect(_on_contract_changed)
+		if layout == value:
+			return                                                                  # idempotence (PITFALLS §5)
+		if layout != null and layout.changed.is_connected(_on_layout_changed):
+			layout.changed.disconnect(_on_layout_changed)
+		layout = value
+		if layout != null:
+			layout.changed.connect(_on_layout_changed)
 		_queue_rebuild()
 
 @export_range(0.0, 1.0, 0.01) var logic_layer_opacity: float = 0.0:
@@ -43,7 +45,6 @@ const _OVERLAY_LAYER_NAME := "_PentaTileDiagonalOverlay"
 		_apply_logic_collision()
 
 var _primary_layer: TileMapLayer
-var _overlay_layer: TileMapLayer
 
 # Debug-build instrumentation (Phase 1 Wave 0 — verifies CONTRACT-05 idempotence).
 # Counts every _queue_rebuild() call in debug builds. Read by verification recipes
@@ -51,11 +52,12 @@ var _overlay_layer: TileMapLayer
 # OS.is_debug_build() gate inside _queue_rebuild.
 var _rebuild_count: int = 0
 
-# Lazy singleton for null-contract fallback (D-07 / CONTRACT-04).
-# Allocated once on first _resolve_layout() call when no contract is assigned.
-# v0.1-style scenes (atlas_contract = null) get PentaTileLayoutPentaHorizontal
-# behavior — output bit-identical to v0.1's HORIZONTAL atlas_layout.
-static var _DEFAULT_LAYOUT: PentaTileLayout = null
+# Wave 2 Task 2.3: synthesized TileSet cache for PentaTileLayoutPenta. Built lazily
+# when (layout, axis, tile_count, source tile_set instance_id, source_id) changes;
+# null when layout is not Penta or synthesis is not yet invoked.
+# PENTA-SYNTH-06 invariant: re-runs only on input change → deterministic output.
+var _synthesized_tile_set: TileSet = null
+var _synthesis_signature: int = 0
 
 
 func _ready() -> void:
@@ -76,14 +78,16 @@ func _update_cells(coords: Array[Vector2i], forced_cleanup: bool) -> void:
 		rebuild()
 		return
 
-	var layout := _resolve_layout()
+	var active_layout := _resolve_layout()
+	if active_layout == null:
+		return
 	var source := _resolve_source_id()
 	if source == -1:
 		return
 	var sample_fn := Callable(self, "_has_logic_cell")
 
 	var affected: Dictionary = {}
-	if layout.is_dual_grid():
+	if active_layout.is_dual_grid():
 		for logic_cell: Vector2i in coords:
 			_mark_affected_display_cells(affected, logic_cell)
 	else:
@@ -91,7 +95,7 @@ func _update_cells(coords: Array[Vector2i], forced_cleanup: bool) -> void:
 			_mark_affected_single_grid_cells(affected, logic_cell)
 
 	for display_cell: Vector2i in affected.keys():
-		_paint_via_layout(display_cell, layout, source, sample_fn)
+		_paint_via_layout(display_cell, active_layout, source, sample_fn)
 
 
 func rebuild() -> void:
@@ -101,14 +105,16 @@ func rebuild() -> void:
 		return
 
 	_sync_visual_layers()
-	var layout := _resolve_layout()
+	var active_layout := _resolve_layout()
+	if active_layout == null:
+		return
 	var source := _resolve_source_id()
 	if source == -1:
 		return
 	var sample_fn := Callable(self, "_has_logic_cell")
 
 	var affected: Dictionary = {}
-	if layout.is_dual_grid():
+	if active_layout.is_dual_grid():
 		for logic_cell: Vector2i in get_used_cells():
 			_mark_affected_display_cells(affected, logic_cell)
 	else:
@@ -116,7 +122,7 @@ func rebuild() -> void:
 			_mark_affected_single_grid_cells(affected, logic_cell)
 
 	for display_cell: Vector2i in affected.keys():
-		_paint_via_layout(display_cell, layout, source, sample_fn)
+		_paint_via_layout(display_cell, active_layout, source, sample_fn)
 
 
 # PRESERVED from v0.1 (line 101-105). Dual-grid affected-cells: 4 corner offsets.
@@ -140,45 +146,28 @@ func _mark_affected_single_grid_cells(affected: Dictionary, logic_cell: Vector2i
 
 
 # The dispatcher per affected display cell. Computes mask once, short-circuits
-# on 0 (universal cleanup per PITFALLS §4), resolves slot, paints primary +
-# optional overlay. Replaces v0.1's _paint_display_cell (lines 108-152) — the
-# 16-state match relocated into PentaTileLayoutPentaHorizontal.mask_to_atlas.
-func _paint_via_layout(display_cell: Vector2i, layout: PentaTileLayout, source: int, sample_fn: Callable) -> void:
+# on 0 (universal cleanup per PITFALLS §4), resolves slot, paints primary layer.
+# Overlay-layer path deleted in Wave 2 — single-layer dispatch only.
+func _paint_via_layout(display_cell: Vector2i, active_layout: PentaTileLayout, source: int, sample_fn: Callable) -> void:
 	_primary_layer.erase_cell(display_cell)
-	_overlay_layer.erase_cell(display_cell)
 
-	var mask := layout.compute_mask(display_cell, sample_fn)
+	var mask := active_layout.compute_mask(display_cell, sample_fn)
 	if mask == 0:
 		return                                                                      # universal short-circuit (PITFALLS §4)
 
-	var slot := layout.mask_to_atlas(mask)
+	var slot := active_layout.mask_to_atlas(mask)
 	if slot == null:
 		return
 	_paint_with_slot(_primary_layer, slot, display_cell, source)
-	_paint_overlay_for_slot(slot, display_cell, source)
 
 
-# Paints the primary slot. Replaces v0.1's _set_visual_cell (lines 172-179) —
-# the slot now carries atlas_coords directly (no _atlas_coords axis dispatch
-# — D-19 removed that helper; the layout owns the axis via _make_slot).
+# Paints the primary slot. The slot carries atlas_coords directly (no _atlas_coords
+# axis dispatch — D-19 removed that helper; the layout owns the axis via _make_slot).
 func _paint_with_slot(layer: TileMapLayer, slot: PentaTileAtlasSlot, display_cell: Vector2i, source: int) -> void:
 	if slot == null:
 		layer.erase_cell(display_cell)
 		return
-	# Phase 1 layouts: alternative_tile = 0 in transform_flags only. Plan 03's
-	# PentaTileLayoutPentaHorizontal._make_slot writes pure transform flags here.
 	layer.set_cell(display_cell, source, slot.atlas_coords, slot.transform_flags)
-
-
-# Paints the optional overlay slot for diagonal masks (penta masks 6 and 9).
-# The complement transform was packed into slot.alternative_tile by the layout's
-# _make_slot via _pack_alternative(0, complement_transform). Phase 1 layouts use
-# alt_id = 0 so alternative_tile == complement_transform.
-func _paint_overlay_for_slot(slot: PentaTileAtlasSlot, display_cell: Vector2i, source: int) -> void:
-	if slot == null or slot.diagonal_complement_atlas_coords == Vector2i(-1, -1):
-		return
-	var complement_transform := slot.alternative_tile
-	_overlay_layer.set_cell(display_cell, source, slot.diagonal_complement_atlas_coords, complement_transform)
 
 
 # PRESERVED from v0.1 (line 168-169). Logic-cell sampling for the layout's
@@ -187,15 +176,11 @@ func _has_logic_cell(logic_cell: Vector2i) -> bool:
 	return get_cell_source_id(logic_cell) != -1
 
 
-# Lazy-singleton fallback (D-07, CONTRACT-04). When atlas_contract is null
-# OR atlas_contract.layout is null, return a single shared PentaTileLayoutPentaHorizontal
-# so v0.1-style scenes render bit-identically to v0.1 horizontal mode.
+# LAYER-02: read self.layout directly (one fewer hop than the prior contract chain).
+# Returns null when layout is unassigned — the layer renders nothing in that case
+# (no v0.1 hardcoded fallback per Phase 2 Breaking Changes Policy).
 func _resolve_layout() -> PentaTileLayout:
-	if atlas_contract != null and atlas_contract.layout != null:
-		return atlas_contract.layout
-	if _DEFAULT_LAYOUT == null:
-		_DEFAULT_LAYOUT = PentaTileLayoutPentaHorizontal.new()
-	return _DEFAULT_LAYOUT
+	return layout
 
 
 func _resolve_source_id() -> int:
@@ -208,12 +193,18 @@ func _resolve_source_id() -> int:
 	return tile_set.get_source_id(0)
 
 
-# PRESERVED from v0.1 (line 198-203). Lazy visual-layer creation.
+# Wave 2 overlay deletion: _ensure_visual_layers now creates only _primary_layer.
+# Synthesis trigger wired in Task 2.3 — invokes PentaTileSynthesis before _sync.
 func _ensure_visual_layers() -> void:
 	if _primary_layer == null or not is_instance_valid(_primary_layer):
 		_primary_layer = _get_or_create_visual_layer(_PRIMARY_LAYER_NAME)
-	if _overlay_layer == null or not is_instance_valid(_overlay_layer):
-		_overlay_layer = _get_or_create_visual_layer(_OVERLAY_LAYER_NAME)
+	# Synthesis trigger: if the active layout needs synthesis (PentaTileLayoutPenta),
+	# build/refresh the synthesized TileSet before routing it to the visual layer.
+	# Uses needs_synthesis() virtual to avoid a forward type reference to Wave 3's class.
+	var resolved_layout := _resolve_layout()
+	if resolved_layout != null and resolved_layout.needs_synthesis():
+		var source_id := _resolve_source_id()
+		_ensure_synthesized_tile_set(resolved_layout, source_id)
 	_sync_visual_layers()
 
 
@@ -229,14 +220,16 @@ func _get_or_create_visual_layer(layer_name: StringName) -> TileMapLayer:
 	return layer
 
 
-# PRESERVED from v0.1 (line 217-233) with one CHANGE: _visual_layer_offset()
-# now branches on layout.is_dual_grid(). The function body itself is unchanged.
+# Single-layer dispatch: iterate only [_primary_layer].
+# Routes _primary_layer.tile_set through _synthesized_tile_set when synthesis is active
+# (PENTA-SYNTH-06 + ROADMAP success criterion 13).
 func _sync_visual_layers() -> void:
 	_apply_logic_collision()
-	for layer: TileMapLayer in [_primary_layer, _overlay_layer]:
+	var effective_tile_set: TileSet = _synthesized_tile_set if _synthesized_tile_set != null else tile_set
+	for layer: TileMapLayer in [_primary_layer]:
 		if layer == null or not is_instance_valid(layer):
 			continue
-		layer.tile_set = tile_set
+		layer.tile_set = effective_tile_set
 		layer.enabled = enabled
 		layer.visible = true
 		layer.z_index = visual_z_index_offset
@@ -256,15 +249,17 @@ func _sync_visual_layers() -> void:
 func _visual_layer_offset() -> Vector2:
 	if tile_set == null:
 		return Vector2.ZERO
-	var layout := _resolve_layout()
-	if not layout.is_dual_grid():
+	var active_layout := _resolve_layout()
+	if active_layout == null:
+		return Vector2.ZERO
+	if not active_layout.is_dual_grid():
 		return Vector2.ZERO
 	return Vector2(tile_set.tile_size) * -0.5
 
 
-# PRESERVED from v0.1 (line 242-245).
+# Single-layer dispatch: iterate only [_primary_layer].
 func _clear_visual_layers() -> void:
-	for layer: TileMapLayer in [_primary_layer, _overlay_layer]:
+	for layer: TileMapLayer in [_primary_layer]:
 		if layer != null and is_instance_valid(layer):
 			layer.clear()
 
@@ -290,9 +285,53 @@ func _queue_rebuild() -> void:
 		rebuild.call_deferred()
 
 
-# Receives Resource.changed from atlas_contract or its sub-Resources (layout)
-# via the CONTRACT-05 disconnect-before-reconnect pattern. Coalesces via
-# _queue_rebuild's call_deferred — multiple emissions per frame collapse to
-# one rebuild.
-func _on_contract_changed() -> void:
+# PENTA-SYNTH-06: Build (or rebuild) the synthesized TileSet for a Penta layout.
+# Re-runs only when the cache signature changes — same inputs produce bit-identical
+# output. The user's source `tile_set` is never mutated.
+#
+# Wave 2 scope: handles EXPLICIT tile_count modes (ONE..FIVE) only.
+# Wave 6 extends this method to call penta.resolve_active_mode for AUTO/AUTO_STRIP
+# resolution; the dispatch + cache invariant remains the same.
+func _ensure_synthesized_tile_set(penta: PentaTileLayout, source_id: int) -> void:
+	# Access axis/tile_count via dynamic get() — PentaTileLayoutPenta doesn't exist
+	# until Wave 3. needs_synthesis() virtual guarantees these properties exist at call time.
+	var penta_axis: int = penta.get("axis") if penta.get("axis") != null else 0
+	var penta_tile_count: int = penta.get("tile_count") if penta.get("tile_count") != null else 0
+	var source_tile_set_id := tile_set.get_instance_id() if tile_set != null else 0
+	var sig := hash([
+		penta.get_instance_id(),
+		penta_axis,
+		penta_tile_count,
+		source_tile_set_id,
+		source_id,
+	])
+	if sig == _synthesis_signature and _synthesized_tile_set != null:
+		return   # cache hit — PENTA-SYNTH-06 deterministic re-run guard
+	_synthesis_signature = sig
+	_synthesized_tile_set = null
+	# Wave 2 scope: handle explicit tile_count modes (ONE..FIVE) only.
+	# Wave 6 extends this with AUTO/AUTO_STRIP resolution via penta.resolve_active_mode.
+	var mode := penta_tile_count
+	if mode < 1 or mode > 5:
+		return   # non-explicit mode (AUTO/AUTO_STRIP); Wave 6 wires resolution
+	if tile_set == null or source_id < 0:
+		return   # no source — Phase 4 fallback path (PREVIEW-03/04) handles null tile_set
+	var result: Dictionary = PentaTileSynthesis.synthesize_strip(tile_set, source_id, penta_axis, 0, mode)
+	if result.is_empty() or not result.has("slots"):
+		push_warning("PentaTileMapLayer: synthesize_strip returned no slots for mode=%d axis=%d" % [mode, penta_axis])
+		return
+	var synthesized: TileSet = PentaTileSynthesis.build_tile_set_from_synthesis(result)
+	if synthesized == null:
+		push_warning("PentaTileMapLayer: build_tile_set_from_synthesis returned null for mode=%d" % mode)
+		return
+	_synthesized_tile_set = synthesized
+
+
+# Receives Resource.changed from layout via the disconnect-before-reconnect pattern.
+# Invalidates the synthesis cache so next rebuild re-runs synthesize_strip with fresh inputs.
+# Coalesces via _queue_rebuild's call_deferred — multiple emissions per frame collapse to one rebuild.
+func _on_layout_changed() -> void:
+	# PENTA-SYNTH-06: invalidate synthesis cache on any layout change.
+	_synthesized_tile_set = null
+	_synthesis_signature = 0
 	_queue_rebuild()
