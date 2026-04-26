@@ -53,8 +53,19 @@ const _TRANSFORM_TRANSPOSE := TileSetAtlasSource.TRANSFORM_TRANSPOSE  # 16384
 ##   source_tile_set – user's TileSet (NOT mutated)
 ##   source_id       – atlas source id within source_tile_set
 ##   axis            – 0 = HORIZONTAL (slots along X), 1 = VERTICAL (slots along Y)
-##   strip_index     – which strip (0 = first row/column)
+##   strip_index     – which strip (0 = first row/column). Used as a fallback
+##                     descriptor when strip_origin is not supplied; for AUTO_STRIP
+##                     dispatch where strips have heterogeneous widths, callers MUST
+##                     supply strip_origin explicitly.
 ##   mode            – MODE_ONE..MODE_FIVE
+##   strip_origin    – Optional Vector2i source-atlas coord of slot 0 of THIS strip.
+##                     Default Vector2i(-1, -1) sentinel → derive from strip_index
+##                     using the legacy uniform-_STRIP_SLOT_COUNT-stride formula
+##                     (correct only when ALL prior strips have width _STRIP_SLOT_COUNT,
+##                     i.e. strip_index == 0 in non-AUTO_STRIP mode). WR-03 FIX:
+##                     AUTO_STRIP per-strip dispatch passes the cumulative offset
+##                     based on prior strips' resolved modes — that origin lives only
+##                     at the call site.
 ##
 ## Returns Dictionary:
 ##   { "slots": Array[Dictionary], "tile_size": Vector2i, "warnings": Array[String] }
@@ -71,7 +82,8 @@ static func synthesize_strip(
 		source_id: int,
 		axis: int,
 		strip_index: int,
-		mode: int) -> Dictionary:
+		mode: int,
+		strip_origin: Vector2i = Vector2i(-1, -1)) -> Dictionary:
 
 	if source_tile_set == null:
 		return {}
@@ -96,6 +108,21 @@ static func synthesize_strip(
 	# Slot 0 (IsolatedCell) is always authored. Slots 1..mode-1 are authored for mode ≥ 2.
 	var authored_count := mode  # slot 0 always + (mode-1) more = mode slots total
 
+	# Resolve strip_origin: source-atlas coord of slot 0 of THIS strip.
+	# WR-03 FIX: explicit strip_origin from caller is the only way to get correct
+	# coords when prior strips have non-_STRIP_SLOT_COUNT widths (AUTO_STRIP). The
+	# default Vector2i(-1,-1) sentinel falls back to the legacy uniform-stride
+	# formula, which is correct only when ALL prior strips are width _STRIP_SLOT_COUNT
+	# (the strip_index == 0 case used by today's _ensure_synthesized_tile_set).
+	var slot0_coords: Vector2i
+	if strip_origin == Vector2i(-1, -1):
+		if axis == 0:
+			slot0_coords = Vector2i(strip_index * _STRIP_SLOT_COUNT, 0)
+		else:
+			slot0_coords = Vector2i(0, strip_index * _STRIP_SLOT_COUNT)
+	else:
+		slot0_coords = strip_origin
+
 	# Get the source atlas image once (used for all sub-region extractions).
 	var atlas_texture := atlas_source.texture
 	var atlas_image: Image
@@ -110,18 +137,19 @@ static func synthesize_strip(
 	# Slots authored_count.._STRIP_SLOT_COUNT-1 are synthesized from slot 0.
 	for out_slot in range(_STRIP_SLOT_COUNT):
 		# Atlas coords in the SOURCE tileset for this slot.
+		# WR-03 FIX: derive authored slot coords from slot0_coords, NOT from the
+		# raw strip_index * _STRIP_SLOT_COUNT formula. That keeps AUTO_STRIP per-strip
+		# dispatch correct — caller supplies the cumulative origin reflecting prior
+		# strips' actual widths, and authored slots N step off it by N along the axis.
 		var src_atlas_coords: Vector2i
-		if axis == 0:  # HORIZONTAL
-			src_atlas_coords = Vector2i(strip_index * _STRIP_SLOT_COUNT + out_slot, 0) if out_slot < authored_count else Vector2i(strip_index * _STRIP_SLOT_COUNT, 0)
-		else:  # VERTICAL
-			src_atlas_coords = Vector2i(0, strip_index * _STRIP_SLOT_COUNT + out_slot) if out_slot < authored_count else Vector2i(0, strip_index * _STRIP_SLOT_COUNT)
-
-		# Slot 0 source coords (IsolatedCell — used for synthesis).
-		var slot0_coords: Vector2i
-		if axis == 0:
-			slot0_coords = Vector2i(strip_index * _STRIP_SLOT_COUNT, 0)
+		if out_slot < authored_count:
+			if axis == 0:  # HORIZONTAL
+				src_atlas_coords = slot0_coords + Vector2i(out_slot, 0)
+			else:  # VERTICAL
+				src_atlas_coords = slot0_coords + Vector2i(0, out_slot)
 		else:
-			slot0_coords = Vector2i(0, strip_index * _STRIP_SLOT_COUNT)
+			# Synthesized slot — sources from slot 0 of this strip.
+			src_atlas_coords = slot0_coords
 
 		var slot_image: Image
 		var slot_polygons: Dictionary
