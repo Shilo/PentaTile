@@ -309,3 +309,75 @@ User reviewed `TetraTileAtlasContract` and called out three things: (1) the `ver
 - Wave 5: 4 native layouts in parallel (DualGrid16, Wang2Edge, Wang2Corner, Min3x3) using the new conventions
 - Wave 6: restructure templates folder — migrate existing flat PNGs to `[layout_name]/atlas.png`; generate new `[layout_name]/bitmask.png` per layout (all 6 Tetra mode×axis combos + 4 native non-Tetra layouts). Update `_generate_greybox_templates.py`.
 - Wave 7: visual regression (FOUR-mode pixel-identity vs v0.1 + ONE/FOUR/FIVE rendering tests) + LOC checkpoint + CHANGELOG entries
+
+---
+
+## FOURTH SUPERSESSION — 2026-04-26 (later, after extended Tetra design refinement)
+
+User pushed deeper on the slot ordering and synthesis quality questions, leading to: **expanded mode set (ONE/TWO/THREE/FOUR/FIVE), new slot order with IsolatedCell at slot 0, and asset consolidation (single PNG per layout, no atlas/bitmask split, templates folder deleted).** This is the locked-in design for Phase 2.
+
+### What changed (since the third supersession)
+
+| Third supersession | Fourth supersession |
+|---|---|
+| Three modes: `ONE`, `FOUR`, `FIVE` | **Five modes**: `ONE`, `TWO`, `THREE`, `FOUR`, `FIVE` (each step adds one explicit archetype slot) |
+| `tile_count: TileCountMode { AUTO, ONE, FOUR, FIVE }` | `tile_count: TileCountMode { AUTO, AUTO_STRIP, ONE, TWO, THREE, FOUR, FIVE }` (AUTO_STRIP added for per-strip detection) |
+| Canonical Tetra slot order (Fill at 0, Inner at 1, Border at 2, Outer at 3) | **New slot order**: `0=IsolatedCell, 1=Fill, 2=Border, 3=InnerCorner, 4=OppositeCorners`. OuterCorner is implicit. |
+| Two PNGs per layout (`atlas.png` + `bitmask.png`) under `templates/[layout_name]/` | **Single PNG per layout**, doubles as inspector preview AND fallback TileSet source. **Templates folder DELETED.** PNGs co-locate next to layout `.gd` files. |
+| Template paths: `addons/tetra_tile/templates/tetra_horizontal/{atlas.png,bitmask.png}` | Flat siblings for single-variant layouts: `addons/tetra_tile/layouts/tetra_tile_layout_dual_grid_16.png`. Subfolder for Tetra (10 variants): `addons/tetra_tile/layouts/tetra_tile_layout_tetra/{one,two,three,four,five}_{horizontal,vertical}.png`. |
+
+### New decisions (D-61..D-67)
+
+- **D-61: Five progressive modes** instead of three. Each subsequent mode adds explicit artist control over one more archetype:
+  - ONE: 1 tile (IsolatedCell only); synth all from sub-regions of slot 0
+  - TWO: + Fill (slot 1); synth Border/Inner/Outer/Opposite from slot 0
+  - THREE: + Border (slot 2); synth Inner/Outer/Opposite from slot 0
+  - FOUR: + InnerCorner (slot 3); synth Outer/Opposite from slot 0
+  - FIVE: + OppositeCorners (slot 4); synth only Outer from slot 0
+  - User intent: "sacrificing quality for less quantity / time saving" — mid-tier modes are intentional for fast prototyping.
+- **D-62: New slot order** `0=IsolatedCell, 1=Fill, 2=Border, 3=InnerCorner, 4=OppositeCorners`. **OuterCorner is implicit** — never has a dedicated slot, always synthesized from slot 0's corners. Rationale: an isolated cell visually IS four outer corners + edges + fill, so OuterCorner art is naturally expressed via slot 0's corners. Acceptable per user: "i dont see this a problem, because in all cases, IsolatedCell is just a 4 sided OuterCorner."
+- **D-63: Border at slot 2 (before InnerCorner at slot 3) — visual frequency over fill-percentage ordering.** Border appears at every edge cell in typical maps (most visually impactful archetype after Fill); InnerCorner appears at concave junctions (less common). User considered strict fill-percentage ordering (`100 → 75 → 50 → 50`) and rejected: "i guess there is technically no pro to this idea other then visually more appealing." Functional ordering wins.
+- **D-64: `AUTO_STRIP` enum value** added alongside `AUTO`. AUTO is dimension-only (cheapest, all strips share the same mode). AUTO_STRIP does per-strip detection via `has_tile()` (each strip independently 1-5; strips can differ within a single atlas). Cost difference is negligible (~50 bool lookups for typical sizes); the practical reason for two modes is intent — *"all my terrain rows have the same complexity"* vs *"different terrains might use different mode counts."* Naming locked at `AUTO_STRIP` per user preference (matches existing TetraTile "strip" terminology; no industry-standard term exists for axis-agnostic 1D atlas line).
+- **D-65: Single PNG per layout serves both inspector preview AND fallback TileSet source.** No `atlas.png` / `bitmask.png` split. The PNG IS the bitmask reference AND its pixels back the prototyping fallback. Saves bundled file count by 50% and simplifies maintenance. The current `tetra_horizontal.png` style (clean greybox with visible slot positions) already functions as both — the artificial split was overengineering.
+- **D-66: Templates folder deleted entirely.** Bundled PNGs co-locate next to layout `.gd` files for self-contained per-layout asset bundles:
+  - **Tetra (10 variants)**: `addons/tetra_tile/layouts/tetra_tile_layout_tetra/{one,two,three,four,five}_{horizontal,vertical}.png` (subfolder)
+  - **Single-variant layouts**: `addons/tetra_tile/layouts/tetra_tile_layout_<slug>.png` (flat sibling)
+  - Bitmask generator script (`_generate_greybox_templates.py`) renamed and updated to produce the new structure.
+- **D-67: Updated test gate.** TETRA-SYNTH-12 specifies FOUR-mode visual regression against a CAPTURED baseline (not bit-identical to literal v0.1 overlay rendering, since slot ordering changed — slot 3 is now InnerCorner, was OuterCorner in v0.1). The baseline is a fresh capture under the new convention. Used to detect synthesis regressions across future refactors.
+
+### Decisions superseded since the third supersession
+
+- **D-58** (`TileCountMode { AUTO, ONE, FOUR, FIVE }`) → REPLACED by D-61+D-64 (added TWO/THREE modes + AUTO_STRIP)
+- **D-60** (axis × mode lookup table for `bitmask_template`) — STILL APPLIES, just with 5 modes × 2 axes = 10 entries instead of 3 × 2 = 6
+- **First-supersession D-50** (FOUR mode bit-identical to v0.1 overlay) — REPLACED by D-67. Since slot ordering changed, true bit-identity vs v0.1 is no longer meaningful; baseline is a fresh capture under the new convention.
+
+### Decisions still in force unchanged
+
+- D-47..D-49 (synthesized atlas internal to `_primary_layer`; collision polygons copied; no animation/custom-data)
+- D-51 (overlay-layer deletion is a breaking change; no compat shim)
+- D-52 (FIVE / hand-authored 5-tile preserved as use case, not separate class)
+- D-53 (Tetra absorbs ONE mode via auto-detect)
+- D-55 (dimension-based detection only, no pixel inspection)
+- D-56 (TetraTileAtlasContract deleted; layout: TetraTileLayout directly on layer)
+- D-57 (Tetra Horizontal/Vertical merged into TetraTileLayoutTetra)
+- D-59 (single user-facing image — `bitmask_template`; `decoder_image` deleted; `fallback_tile_set` hidden)
+
+### Wave breakdown (fourth revision — supersedes all prior)
+
+- Wave 1: synthesis machinery — `_synthesize_strip(strip_index, mode)` helper covering all 5 modes (ONE/TWO/THREE/FOUR/FIVE) + runtime TileSet construction via `get_fallback_tile_set()` + collision/occlusion/navigation polygon copy. Delete `_overlay_layer` from `TetraTileMapLayer` + `diagonal_complement_atlas_coords` from `AtlasSlot`.
+- Wave 2: delete `TetraTileAtlasContract` + `addons/tetra_tile/contracts/` folder + `addons/tetra_tile/tetra_tile_template.png`. Replace `atlas_contract` with `layout: TetraTileLayout` on `TetraTileMapLayer`. Update setter for direct `layout.changed` connection.
+- Wave 3: merge `TetraTileLayoutTetraHorizontal` + `Vertical` into `TetraTileLayoutTetra` with `axis: Axis` + `tile_count: TileCountMode { AUTO, AUTO_STRIP, ONE, TWO, THREE, FOUR, FIVE }`. Hide `bitmask_template` via `_validate_property`. Class-level constant lookup table for axis × mode → bundled PNG path.
+- Wave 4: `TetraTileLayout` base — rename `template_image` → `bitmask_template`. Remove `fallback_tile_set` @export. Add `get_fallback_tile_set()` virtual (codegens TileSet from `bitmask_template`). Delete `decoder_image`.
+- Wave 5: 4 native layouts in parallel (DualGrid16, Wang2Edge, Wang2Corner, Min3x3) using the new conventions + flat-sibling PNG bundles.
+- Wave 6: relocate templates — delete `addons/tetra_tile/templates/` folder; create per-layout PNGs at new co-located paths (10 in `tetra_tile_layout_tetra/` subfolder + 4 flat siblings). Update bitmask generator script.
+- Wave 7: AUTO_STRIP detection, configuration_warnings, FOUR-mode regression baseline capture, demo refresh across modes, LOC checkpoint, CHANGELOG entries.
+
+### What this means for the Phase 2 planner
+
+If you've started planning Phase 2 against any prior supersession, **this fourth supersession is the LOCKED final design.** Re-run `/gsd-discuss-phase 2` if helpful — the discussion log is now coherent across four iterations. Key constraints for the plan:
+- Five `tile_count` modes (not three) plus AUTO/AUTO_STRIP
+- Slot 0 = IsolatedCell across all modes; OuterCorner never has its own slot
+- Single PNG per layout (no atlas/bitmask split)
+- No `templates/` folder — bundled PNGs co-locate in `layouts/`
+- `TetraTileAtlasContract` deleted; `layout: TetraTileLayout` directly on layer
+- One merged `TetraTileLayoutTetra` class with `axis` + `tile_count` enums
