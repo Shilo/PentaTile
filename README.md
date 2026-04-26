@@ -2,7 +2,7 @@
 
 **Just paint your tiles.** Intuitive Godot autotiling addon that takes the pain out of tilesets, with no manual terrain setup needed. Supports [5-archetype **Penta**](#-what-is-a-penta-tileset) and [popular layouts](#-supported-layouts). Paint with Godot's normal tools and PentaTile fills in the corners, edges, and transitions for you.
 
-<img src="addons/penta_tile/templates/penta_horizontal.png" width="256" alt="Penta Horizontal Tileset Template">
+<img src="addons/penta_tile/layouts/penta_tile_layout_penta/five_horizontal.png" width="256" alt="Penta Horizontal Tileset Template">
 
 ## 📑 Table of Contents
 
@@ -27,7 +27,7 @@
 
 ## 🍀 What is a Penta tileset?
 
-<img src="addons/penta_tile/templates/penta_horizontal.png" width="256" alt="Penta archetype reference: IsolatedCell (slot 0, source of synthesized OuterCorner) + Fill / Border / InnerCorner / OppositeCorners (slots 1-4)">
+<img src="addons/penta_tile/layouts/penta_tile_layout_penta/five_horizontal.png" width="256" alt="Penta archetype reference: IsolatedCell (slot 0, source of synthesized OuterCorner) + Fill / Border / InnerCorner / OppositeCorners (slots 1-4)">
 
 A **Penta tileset** is a 5-archetype autotile format. The five archetypes, **listed in canonical slot order**:
 
@@ -67,7 +67,7 @@ Whatever convention your art was drawn for, PentaTile can paint with it. And if 
 
 ## 🎨 The Penta-System Template
 
-<img src="addons/penta_tile/templates/penta_horizontal.png" width="256" alt="Penta Horizontal Tileset Template">
+<img src="addons/penta_tile/layouts/penta_tile_layout_penta/four_horizontal.png" width="256" alt="Penta Horizontal Tileset Template">
 
 To use the system, your atlas needs these four essential components arranged horizontally or vertically:
 
