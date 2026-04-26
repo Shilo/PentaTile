@@ -338,6 +338,21 @@ func _validate_property(property: Dictionary) -> void:
 		property.usage &= ~PROPERTY_USAGE_EDITOR
 
 
+# WR-04 FIX: typed accessor for the axis × mode → bundled PNG lookup. Enforces the
+# precondition that `m` is a concrete ONE..FIVE before keying — AUTO (0) and AUTO_STRIP
+# (-1) are caller bugs at this layer (the inspector preview / fallback path resolves
+# AUTO/AUTO_STRIP to a concrete mode upstream). The assertion fails loud rather than
+# silently returning the empty default that an unguarded `.get(key, "")` would mask.
+# Numerically the Axis enum (HORIZONTAL=0, VERTICAL=1) overlaps TileCountMode in range
+# (AUTO=0, ONE=1) — Vector2i field POSITION distinguishes them, but the assertion
+# documents AND enforces the contract at the call site.
+func _bundled_png_path(a: Axis, m: TileCountMode) -> String:
+	assert(m >= TileCountMode.ONE and m <= TileCountMode.FIVE,
+		"_bundled_png_path requires concrete TileCountMode.ONE..FIVE; got %d (resolve AUTO/AUTO_STRIP upstream)" % int(m))
+	var key := Vector2i(a, m)
+	return _BITMASK_TEMPLATE_LOOKUP.get(key, "")
+
+
 # Override base get_fallback_tile_set: builds a TileSet from the active axis × mode
 # PNG. Mode-aware texture_region_size derivation (no hardcoded 16×16): tile dimensions
 # are computed from the loaded texture's pixel dimensions divided by the strip's tile
@@ -351,11 +366,12 @@ func get_fallback_tile_set() -> TileSet:
 	var resolved_mode := tile_count
 	if resolved_mode == TileCountMode.AUTO or resolved_mode == TileCountMode.AUTO_STRIP:
 		resolved_mode = TileCountMode.FOUR
-	# H-4 BLOCKER FIX: Vector2i key (matches the new dict-key type above) + .get() with
-	# default empty string for graceful miss handling. Empty path → load() returns null →
-	# we fall through to the warning + return null below.
-	var key := Vector2i(axis, resolved_mode)
-	var path: String = _BITMASK_TEMPLATE_LOOKUP.get(key, "")
+	# WR-04 FIX: route the lookup through _bundled_png_path so the AUTO/AUTO_STRIP
+	# (mode <= 0) misuse class fails LOUD at the assert rather than silently returning
+	# the empty default. Vector2i(axis, mode) keys collide with axis values numerically
+	# (HORIZONTAL=0 == AUTO=0; VERTICAL=1 == ONE=1) — the typed accessor enforces the
+	# precondition that mode is always a concrete ONE..FIVE before keying.
+	var path: String = _bundled_png_path(axis, resolved_mode)
 	if path.is_empty():
 		push_warning("PentaTileLayoutPenta: no bundled PNG for axis=%s mode=%s" % [axis, resolved_mode])
 		return null
