@@ -21,8 +21,8 @@
 
 ## 🚀 Why PentaTile?
 
-- **Reduced Tile Requirements:** Creating 47 tiles for a single terrain type is a time-consuming task. PentaTile's signature **Penta** layout reduces this requirement to just four tiles, lowering the barrier for creating custom game art while maintaining professional results.
-- **Efficient Visual Variation:** Managing only **four base tiles** allows for easier creation of **multiple variations**. Instead of redrawing dozens of tiles for a single alternative set, you can quickly iterate on the core four tiles to add organic variety and reduce repetitive patterns.
+- **Reduced Tile Requirements:** Creating 47 tiles for a single terrain type is a time-consuming task. PentaTile's signature **Penta** layout scales the requirement from as few as one tile up to five (the progressive ONE through FIVE modes), lowering the barrier for creating custom game art while maintaining professional results.
+- **Efficient Visual Variation:** Authoring as few as 1–5 tiles per terrain makes iteration cheap. Instead of redrawing dozens of tiles for a single alternative set, you can quickly iterate on the small archetype set to add organic variety and reduce repetitive patterns.
 - **Native Integration:** Built as a single-class subclass of `TileMapLayer`, PentaTile hooks directly into Godot's native API. It listens to standard drawing commands and updates the visual layers in real-time without requiring a custom drawing interface.
 
 ## 🍀 What is a Penta tileset?
@@ -89,7 +89,7 @@ Modes ONE through FOUR synthesize the missing archetypes from slot 0 at load tim
 | Drawing API      | Native `TileMapLayer.set_cell()` / editor painting                         | Native painting plus custom helpers such as `draw_cell(cell, terrain)` |
 | Update hook      | `_update_cells(coords, forced_cleanup)` directly recomputes affected masks | `_update_cells()` forwards into display/cache/watcher systems          |
 | Terrain model    | Binary occupied/empty terrain for V1                                       | Terrain peering bits and terrain rules                                 |
-| Tile requirement | Four source tiles, with two-layer composition for diagonals                | 15-16 tile dual-grid/Wang-style sets                                   |
+| Tile requirement | 1–5 tiles per Penta layout (or the layout's native count: 9, 16, 47…)      | 15-16 tile dual-grid/Wang-style sets                                   |
 | Internal state   | No persistent coordinate cache; direct 4-bit sampling                      | Tile caches, terrain rule tries, watchers, signals                     |
 | TileSet setup    | Strict atlas order, no terrain metadata required                           | Terrain metadata and optional editor autotile setup                    |
 | Grid scope       | Square orthogonal V1                                                       | Broader grid-shape handling                                            |
@@ -101,7 +101,7 @@ PentaTile is smaller because it focuses on a specific subset of the multi-terrai
 
 ### Why choose PentaTile?
 
-- **Scalability of Variations:** Because the **Penta** layout requires only 4 tiles, creating multiple visual variations is significantly faster and more manageable.
+- **Scalability of Variations:** Because the **Penta** layout authoring scale starts at one tile and tops out at five, creating multiple visual variations is significantly faster and more manageable.
 - **Engine Purity:** PentaTile acts as a lightweight extension of the native `TileMapLayer`. It allows you to use Godot's native painting tools as intended, with the system handling the transformation logic automatically.
 - **Direct Logic:** It uses direct bitwise math to determine rotations and flips, keeping the runtime path short and easy to reason about.
 
@@ -118,7 +118,6 @@ addons/penta_tile/
   penta_tile_map_layer.gd                  # core PentaTileMapLayer node
   penta_tile_synthesis.gd                  # synthesis machinery for Penta layouts
   penta_tile_atlas_slot.gd                 # slot resource (atlas_coords + transform_flags)
-  penta_tile_template.png                  # blank reference template
   _generate_bitmasks.py                    # internal tooling — regenerates bundled bitmask PNGs
   layouts/
     penta_tile_layout.gd                   # base PentaTileLayout
@@ -185,8 +184,8 @@ Open `res://addons/penta_tile/demo/penta_tile_demo.tscn`.
 
 The demo includes:
 
-- a `PentaTileMapLayer`
-- a demo TileSet with collision polygons on all four template tiles
+- a `PentaTileMapLayer` bound to a Penta FOUR-mode layout (`penta_layout_four_horizontal.tres`)
+- a demo TileSet with collision polygons on the four authored Penta tiles
 - generated visual-layer collisions enabled
 - hidden logic-layer collisions disabled
 - a `CharacterBody2D` using Godot's `icon.svg`, a capsule collision shape, gravity, arrow-key movement, and jump with Up/Space
@@ -213,7 +212,6 @@ Future ideas remain intentionally separate from the V1 API:
 
 - **PentaBake:** edit-time utility to procedurally compose a fifth edge/diagonal connector tile when useful.
 - **Y-axis variations:** support atlas rows for deterministic/random visual variation.
-- **Shader fallback:** single-pass shader option for diagonal compositing.
 - **Collision tooling:** research automatic collision generation and better collision presets. V1 supports TileSet-authored collision polygons on generated visual layers.
 - **Outer transition tile support:** support transitions between terrain types, such as grass to dirt.
 - **Top tiles:** support sets with designated top visuals for platformer-style grass caps.

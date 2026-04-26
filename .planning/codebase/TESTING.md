@@ -1,6 +1,8 @@
 # Testing Patterns
 
-**Analysis Date:** 2026-04-26
+> **⚠ HISTORICAL — v0.1.0 snapshot.** This document was captured by `/gsd-map-codebase` against the v0.1.0 codebase before Phase 2 shipped. Phase 2 added a determinism test harness under `addons/penta_tile/tests/` (`determinism_test.gd`, `_capture_baseline.gd`, `baselines/`) — those are NOT reflected here. A refresh is planned for the v0.2.0 release pass.
+
+**Analysis Date:** 2026-04-26 (v0.1.0 baseline)
 
 ## Test Framework
 

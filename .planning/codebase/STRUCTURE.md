@@ -1,6 +1,8 @@
 # Codebase Structure
 
-**Analysis Date:** 2026-04-26
+> **⚠ HISTORICAL — v0.1.0 snapshot.** This document was captured by `/gsd-map-codebase` against the v0.1.0 codebase before Phase 2 shipped. It describes the deleted `PentaTileAtlasContract` / `template_image` / `_overlay_layer` / `penta_tile_template.png` / single-file addon layout. **Do not treat as current.** For the current addon surface see `README.md` § Addon Layout, the addon source under `addons/penta_tile/`, and `.planning/phases/02-native-layouts/02-VERIFICATION.md`. A refresh is planned for the v0.2.0 release pass.
+
+**Analysis Date:** 2026-04-26 (v0.1.0 baseline)
 
 ## Directory Layout
 

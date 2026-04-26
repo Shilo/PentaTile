@@ -86,8 +86,8 @@ Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
 - v0.2 pivot from "expand the contract" (variation + top tiles + non-rotating) to "layout library" (8 pluggable layout Resources)
-- Layout = typed `Resource` subclass (`PentaTileLayout`) hung off `PentaTileAtlasContract`, NOT a `RotationMode` enum on the contract
-- Each layout exposes `template_image: Texture2D` + `fallback_tile_set: TileSet` + `description: String` for inspector preview and zero-config prototyping
+- ~~Layout = typed `Resource` subclass (`PentaTileLayout`) hung off `PentaTileAtlasContract`, NOT a `RotationMode` enum on the contract~~ — **Superseded** by 2026-04-26 architectural simplification: `PentaTileAtlasContract` deleted; `layout: PentaTileLayout` lives directly on `PentaTileMapLayer`. See newer entry below.
+- ~~Each layout exposes `template_image: Texture2D` + `fallback_tile_set: TileSet` + `description: String` for inspector preview and zero-config prototyping~~ — **Superseded**: `template_image` renamed `bitmask_template`; `fallback_tile_set` @export deleted (now virtual `get_fallback_tile_set()`); `description: String` retained.
 - Tilesetter slot tables transcribed from TileBitTools (MIT, attributed) rather than empirically fingerprinted
 - Tilesetter Wang is 15 tiles in 5×3, not 16 in 4×4 (per TBT verified slot table)
 - Tilesetter Blob is 11×5 with sub-block gaps, not 7×8 (per TBT verified slot table)
@@ -129,13 +129,19 @@ None yet.
 
 ### Blockers/Concerns
 
+### Active
+
 - **Phase 3 TBT slot-table transcription:** the load-bearing data work for Phase 3. Each `.tres` from TBT needs to be read and translated into a mask-to-slot table; mistakes here corrupt rendering for that layout. Mitigated by visual regression on the demo for each shipped layout.
-- **Demo scene rebinding in Wave 2:** `addons/penta_tile/demo/penta_tile_demo.tscn` references `contracts/default_horizontal.tres` and sets `atlas_contract = ExtResource(...)`. Both get deleted in Phase 2 Wave 2. The demo will fail to load between waves unless updated atomically with the contract deletion. Wave 2 acceptance criterion: "demo loads cleanly after contract deletion."
-- **Phase 1 verification suite (`01-VERIFICATION.md` 26/26 tests) references `atlas_contract` and the old class names** (`PentaTileLayoutPentaHorizontal` / `Vertical`). Phase 2 Wave 1 must migrate these tests to the new `layout: PentaTileLayout` + `PentaTileLayoutPenta(axis=...)` API. Don't let the planner assume Phase 1 tests just keep passing.
-- **ONE-mode sub-region anchoring (PENTA-SYNTH-05) is the riskiest synthesis path.** Spikes 001-003 covered decoder feasibility, NOT synthesis-from-a-single-source-tile. The geometric spec — "where in slot 0 do the corners / edges / fill live, and how are sub-rects extracted?" — is not yet answered. Recommend inserting a Spike 004 before plan execution OR pinning down the anchoring math during plan-phase.
-- **Collision-polygon transform math (PENTA-SYNTH-06)** for synthesis is non-trivial: copying a source-tile collision polygon to a synthesized OppositeCorners tile requires applying a rotation/flip transform to a `Vector2[]` of polygon vertices. Worth a sketch in the plan before executor hits it.
-- **`_DEFAULT_LAYOUT` static singleton** in `penta_tile_map_layer.gd:193-198` allocates `PentaTileLayoutPentaHorizontal.new()` — a class being deleted in Wave 3. LAYER-02 implies the default-layout path goes away, but no wave explicitly handles it. Wave 2 should call out the cleanup as a non-skippable task.
-- **Phase 2 scope is now ~2× original Phase 2** (31 of 56 reqs, 15 success criteria, ~7 waves). Worth deciding upfront in plan-phase whether Phase 2 needs a sub-wave structure or a Phase 2.0/2.5 split. Estimated LOC will significantly exceed the prior ~911 figure (more like 1300-1500). Identity guardrail audit recommended at end of Phase 2.
+- **LOC overage carry-forward:** Phase 2 closed at 1827 runtime LOC vs the ~1500 informational trigger. Hard gate is end of Phase 4 (per CLAUDE.md). Watch additions in Phase 3/3.5/4 carefully — every shipped layout adds ~70-300 LOC.
+
+### Resolved during Phase 2 execution
+
+- **Demo scene rebinding in Wave 2** — done atomically with contract deletion in commit `b6349fa` (Wave 2 acceptance: "demo loads cleanly" satisfied).
+- **Phase 1 verification suite migration** — done in Wave 1 (commit `595f0f8`); spec moved to `02-01-VERIFICATION-MIGRATION.md`; original `01-VERIFICATION.md` prepended with HISTORICAL banner.
+- **ONE-mode sub-region anchoring (PENTA-SYNTH-05)** — geometric spec resolved inline at top of `02-02-PLAN.md` as HARD GATE D-69 (Path B sub-region anchoring); implemented in `PentaTileSynthesis.synthesize_strip` (commit `e8e114a`).
+- **Collision-polygon transform math (PENTA-SYNTH-06)** — resolved inline as HARD GATE D-70 (TRANSPOSE→FLIP_H→FLIP_V order + Liang-Barsky rect clip, replaced in fix WR-01 with canonical Sutherland-Hodgman). Implemented in `PentaTileSynthesis.transform_vertex` + `clip_polygon_to_subrect`.
+- **`_DEFAULT_LAYOUT` static singleton** — deleted in Wave 2 (commit `b6349fa`) atomically with `_resolve_layout` rewrite.
+- **Phase 2 scope expansion concern** — phase shipped 7/7 plans; final LOC 1827 runtime (slightly above the predicted 1300-1500 estimate, but within the same order of magnitude).
 
 ## Deferred Items
 

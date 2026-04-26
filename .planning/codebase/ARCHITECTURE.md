@@ -1,6 +1,8 @@
 # Architecture
 
-**Analysis Date:** 2026-04-26
+> **⚠ HISTORICAL — v0.1.0 snapshot.** This document was captured by `/gsd-map-codebase` against the v0.1.0 codebase before Phase 2 shipped. It describes the deleted overlay-layer composition pattern, `PentaTileAtlasContract`, and the v0.1 single-layer-per-archetype dispatch. **Do not treat as current.** Phase 2 deleted the runtime overlay layer entirely; load-time synthesis via `PentaTileSynthesis` produces the OppositeCorners archetype (masks 6/9). For the current architecture see `.planning/phases/02-native-layouts/02-02-SUMMARY.md` and `02-VERIFICATION.md`. A refresh is planned for the v0.2.0 release pass.
+
+**Analysis Date:** 2026-04-26 (v0.1.0 baseline)
 
 ## Pattern Overview
 

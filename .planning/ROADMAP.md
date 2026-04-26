@@ -152,17 +152,17 @@ Plans:
 
 ### Phase 4: Fallback Routing
 
-**Goal**: When `PentaTileMapLayer.tile_set == null` and `atlas_contract.layout != null`, the layer routes rendering through `layout.fallback_tile_set`. This is the prototyping UX win — drop a fresh layer into a scene with just a layout attached and start painting.
+**Goal**: When `PentaTileMapLayer.tile_set == null` and `layout != null`, the layer routes rendering through `layout.get_fallback_tile_set()` (codegen from `bitmask_template`). This is the prototyping UX win — drop a fresh layer into a scene with just a layout attached and start painting.
 
-**Depends on**: Phase 1 (layer integration), Phase 2 (native fallback `.tres` files), Phase 3 (TBT fallback `.tres` files). Wires the consumer side once all 8 layouts have their fallback TileSets bundled.
+**Depends on**: Phase 1 (layer integration), Phase 2 (Phase 2 ships `get_fallback_tile_set()` codegen on the base class + co-located bundled bitmask PNGs for all 5 layouts shipped so far), Phase 3 (TBT layouts add their own `get_fallback_tile_set()` overrides). Wires the consumer side once all 8 layouts can produce a fallback TileSet.
 
 **Requirements**: PREVIEW-03, PREVIEW-04. Final visual-regression sweep across all 8 layouts.
 
 **Success Criteria** (what must be TRUE):
-1. Creating a new `PentaTileMapLayer` node with `tile_set = null` and `atlas_contract` attached (with any of the 8 layouts) makes drag-paint produce visible greybox tiles immediately — no TileSet authored.
+1. Creating a new `PentaTileMapLayer` node with `tile_set = null` and `layout` attached (with any of the 8 layouts) makes drag-paint produce visible greybox tiles immediately — no TileSet authored.
 2. Assigning `tile_set` directly overrides the fallback (no warnings, no errors). Removing `tile_set` again (back to null) re-routes to the fallback.
-3. All 8 layouts have a working fallback path: paint a small scene using each layout's fallback, confirm visible output matches the layout's template silhouettes.
-4. The fallback routing path doesn't change behavior when `tile_set` is provided (regression check: existing v0.1-style scenes with `tile_set` set don't suddenly use fallback art).
+3. All 8 layouts have a working fallback path: paint a small scene using each layout's fallback, confirm visible output matches the layout's bitmask-template silhouettes.
+4. The fallback routing path doesn't change behavior when `tile_set` is provided (regression check: existing scenes with `tile_set` set don't suddenly use fallback art).
 
 **Plans**: TBD
 
@@ -175,11 +175,11 @@ Plans:
 **Requirements**: DEMO-01, DEMO-02, DEMO-03, DOC-01, DOC-02, DOC-03, DOC-04, REL-01, REL-02, REL-03.
 
 **Success Criteria** (what must be TRUE):
-1. The updated `penta_tile_demo.tscn` showcases all 8 layouts — either via runtime layout switching (UI to swap `atlas_contract.layout`) or side-by-side `PentaTileMapLayer` instances arranged spatially. A casual playtester can see each layout in action.
-2. The demo references the bundled fallback TileSets so it works out of the box without any authored tilesets (proves the prototyping UX).
+1. The updated `penta_tile_demo.tscn` showcases all 8 layouts — either via runtime layout switching (UI to swap the `layout` property) or side-by-side `PentaTileMapLayer` instances arranged spatially. A casual playtester can see each layout in action.
+2. The demo references the bundled fallback TileSets (via `get_fallback_tile_set()` codegen) so it works out of the box without any authored tilesets (proves the prototyping UX).
 3. Runtime drag-paint (existing `demo_runtime_painter.gd`) continues to work across all layouts in the updated demo without script changes beyond layout-switching glue.
 4. README has a "Layouts" section listing all 8 built-in layouts with names, descriptions, atlas grids, tile counts, and which conventions they target. Plus "Upgrading from 0.1.x" and "Authoring a Custom Layout" (experimental).
-5. `plugin.cfg` `version` field reads `0.2.0` exactly (no `-pre` / `-alpha` / `-dev` suffix). `CHANGELOG.md` has a v0.2.0 entry naming all breaking changes (`atlas_contract` introduction, deprecated `atlas_layout` enum, any property renames).
+5. `plugin.cfg` `version` field reads `0.2.0` exactly (no `-pre` / `-alpha` / `-dev` suffix). `CHANGELOG.md` has a v0.2.0 entry naming all breaking changes (`PentaTileAtlasContract` deletion, `template_image` → `bitmask_template` rename, `fallback_tile_set` @export removal, separate Penta H/V class merge, overlay-layer deletion, etc.).
 6. Downloading the v0.2.0 GitHub Release zip and extracting to a fresh Godot 4.6 project produces a working demo with no errors on first run; ATTRIBUTION.md is present at the addon root.
 7. Final LOC audit confirms `addons/penta_tile/` total surface area stays under TileMapDual's equivalent — the result included in the release notes.
 

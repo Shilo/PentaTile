@@ -1,6 +1,8 @@
 # Codebase Concerns
 
-**Analysis Date:** 2026-04-26
+> **⚠ HISTORICAL — v0.1.0 snapshot.** This document was captured by `/gsd-map-codebase` against the v0.1.0 codebase before Phase 2 shipped. Several "tech debt" items listed here (fixed 4-tile atlas constraint, dual-layer composition for diagonals, `_overlay_layer` lifecycle) **were resolved by Phase 2** — the overlay layer was deleted entirely; the Penta layout family scales 1–5 tiles via progressive synthesis. **Do not treat as current.** A refresh is planned for the v0.2.0 release pass.
+
+**Analysis Date:** 2026-04-26 (v0.1.0 baseline)
 
 ## Overview
 

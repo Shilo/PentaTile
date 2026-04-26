@@ -1,6 +1,8 @@
 # Coding Conventions
 
-**Analysis Date:** 2026-04-26
+> **⚠ HISTORICAL — v0.1.0 snapshot.** This document was captured by `/gsd-map-codebase` against the v0.1.0 codebase before Phase 2 shipped. The naming/structure patterns themselves are still accurate, but examples that reference deleted symbols (`_overlay_layer`, `atlas_contract`, `template_image`) **are stale**. For canonical conventions see `CLAUDE.md` § Coding Conventions and the addon source. A refresh is planned for the v0.2.0 release pass.
+
+**Analysis Date:** 2026-04-26 (v0.1.0 baseline)
 
 ## Naming Patterns
 

@@ -1,6 +1,8 @@
 # External Integrations
 
-**Analysis Date:** 2026-04-26
+> **⚠ HISTORICAL — v0.1.0 snapshot.** This document was captured by `/gsd-map-codebase` against the v0.1.0 codebase before Phase 2 shipped. References to `penta_tile_template.png` and other deleted v0.1 artifacts **are stale**. The integration surface (Godot 4.6 only, no third-party deps) has not changed. A refresh is planned for the v0.2.0 release pass.
+
+**Analysis Date:** 2026-04-26 (v0.1.0 baseline)
 
 ## APIs & External Services
 

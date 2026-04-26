@@ -1,6 +1,8 @@
 # Technology Stack
 
-**Analysis Date:** 2026-04-26
+> **⚠ HISTORICAL — v0.1.0 snapshot.** This document was captured by `/gsd-map-codebase` against the v0.1.0 codebase before Phase 2 shipped. The core stack (Godot 4.6, GDScript 2, no third-party deps) has not changed; LOC counts and any per-file breakdowns are stale. A refresh is planned for the v0.2.0 release pass.
+
+**Analysis Date:** 2026-04-26 (v0.1.0 baseline)
 
 ## Languages
 

@@ -1,5 +1,7 @@
 # PentaTile MVP Research
 
+> **⚠ HISTORICAL — v0.1.0 research.** This document is the original feasibility research that informed the v0.1.0 release (when the project was still TetraTile). Its core claim — "four source tiles cannot faithfully draw the two disconnected diagonal marching-squares states in a single visual tile, therefore use an internal overlay layer" — was the v0.1 architectural choice. **Phase 2 superseded both halves**: 1–5 tile progressive Penta layouts replace the fixed 4-tile constraint, and load-time synthesis (`PentaTileSynthesis`) produces the OppositeCorners archetype for masks 6/9 — the runtime overlay layer was deleted entirely. Mask numbering (TL=1, TR=2, BL=4, BR=8; diagonals 6/9) is unchanged. For current research and design context see `.planning/research/` and `.planning/phases/02-native-layouts/`. **Do not treat this file as current research.**
+
 ## Verdict
 
 PentaTile should proceed, but with one corrected constraint: four source tiles cannot faithfully draw the two disconnected diagonal marching-squares states in a single visual tile. The professional V1 solution is still a single public `PentaTileMapLayer` class, but it must manage a second internal visual `TileMapLayer` for diagonal composition. That keeps the asset template at four tiles and avoids a shader or bake dependency.

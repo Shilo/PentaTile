@@ -24,33 +24,45 @@ Key Godot APIs in use:
 ```
 addons/penta_tile/
   plugin.cfg
-  penta_tile_map_layer.gd          # core class (~261 LOC at v0.1.0)
-  penta_tile_template.png          # blank 4-tile reference template
+  penta_tile_map_layer.gd          # core PentaTileMapLayer node
+  penta_tile_synthesis.gd          # synthesis machinery for Penta layouts
+  penta_tile_atlas_slot.gd         # slot resource (atlas_coords + transform_flags)
+  _generate_bitmasks.py            # internal tooling — regenerates bundled bitmask PNGs
+  layouts/                         # PentaTileLayout base + subclasses + co-located fallback PNGs
+    penta_tile_layout.gd           # base PentaTileLayout
+    penta_tile_layout_penta.gd     # merged Penta family (axis × tile_count enums)
+    penta_tile_layout_dual_grid_16.gd
+    penta_tile_layout_wang_2_edge.gd
+    penta_tile_layout_wang_2_corner.gd
+    penta_tile_layout_minimal_3x3.gd
+    penta_tile_layout_penta/       # Penta variants' bundled PNGs (5 modes × 2 axes)
+  tests/                           # determinism harness + baselines
   demo/
     penta_tile_demo.tscn           # main demo scene (entry point)
     demo_player.gd                 # CharacterBody2D platformer player
     demo_runtime_painter.gd        # left-click paint, right-click erase, drag-paint
     penta_tile_ground.png/.tres    # demo TileSet with collision polygons
+    penta_layout_*.tres            # demo Penta layout resources (one/four/five horizontal + four vertical)
 .planning/                         # GSD planning artifacts (committed to git)
   PROJECT.md                       # what we're building, why, constraints
-  REQUIREMENTS.md                  # 30 v1 REQ-IDs + v2 deferred + Out of Scope
+  REQUIREMENTS.md                  # v1 REQ-IDs + v2 deferred + Out of Scope
   ROADMAP.md                       # 5-phase plan with success criteria
   STATE.md                         # current position, decisions, blockers
   config.json                      # workflow config (interactive, standard, parallel, opus quality)
   research/                        # SUMMARY.md + STACK/FEATURES/ARCHITECTURE/PITFALLS
-  codebase/                        # ARCHITECTURE/CONCERNS/CONVENTIONS/etc. from /gsd-map-codebase
+  codebase/                        # v0.1 snapshot from /gsd-map-codebase (refresh planned end of v0.2)
 ```
 
 ## GSD Workflow
 
 This project uses Get Shit Done (GSD) for structured execution. The phases of v0.2.0 are:
 
-1. **Contract Skeleton + Penta Layouts** ✅ DONE — `PentaTileAtlasContract` + `PentaTileLayout` base + `AtlasSlot`; `PentaTileLayoutPentaHorizontal` + `PentaTileLayoutPentaVertical` (archived under `01-contract-skeleton-penta-layouts/`; partially superseded by Phase 2's architectural sweep).
+1. **Contract Skeleton + Penta Layouts** ✅ DONE (partially superseded by Phase 2). Phase 1 originally shipped `PentaTileAtlasContract` + `PentaTileLayout` base + `AtlasSlot` + separate `PentaTileLayoutPentaHorizontal` / `PentaTileLayoutPentaVertical` classes. Phase 2 deleted the contract and merged the H/V pair into `PentaTileLayoutPenta`. Phase 1 artifacts archived under `.planning/phases/01-contract-skeleton-penta-layouts/`; the only Phase 1 outputs that survived intact are the `PentaTileLayout` base virtual surface + `AtlasSlot`.
 2. **Native Layouts** — DualGrid16, Wang2Edge, Wang2Corner, Min3x3 + Penta layouts gain load-time synthesis of the 5th `OppositeCorners` archetype (drops the runtime overlay layer entirely).
 2.1 **Single-Tile Layout (Prototyping)** — `PentaTileLayoutSingleTile` slices ONE source image into 5 archetypes at load time.
 3. **TileBitTools-Decoded Layouts** — Blob47Godot, TilesetterWang15, TilesetterBlob47 with attribution.
 3.5 **PixelLab Layouts + Variation-Bank Wiring** — PixelLabTopDown + PixelLabSideScroller (8×8 atlas, internal variation banks).
-4. **Fallback Routing** — `tile_set == null` → `layout.fallback_tile_set`.
+4. **Fallback Routing** — `tile_set == null` → `layout.get_fallback_tile_set()`.
 5. **Demo Refresh + Documentation + Release** — updated demo, README, CHANGELOG, `v0.2.0` tag.
 
 Authoritative source: `.planning/ROADMAP.md` (this list is a summary, not the spec).
@@ -114,9 +126,9 @@ When implementing v0.2.0 features, watch for:
 1. **`alternative_tile` bit packing** — alt-ID and `TRANSFORM_FLIP_*` flags share one int; always OR them together via `_pack_alternative()`; assert `alt_id < 4096`.
 2. **Variation determinism** — never `randi()`. Always `RandomNumberGenerator.seed = hash(Vector4i(coord.x, coord.y, atlas_coords.x, atlas_coords.y) + variation_seed)` then `rand_weighted()`. Otherwise `rebuild()` shimmers.
 3. **Resource property renames orphan saved scenes silently** — Godot 4.6 has no automatic property-rename migration. Use `@export_storage` shadow + `__migrate__()` two-step pattern; CHANGELOG every rename.
-4. **Setter loops + `Resource.changed` storms** — idempotence guard (`if value == _atlas_contract: return`), disconnect-before-reconnect on `Resource.changed`, ride the existing `_queue_rebuild` deferred coalescer.
-5. **Non-rotating tileset table** — 16 runtime entries GENERATED from the rotating table at contract-load time. Never hand-write 64 entries. Mask 0 special-cased on the FIRST line of the paint function.
-6. **Top-tile assignment must be EXPLICIT per-mask in the contract** — never inferred via "tile below is filled" heuristics. Auto-detection bakes platformer assumptions into the addon.
+4. **Setter loops + `Resource.changed` storms** — idempotence guard (`if value == layout: return`), disconnect-before-reconnect on `Resource.changed`, ride the existing `_queue_rebuild` deferred coalescer.
+5. **Non-rotating tileset table** — 16 runtime entries GENERATED from the rotating table at layout-load time. Never hand-write 64 entries. Mask 0 special-cased on the FIRST line of the paint function.
+6. **Top-tile assignment must be EXPLICIT per-mask on the layout** — never inferred via "tile below is filled" heuristics. Auto-detection bakes platformer assumptions into the addon. (Top tiles are v2 backlog; this guidance applies when that work lands.)
 7. **`TileMapLayer.visible = false` cleanup behavior** — already mitigated in v0.1 via `self_modulate.a` on the logic layer. Don't regress.
 
 Full pitfall analysis is in `.planning/research/PITFALLS.md`.
@@ -125,7 +137,7 @@ Full pitfall analysis is in `.planning/research/PITFALLS.md`.
 
 **"Penta" is reserved exclusively for the 5-archetype tileset format used by PentaTile.** This is a project invariant — never use "Penta" for anything else, or the term loses descriptive meaning.
 
-- Use **PentaTile** for the project name, public class prefixes (`PentaTileMapLayer`, `PentaTileAtlasContract`, `PentaTileLayout*`), file/folder names (`addons/penta_tile/`, `penta_tile_map_layer.gd`), the plugin id, and demo scene names. The project happens to share its name with its native layout family — that coincidence is load-bearing for the codename to land.
+- Use **PentaTile** for the project name, public class prefixes (`PentaTileMapLayer`, `PentaTileLayout*`, `PentaTileSynthesis`, `PentaTileAtlasSlot`), file/folder names (`addons/penta_tile/`, `penta_tile_map_layer.gd`), the plugin id, and demo scene names. The project happens to share its name with its native layout family — that coincidence is load-bearing for the codename to land.
 - Use **Penta** as a generic codename in phrases like "a Penta tileset," "the Penta layout family," "Penta archetypes," "Penta slot order." Never coin "Penta" prefixes for unrelated subsystems (e.g., do NOT introduce `PentaCache`, `PentaDecoder`, `PentaToolkit` for things that aren't the 5-archetype format).
 - The labeled archetype diagram in `README.md` § What is a Penta tileset? is **load-bearing** for codename propagation — without the picture-with-named-archetypes, the codename cannot spread (the Boris-the-Brave precedent for "Blob": classification stuck because the diagram was canonical).
 - When introducing the term to a new reader (docs, CHANGELOG, release notes), link or excerpt from the canonical README definition rather than re-explaining inline. Single source of truth keeps the term stable.
@@ -134,14 +146,14 @@ Canonical "What is a Penta tileset?" definition lives in `README.md`.
 
 ## Coding Conventions
 
-- Class names: PascalCase (`PentaTileMapLayer`, `PentaTileAtlasContract`)
+- Class names: PascalCase (`PentaTileMapLayer`, `PentaTileLayout`, `PentaTileSynthesis`)
 - Public methods: `snake_case` without leading underscore (`rebuild()`, `set_cell()`)
 - Private methods: `_snake_case` (`_resolve_slot()`, `_pick_alternative()`)
 - Constants: `_UPPER_SNAKE_CASE` (private, `_FILL`, `_ROTATE_90`)
 - Enum members: `UPPER_CASE` (`HORIZONTAL`, `NON_ROTATING`)
-- Export properties: `snake_case` (`atlas_source_id`, `atlas_contract`)
+- Export properties: `snake_case` (`atlas_source_id`, `layout`)
 - File names: snake_case matching class name (`penta_tile_map_layer.gd` → `PentaTileMapLayer`)
 
 ## Next Step
 
-Run `/gsd-progress` to see current position. Phase 1.1 (this rename) is in progress; Phase 2 is the next major work.
+Run `/gsd-progress` to see current position. Phase 2 is code-complete (7/7 plans, 3 review passes clean) and awaiting visual UAT — see `.planning/phases/02-native-layouts/02-HUMAN-UAT.md`.

@@ -1,5 +1,7 @@
 # PentaTile MVP Implementation Plan
 
+> **⚠ HISTORICAL — v0.1.0 spec.** This document is the original implementation plan that produced the v0.1.0 release (when the project was still TetraTile). It describes the deleted v0.1 architecture: 4-tile atlas, internal overlay layer for diagonals, single `PentaTileMapLayer` class. Phase 1 + Phase 2 have since shipped a different shape — `PentaTileLayout` strategy pattern, 1–5 tile Penta progressive scale, load-time synthesis (no overlay layer). For the current architecture see `README.md`, `CLAUDE.md`, `.planning/ROADMAP.md`, and the addon source. **Do not treat this file as current spec.**
+
 ## Public Contract
 
 - `PentaTileMapLayer` extends `TileMapLayer` and is the only public runtime class.

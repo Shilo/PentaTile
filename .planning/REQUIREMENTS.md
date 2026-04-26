@@ -296,37 +296,37 @@ Which phases cover which requirements. Empty initially — populated by `gsd-roa
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LAYER-01 | 2 | Pending (replaces deleted CONTRACT-01) |
-| LAYER-02 | 2 | Pending (replaces deleted CONTRACT-03/04 + `_DEFAULT_LAYOUT` cleanup) |
-| LAYER-03 | 2 | Pending (file/folder deletions) |
-| LAYER-04 | 2 | Pending (demo scene rebind — Wave 2 acceptance criterion) |
-| LAYER-05 | 2 | Pending (Phase 1 verification suite migration — Wave 1) |
+| LAYER-01 | 2 | Complete (replaces deleted CONTRACT-01; `layout: PentaTileLayout` directly on `PentaTileMapLayer`) |
+| LAYER-02 | 2 | Complete (replaces deleted CONTRACT-03/04; `_DEFAULT_LAYOUT` deleted in Wave 2) |
+| LAYER-03 | 2 | Complete (PentaTileAtlasContract + contracts/ + penta_tile_template.png all deleted in Wave 2) |
+| LAYER-04 | 2 | Complete (demo scene atomically rebound to `layout` ExtResource in Wave 2 / `b6349fa`) |
+| LAYER-05 | 2 | Complete (Phase 1 verification suite migrated to `02-01-VERIFICATION-MIGRATION.md` in Wave 1 / `595f0f8`) |
 | LAYOUT-01 | 1 | Complete |
 | LAYOUT-02 | 1 | Complete |
-| LAYOUT-03 | 2 | Pending (rename + cleanup; was Phase 1 Complete, now revised in Phase 2) |
-| LAYOUT-04 | 2 | Pending (overlay field removal; was Phase 1 Complete, now revised in Phase 2) |
+| LAYOUT-03 | 2 | Complete (`template_image` → `bitmask_template` in Wave 1 / `cb6d253`) |
+| LAYOUT-04 | 2 | Complete (`fallback_tile_set` @export + `decoder_image` deleted in Wave 1) |
 | LAYOUT-05 | 1 | Complete |
-| LAYOUT-06 | 2 | Pending (new — `get_fallback_tile_set()` virtual) |
-| LAYOUT-07 | 2 | Pending (new — per-layout templates folder convention) |
-| PENTA-01 | 2 | Pending (Phase 1 work superseded by merged class) |
-| PENTA-02 | 2 | Pending (`tile_count` enum on merged class) |
-| PENTA-03 | 2 | Pending (visual regression vs v0.1 baseline w/ synthesis) |
-| NATIVE-01 | 2 | Pending |
-| NATIVE-02 | 2 | Pending |
-| NATIVE-03 | 2 | Pending |
-| MIN3x3-01 | 2 | Pending |
-| PENTA-SYNTH-01 | 2 | Pending |
-| PENTA-SYNTH-02 | 2 | Pending |
-| PENTA-SYNTH-03 | 2 | Pending |
-| PENTA-SYNTH-04 | 2 | Pending |
-| PENTA-SYNTH-05 | 2 | Pending |
-| PENTA-SYNTH-06 | 2 | Pending |
-| PENTA-SYNTH-07 | 2 | Pending |
-| PENTA-SYNTH-08 | 2 | Pending |
-| PENTA-SYNTH-09 | 2 | Pending |
-| PENTA-SYNTH-10 | 2 | Pending (single PNG per layout, no atlas/bitmask split) |
-| PENTA-SYNTH-11 | 2 | Pending (demo across modes) |
-| PENTA-SYNTH-12 | 2 | Pending (FOUR-mode visual regression vs captured baseline) |
+| LAYOUT-06 | 2 | Complete (`get_fallback_tile_set()` virtual on base; codegen body added in Wave 2) |
+| LAYOUT-07 | 2 | Complete (PNGs co-located under `addons/penta_tile/layouts/...` in Wave 5) |
+| PENTA-01 | 2 | Complete (`PentaTileLayoutPenta` merged class replaces Phase 1 H/V pair in Wave 3) |
+| PENTA-02 | 2 | Complete (`axis: Axis` + `tile_count: TileCountMode` enums on merged class) |
+| PENTA-03 | 2 | Complete (FOUR-mode determinism baseline `BASELINE_HASH=2986698704` captured Wave 6 + VERTICAL structural baseline `673ace0`) |
+| NATIVE-01 | 2 | Complete (DualGrid16 in Wave 4 / `91f69a2`) |
+| NATIVE-02 | 2 | Complete (Wang2Edge in Wave 4) |
+| NATIVE-03 | 2 | Complete (Wang2Corner in Wave 4) |
+| MIN3x3-01 | 2 | Complete (Min3x3 in Wave 4) |
+| PENTA-SYNTH-01 | 2 | Complete (`PentaTileSynthesis.synthesize_strip()` in Wave 2 / `e8e114a`) |
+| PENTA-SYNTH-02 | 2 | Complete (AUTO mode dimension-only detection in Wave 6) |
+| PENTA-SYNTH-03 | 2 | Complete (AUTO_STRIP per-strip detection in Wave 6) |
+| PENTA-SYNTH-04 | 2 | Complete (Gate 1 Path B: OuterCorner = slot 0 + rotation) |
+| PENTA-SYNTH-05 | 2 | Complete (Gate 2 transform_vertex: TRANSPOSE→FLIP_H→FLIP_V; sub-test (a) PASS) |
+| PENTA-SYNTH-06 | 2 | Complete (signature-based synthesis cache; main determinism test PASS over 11 runs) |
+| PENTA-SYNTH-07 | 2 | Complete (Sutherland-Hodgman polygon clip per WR-01 fix `ae5d787`) |
+| PENTA-SYNTH-08 | 2 | Complete (`build_tile_set_from_synthesis()` wires synthesized slots to TileSet) |
+| PENTA-SYNTH-09 | 2 | Complete (`_ensure_synthesized_tile_set` wires `_synthesized_tile_set` to `_primary_layer`) |
+| PENTA-SYNTH-10 | 2 | Complete (single PNG per layout serves both inspector preview and fallback source) |
+| PENTA-SYNTH-11 | 2 | Complete (demo bound to FOUR mode; ONE/FIVE `.tres` resources shipped) |
+| PENTA-SYNTH-12 | 2 | Complete (FOUR-mode determinism `BASELINE_HASH=2986698704`; 11/11 runs match) |
 | TBT-01 | 3 | Pending |
 | TBT-02 | 3 | Pending |
 | TBT-03 | 3 | Pending |
@@ -335,14 +335,14 @@ Which phases cover which requirements. Empty initially — populated by `gsd-roa
 | PIXLAB-02 | 3.5 | Pending |
 | PIXLAB-03 | 3.5 | Pending |
 | PIXLAB-04 | 3.5 | Pending |
-| PREVIEW-01 | 2 | Pending (rename `template_image` → `bitmask_template`; was Phase 1 Complete, now revised in Phase 2) |
-| PREVIEW-02 | 2 | Pending (now `get_fallback_tile_set()` codegen, no bundled .tres) |
+| PREVIEW-01 | 2 | Complete (`template_image` renamed `bitmask_template` in Wave 1) |
+| PREVIEW-02 | 2 | Complete (dual-role `bitmask_template` serves preview AND fallback codegen) |
 | PREVIEW-03 | 4 | Pending |
 | PREVIEW-04 | 4 | Pending |
-| TEMPLATE-01 | 2 | Pending (5 source PNGs shipped flat in commit e86036f need migration to new co-located scheme; new TWO/THREE/FIVE Penta PNGs added; total 14 bundled PNGs at end of Phase 2) |
+| TEMPLATE-01 | 2 | Complete (14 bundled PNGs at co-located paths; `templates/` folder deleted in Wave 5) |
 | TEMPLATE-02 | 3 | Pending |
-| TEMPLATE-03 | Pre-shipped | Pending |
-| TEMPLATE-04 | 2 | Pending |
+| TEMPLATE-03 | Pre-shipped | Complete (template image format established v0.1; carried forward) |
+| TEMPLATE-04 | 2 | Complete (slot 0 IsolatedCell PNG has transparent gaps; verified Wave 5 / `e17512e`) |
 | DEMO-01 | 5 | Pending |
 | DEMO-02 | 5 | Pending |
 | DEMO-03 | 5 | Pending |

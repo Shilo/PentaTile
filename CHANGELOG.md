@@ -108,6 +108,5 @@ Initial release as **TetraTile**.
 - 4-tile binary atlas: Fill, Inner Corner, Border, Outer Corner.
 - 16-state marching-squares mask with transform-based rotations.
 - Overlay layer composition for disconnected-diagonal masks (6 and 9).
-- `PentaTileAtlasContract` resource + `PentaTileLayout` base (shipped as TetraTile v0.1).
 - Horizontal and Vertical atlas layout support.
 - Demo scene with platformer player and runtime painter.
