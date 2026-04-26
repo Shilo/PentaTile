@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="TetraTileLayoutTetraVertical" format=3]
+
+[ext_resource type="Script" path="res://addons/tetra_tile/layouts/tetra_tile_layout_tetra_vertical.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://dqm0wtrvreo5i" path="res://addons/tetra_tile/templates/tetra_vertical.png" id="2_template"]
+
+[resource]
+script = ExtResource("1_script")
+template_image = ExtResource("2_template")
+description = "TetraTile 4-tile vertical layout (Fill / Inner Corner / Border / Outer Corner stacked top-to-bottom). Dual-grid; matches v0.1 vertical output."
