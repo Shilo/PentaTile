@@ -1,0 +1,5 @@
+260 addons/tetra_tile/tetra_tile_map_layer.gd
+
+Captured: 2026-04-26T07:01:04Z
+Pre-Phase-1 baseline. End-of-Phase-1 (Plan 05) compares against this.
+Demo scripts (demo/*.gd) are NOT counted — they are not part of the addon's surface area.
