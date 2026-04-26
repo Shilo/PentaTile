@@ -39,9 +39,25 @@ func _pack_alternative(alt_id: int, transform_flags: int) -> int:
 	return alt_id | transform_flags
 
 
-# LAYOUT-06: virtual TileSet codegen path. Default returns null in Wave 1;
-# Wave 2 fills the body to construct a TileSet from `bitmask_template`.
-# Subclasses can override for custom logic.
+var _cached_fallback_tile_set: TileSet = null
+
+# LAYOUT-06 / PREVIEW-02: build a TileSet from `bitmask_template` at first call, cached.
+# Subclasses can override for custom logic (e.g. the Penta layout's per-mode lookup).
+# Default impl: 1 source × 1 atlas with the `bitmask_template` PNG; warns on first call
+# because the base class cannot know the correct grid size — subclasses must override.
 # Consumer (PentaTileMapLayer) calls this when tile_set == null (PREVIEW-03 wired in Phase 4).
 func get_fallback_tile_set() -> TileSet:
-	return null
+	if _cached_fallback_tile_set != null:
+		return _cached_fallback_tile_set
+	if bitmask_template == null:
+		return null
+	var ts := TileSet.new()
+	var src := TileSetAtlasSource.new()
+	src.texture = bitmask_template
+	# Subclasses override texture_region_size + create_tile() loops per their grid.
+	# Base impl leaves src empty so this warning fires on first call, surfacing the
+	# override-missing condition rather than silently rendering nothing.
+	ts.add_source(src, 0)
+	_cached_fallback_tile_set = ts
+	push_warning("PentaTileLayout.get_fallback_tile_set called on base; subclass should override.")
+	return _cached_fallback_tile_set
