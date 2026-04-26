@@ -4,14 +4,14 @@ milestone: v0.2.0
 milestone_name: milestone
 status: planning
 stopped_at: Phase 2 context regenerated (fifth supersession; D-68..D-71)
-last_updated: "2026-04-26T16:40:14.694Z"
+last_updated: "2026-04-26T18:54:39.529Z"
 last_activity: 2026-04-26 -- Phase 01.1 complete (PentaTile rename + Penta codename established)
 progress:
   total_phases: 7
   completed_phases: 2
-  total_plans: 8
+  total_plans: 15
   completed_plans: 8
-  percent: 100
+  percent: 53
 ---
 
 # Project State
@@ -128,3 +128,5 @@ Resume file: --resume-file
 **Completed Phase:** 01 (Contract Skeleton + Penta Layouts) — 5/5 plans, 14/14 requirements, 26/26 automated tests PASS — 2026-04-26
 **Completed Phase:** 01.1 (PentaTile Rename + Penta Codename Establishment) — 3/3 plans, 0 formal REQ-IDs (rename phase), demo loads cleanly under new name, git remote tracks PentaTile origin — 2026-04-26
 **Next Phase:** 02 (Native Layouts) — DualGrid16, Wang2Edge, Wang2Corner, Minimal3x3 (subclass adds; single-grid pipeline already wired by Phase 1's D-06)
+
+**Planned Phase:** 02 (native-layouts) — 7 plans — 2026-04-26T18:54:39.523Z
