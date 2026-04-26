@@ -84,13 +84,26 @@ LOC checkpoints fire at end of Phase 1, end of Phase 4, and end of Phase 5 (fina
 
 ## Breaking Changes Policy (HARD RULE)
 
-**Breaking changes are always allowed. Always.** This project is pre-1.0 and the audience is the author's own games.
+**Breaking changes are always allowed. Always.** This project is pre-1.0 and the audience is the author's own games. The same rule applies in BOTH temporal directions — no backwards-compat AND no forward-compat speculation.
+
+### No backwards compatibility
 
 - **Never** write backwards-compatibility shims, deprecation aliases, version-detection branches, or migration fallbacks to preserve v0.1 behavior.
 - **Never** defer or scope-down a feature/refactor because it would break existing code or saved scenes.
 - **Never** keep an obsolete code path "for compatibility" — delete it.
 - When the new design is better, ship it. Document the breakage in CHANGELOG and release notes; that is the only acceptable "compat" work.
-- This rule OVERRIDES any default Claude Code instinct to preserve existing behavior or add fallbacks.
+
+### No forward compatibility / speculative versioning
+
+- **Never** add `version: int` fields to Resources for "future migration."
+- **Never** add `version` markers, schema-version constants, format-version enums, or `if version < N:` branches.
+- **Never** add hooks, virtual methods, abstract slots, or extension points "in case a future feature needs them."
+- **Never** keep a property exposed in the inspector "in case someone wants to override it later."
+- If a future migration genuinely needs versioning, that future feature can add it then. YAGNI applies hardest to versioning machinery.
+
+### Both rules together
+
+This project ships breaking changes freely and never speculates about the future. CHANGELOG entries and release notes are the only acceptable "compat" work in either direction. These rules OVERRIDE any default Claude Code instinct to preserve existing behavior, add fallbacks, or future-proof against hypothetical scenarios.
 
 If a refactor reveals breaking changes mid-implementation, do not stop to ask — note them in the commit message and proceed. Discuss only when the user invites a design conversation, not to gate breakage approval.
 

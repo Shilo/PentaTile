@@ -83,7 +83,7 @@ Painting tiles with the native `TileMapLayer` API produces correct dual-grid aut
 - **Tech stack**: Godot 4.6+ stable. Pure GDScript. No C#, no GDExtension, no third-party dependencies.
 - **Engine API**: Implementation must continue to ride `TileMapLayer._update_cells()`. No persistent coordinate cache, signal fanout, or watcher systems (per the existing architecture's "lean" stance).
 - **Distribution**: GitHub releases with plain semver tags (no `-pre`, `-alpha`, `-dev` suffixes). No Asset Library submission this milestone.
-- **Audience**: The author's own games. No public-API SLA. **Breaking changes are always allowed and explicitly encouraged when they enable improvements; never write backwards-compatibility shims, never defer features because they would break v0.1.** Migration notes go in CHANGELOG and release notes; that's the only "compat" work.
+- **Audience**: The author's own games. No public-API SLA. **Breaking changes are always allowed and explicitly encouraged when they enable improvements; never write backwards-compatibility shims, never defer features because they would break v0.1. Equally: never speculate about forward-compat — no `version: int` fields, schema markers, or speculative extension points "in case a future feature needs them."** Migration notes go in CHANGELOG and release notes; that's the only "compat" work in either direction.
 - **Performance**: Demo-scale target (~100–1k cells). Interactive painting and runtime drag-paint must remain fluid; large-map perf is not a milestone gate.
 - **Identity**: TetraTile must remain visibly smaller and simpler than TileMapDual; expansions should not pull in terrain metadata, tile caches, or watcher infrastructure.
 

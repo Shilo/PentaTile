@@ -259,3 +259,53 @@ The Phase 2.1 brainstorm session reframed the Tetra5 plan. **The decisions in CO
 ### What this means for the Phase 2 planner
 
 If you already started planning Phase 2 against the first supersession (D-47..D-52), you can re-run `/gsd-discuss-phase 2` safely — the discussion log is now coherent with the second supersession. The 4 native layouts (DualGrid16/Wang2Edge/Wang2Corner/Min3x3) are unchanged; the architectural lift is broader (TETRA1 + TETRA4 + TETRA5 modes + enum + per-strip refinement) but uses the same synthesis machinery.
+
+---
+
+## THIRD SUPERSESSION — 2026-04-26 (later, after spotting AI-overengineering on the contract)
+
+User reviewed `TetraTileAtlasContract` and called out three things: (1) the `version: int = 1` field had no consumer (speculative forward-compat the AI added), (2) the `decoder_image` had no consumer (similarly speculative), (3) the contract wrapper was overengineered for what should be a single resource attached to the layer. Result: a sweeping simplification + a no-forward-compat policy added to CLAUDE.md.
+
+### What changed
+
+| Before this supersession | After |
+|---|---|
+| `TetraTileMapLayer.atlas_contract: TetraTileAtlasContract` | `TetraTileMapLayer.layout: TetraTileLayout` (no contract wrapper) |
+| `TetraTileAtlasContract` class with `version`, `layout`, `variation_seed` | Class deleted; `version` deleted (speculative); `variation_seed` deferred to v2 with VAR-PIXEL-01 |
+| Two Tetra classes (`TetraTileLayoutTetraHorizontal`, `TetraTileLayoutTetraVertical`) | One merged `TetraTileLayoutTetra` with `axis: Axis` enum |
+| `tile_count_mode: TileCountMode { AUTO, TETRA1, TETRA4, TETRA5 }` | `tile_count: TileCountMode { AUTO=0, ONE=1, FOUR=4, FIVE=5 }` (renamed property; non-AUTO ints match the actual count) |
+| `template_image: Texture2D` exposed @export on layout base | `bitmask_template: Texture2D` (renamed); on `TetraTileLayoutTetra` hidden via `_validate_property` (axis-resolved) |
+| `fallback_tile_set: TileSet` exposed @export | Hidden; codegen via `get_fallback_tile_set() -> TileSet` virtual on the base class |
+| `decoder_image: Texture2D` (speculative) | Deleted |
+| Flat `templates/*.png` files | Per-layout folders: `templates/[layout_name]/{atlas.png, bitmask.png}` |
+| `addons/tetra_tile/contracts/*.tres` (4 files) + `tetra_tile_atlas_contract.gd` + `tetra_tile_template.png` (root) | All deleted |
+
+### New decisions (D-56..D-60)
+
+- **D-56: `TetraTileAtlasContract` deleted entirely.** `version`, `variation_seed`, `_set_contract` back-ref, `_contract: WeakRef` on layout — all gone. `layout` is on `TetraTileMapLayer` directly. Setter has idempotence guard + disconnect-before-reconnect on `layout.changed`. Per the no-forward-compat policy, no migration shim.
+- **D-57: Tetra layout classes merged.** `TetraTileLayoutTetra` with `axis: Axis = HORIZONTAL` enum (members `HORIZONTAL`/`VERTICAL`). `_make_slot` branches on axis. Phase 1's `TetraTileLayoutTetraHorizontal` / `TetraTileLayoutTetraVertical` files deleted; new `tetra_tile_layout_tetra.gd` created.
+- **D-58: `tile_count: TileCountMode` enum** (renamed from `tile_count_mode` — `_mode` was redundant). Members `AUTO = 0`, `ONE = 1`, `FOUR = 4`, `FIVE = 5`. Explicit int values match the tile count for non-AUTO; `int(mode)` returns the count when not AUTO. Same auto-detect algorithm as the second supersession (D-47), now also handles ONE.
+- **D-59: One user-facing image property — `bitmask_template`** (renamed from `template_image`). Doubles as visual reference + bitmask rules definition. `fallback_tile_set` no longer @export'd; replaced by `get_fallback_tile_set()` virtual that builds from bundled `atlas.png`. `decoder_image` deleted (was speculative). Per-layout folders: `templates/[layout_name]/{atlas.png, bitmask.png}`.
+- **D-60: `TetraTileLayoutTetra` hides `bitmask_template` via `_validate_property`.** Class-level constant lookup table maps `(axis, tile_count)` → bundled `bitmask.png` and `atlas.png` paths. Inspector shows ONLY `axis`, `tile_count`, `description` for Tetra. Other layouts (DualGrid16, Wang*, etc.) still show their `bitmask_template` for user customization (they don't hide it).
+
+### Decisions superseded by this round
+
+- **D-47** (auto-detect 1/4/5 from `get_atlas_grid_size()`) — STILL APPLIES, just with the new ONE/FOUR/FIVE enum naming
+- **D-48** (synthesized atlas internal to `_primary_layer`) — STILL APPLIES
+- **D-49** (collision/occlusion/navigation polygons copied to synthesized tiles) — STILL APPLIES
+- **D-50** (pixel-identity test gate for FOUR mode) — STILL APPLIES (just renamed from TETRA4)
+- **D-51** (overlay-layer deletion) — STILL APPLIES
+- **D-52** (FIVE / hand-authored 5-tile preserved as use case, not separate class) — STILL APPLIES (now within the merged class)
+- **D-53** (Tetra absorbs ONE mode) — STILL APPLIES (within the merged class)
+- **D-54** (`TileCountMode` enum) — REPLACED by D-58 (renamed property + new member names)
+- **D-55** (dimension-based detection, no pixel inspection) — STILL APPLIES
+
+### Wave breakdown (third revision)
+
+- Wave 1: synthesis machinery (`_synthesize_strip()` covering ONE/FOUR/FIVE, runtime TileSet construction via `get_fallback_tile_set()`, collision polygon copy) + delete `_overlay_layer` from `TetraTileMapLayer` + delete `diagonal_complement_atlas_coords` from `AtlasSlot`
+- Wave 2: delete `TetraTileAtlasContract` + delete `addons/tetra_tile/contracts/` folder + delete `addons/tetra_tile/tetra_tile_template.png`. Replace `atlas_contract` property with `layout: TetraTileLayout` on `TetraTileMapLayer`. Update setter for direct `layout.changed` connection.
+- Wave 3: merge `TetraTileLayoutTetraHorizontal` + `TetraTileLayoutTetraVertical` into `TetraTileLayoutTetra` with `axis: Axis` + `tile_count: TileCountMode` enums. Hide `bitmask_template` via `_validate_property`. Class-level constant lookup table for axis × mode → bundled paths.
+- Wave 4: `TetraTileLayout` base — rename `template_image` → `bitmask_template`. Remove `fallback_tile_set` @export. Add `get_fallback_tile_set()` virtual. Delete `decoder_image`.
+- Wave 5: 4 native layouts in parallel (DualGrid16, Wang2Edge, Wang2Corner, Min3x3) using the new conventions
+- Wave 6: restructure templates folder — migrate existing flat PNGs to `[layout_name]/atlas.png`; generate new `[layout_name]/bitmask.png` per layout (all 6 Tetra mode×axis combos + 4 native non-Tetra layouts). Update `_generate_greybox_templates.py`.
+- Wave 7: visual regression (FOUR-mode pixel-identity vs v0.1 + ONE/FOUR/FIVE rendering tests) + LOC checkpoint + CHANGELOG entries
