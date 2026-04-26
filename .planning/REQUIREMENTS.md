@@ -37,7 +37,8 @@ The Resource hierarchy that lets every supported atlas convention plug into the 
 - [x] **LAYOUT-05**: `_pack_alternative(alt_id: int, transform_flags: int) -> int` helper combines alt-ID and `TRANSFORM_FLIP_*` flags via bitwise OR with `assert(alt_id < 4096)` to guard the bit-collision pitfall.
 - [x] **LAYOUT-06
 **: `PentaTileLayout` defines virtual `get_fallback_tile_set() -> TileSet` method. Default implementation builds a TileSet at first call from the layout's `bitmask_template` (the SAME image that's the inspector preview — single PNG per layout serves both roles). Layouts can override to inject custom logic. Consumer (`PentaTileMapLayer`) calls this method when `tile_set == null` to get prototyping-mode rendering (PREVIEW-03 wiring lands in Phase 4).
-- [ ] **LAYOUT-07**: Bundled bitmask templates co-locate next to their layout `.gd` file (the `templates/` folder is deleted entirely):
+- [x] **LAYOUT-07
+**: Bundled bitmask templates co-locate next to their layout `.gd` file (the `templates/` folder is deleted entirely):
   - **Single-PNG layouts** (DualGrid16, Wang2Edge, Wang2Corner, Min3x3, future PixelLab + TBT): flat sibling — `addons/penta_tile/layouts/penta_tile_layout_<slug>.gd` + `addons/penta_tile/layouts/penta_tile_layout_<slug>.png`
   - **Multi-variant layouts** (Penta has 5 modes × 2 axes = 10 variants): per-layout subfolder — `addons/penta_tile/layouts/penta_tile_layout_penta/<mode>_<axis>.png` (e.g. `one_horizontal.png`, `four_vertical.png`)
   - Each PNG is BOTH the inspector bitmask reference AND the prototyping fallback's source pixels (no separate atlas/bitmask split)
@@ -168,13 +169,16 @@ The drop-in prototyping UX. Each layout has an inspector-visible thumbnail (the 
 
 Greyboxed silhouette PNGs the artist paints over.
 
-- [ ] **TEMPLATE-01**: Single bundled bitmask template PNG ships per layout (no atlas/bitmask split — one image serves both inspector preview and fallback TileSet source). Co-located next to each layout `.gd` file:
+- [x] **TEMPLATE-01
+**: Single bundled bitmask template PNG ships per layout (no atlas/bitmask split — one image serves both inspector preview and fallback TileSet source). Co-located next to each layout `.gd` file:
   - **Penta (multi-variant)**: `addons/penta_tile/layouts/penta_tile_layout_penta/{one,two,three,four,five}_{horizontal,vertical}.png` — 10 PNGs in a subfolder
   - **Single-variant layouts**: `addons/penta_tile/layouts/penta_tile_layout_<slug>.png` — flat sibling to the `.gd` file (DualGrid16, Wang2Edge, Wang2Corner, Min3x3)
   - The existing flat PNGs in `templates/` are migrated to the new locations and the `templates/` folder is deleted
 - [ ] **TEMPLATE-02**: Same convention for TBT-decoded layouts (Phase 3): `penta_tile_layout_blob_47_godot.png`, `penta_tile_layout_tilesetter_wang_15.png`, `penta_tile_layout_tilesetter_blob_47.png` — each as a flat sibling to its `.gd` file.
-- [ ] **TEMPLATE-03**: A bitmask-template generator script (renamed/relocated from `_generate_greybox_templates.py`) produces all bundled PNGs from data definitions — regenerable from source. New location TBD by Phase 2 plan (probably `addons/penta_tile/_generate_bitmasks.py` or repo root).
-- [ ] **TEMPLATE-04**: Each layout's bundled bitmask PNG slot positions match its `mask_to_atlas` table (verified by visual regression: paint the layout's `get_fallback_tile_set()` output and confirm visible tile shapes match).
+- [x] **TEMPLATE-03
+**: A bitmask-template generator script (renamed/relocated from `_generate_greybox_templates.py`) produces all bundled PNGs from data definitions — regenerable from source. New location TBD by Phase 2 plan (probably `addons/penta_tile/_generate_bitmasks.py` or repo root).
+- [x] **TEMPLATE-04
+**: Each layout's bundled bitmask PNG slot positions match its `mask_to_atlas` table (verified by visual regression: paint the layout's `get_fallback_tile_set()` output and confirm visible tile shapes match).
 
 ### Demo (DEMO)
 
