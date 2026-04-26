@@ -5,6 +5,7 @@
 ##   Sub-test (a) — transform_vertex worked example (Gate 2, all 8 flag combos)
 ##   Sub-test (b) — clip_polygon_to_subrect hash determinism (10 invocations)
 ##   Main test    — rebuild loop × 10 runs; assert all hashes identical AND match BASELINE_HASH
+##   Sub-test (c) — VERTICAL-axis structural coverage (WR-07 regression net)
 ##
 ## PENTA-SYNTH-06 invariant: cache-invalidation via rebuild() between runs.
 ## (The demo scene's PentaTileMapLayer.rebuild() call re-runs synthesis from scratch.)

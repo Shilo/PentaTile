@@ -25,6 +25,7 @@ func _initialize() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--layout-path="):
 			override_layout_path = arg.substr("--layout-path=".length())
+			break
 
 	# Load the demo scene. The scene's PentaTileMapLayer will use the preloaded scripts.
 	var demo_scene_path := "res://addons/penta_tile/demo/penta_tile_demo.tscn"
@@ -64,10 +65,17 @@ func _initialize() -> void:
 		# scene-load cached HORIZONTAL synthesis. Invoke _on_layout_changed manually to clear.
 		if layer_node.has_method("_on_layout_changed"):
 			layer_node._on_layout_changed()
-		print("LAYOUT_OVERRIDE=%s axis=%d tile_count=%d" % [
+		# Penta-only properties; non-Penta layouts return null from get() (which int(...) silently
+		# coerces to 0 and would mislead a reader scanning the log). Print "(n/a)" instead.
+		var ax = override_layout.get("axis")
+		var tc = override_layout.get("tile_count")
+		var ax_str := str(ax) if ax != null else "(n/a)"
+		var tc_str := str(tc) if tc != null else "(n/a)"
+		print("LAYOUT_OVERRIDE=%s class=%s axis=%s tile_count=%s" % [
 			override_layout_path,
-			int(override_layout.get("axis")),
-			int(override_layout.get("tile_count")),
+			override_layout.get_class(),
+			ax_str,
+			tc_str,
 		])
 
 	# Force synchronous rebuild (in case call_deferred hasn't fired yet).
