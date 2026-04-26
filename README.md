@@ -7,22 +7,49 @@
 ## 📑 Table of Contents
 
 1. [Why PentaTile?](#-why-pentatile)
-2. [Supported Layouts](#-supported-layouts)
-3. [The Penta-System Template](#-the-penta-system-template)
-4. [Comparison: PentaTile vs. TileMapDual](#-pentatile-vs-tilemapdual-api)
-5. [Choosing the Right Tool](#-choosing-the-right-tool)
-6. [Addon Layout](#-addon-layout)
-7. [Current API](#-current-api)
-8. [Demo](#-demo)
-9. [Implementation Notes](#-implementation-notes)
-10. [Roadmap](#-roadmap)
-11. [External Resources](#-external-resources)
+2. [What is a Penta tileset?](#-what-is-a-penta-tileset)
+3. [Supported Layouts](#-supported-layouts)
+4. [The Penta-System Template](#-the-penta-system-template)
+5. [Comparison: PentaTile vs. TileMapDual](#-pentatile-vs-tilemapdual-api)
+6. [Choosing the Right Tool](#-choosing-the-right-tool)
+7. [Addon Layout](#-addon-layout)
+8. [Current API](#-current-api)
+9. [Demo](#-demo)
+10. [Implementation Notes](#-implementation-notes)
+11. [Roadmap](#-roadmap)
+12. [External Resources](#-external-resources)
 
 ## 🚀 Why PentaTile?
 
 - **Reduced Tile Requirements:** Creating 47 tiles for a single terrain type is a time-consuming task. PentaTile's signature **Penta** layout reduces this requirement to just four tiles, lowering the barrier for creating custom game art while maintaining professional results.
 - **Efficient Visual Variation:** Managing only **four base tiles** allows for easier creation of **multiple variations**. Instead of redrawing dozens of tiles for a single alternative set, you can quickly iterate on the core four tiles to add organic variety and reduce repetitive patterns.
 - **Native Integration:** Built as a single-class subclass of `TileMapLayer`, PentaTile hooks directly into Godot's native API. It listens to standard drawing commands and updates the visual layers in real-time without requiring a custom drawing interface.
+
+## 🍀 What is a Penta tileset?
+
+<img src="addons/penta_tile/templates/penta_horizontal.png" width="256" alt="Penta archetype reference: IsolatedCell (slot 0, source of synthesized OuterCorner) + Fill / Border / InnerCorner / OppositeCorners (slots 1-4)">
+
+A **Penta tileset** is a 5-archetype autotile format. The five archetypes, **listed in canonical slot order**:
+
+1. **IsolatedCell** (slot 0) — a tile with all four edges and all four corners exposed; serves as the source for synthesizing OuterCorner.
+2. **Fill** (slot 1) — a tile with all four edges adjacent to the same terrain; the most common interior tile.
+3. **Border** (slot 2) — a tile on a straight terrain edge (one side adjacent to "different terrain").
+4. **InnerCorner** (slot 3) — a tile at the inside of an L-bend (two adjacent sides adjacent to "different terrain").
+5. **OppositeCorners** (slot 4) — a tile with two diagonally-opposite different-terrain corners.
+
+**OuterCorner** is implicit — synthesized from the corners of slot 0 (IsolatedCell) at load time. It does not occupy a dedicated slot.
+
+**Synthesis rule:** PentaTile supports a progressive 5-mode authoring scale (ONE through FIVE). Modes ONE through FOUR synthesize the missing archetypes from slot 0; mode FIVE provides all five archetypes hand-authored. Either way, every connectivity state at runtime resolves to one of the five archetypes above.
+
+**How "Penta" relates to other tileset codenames:**
+
+| Format | Tiles authored | Slot count | Year coined |
+|--------|---------------|------------|-------------|
+| Wang   | 16 / 64 / 256 | varies     | ~1986       |
+| Blob   | 47            | 47         | ~2010       |
+| Penta  | 1–5           | 5          | 2026        |
+
+"Penta" is reserved for the 5-archetype format only — never for unrelated 5-tile arrangements. This rule is encoded as a project invariant in `CLAUDE.md` § Coined-Term Discipline.
 
 ## 🧩 Supported Layouts
 
