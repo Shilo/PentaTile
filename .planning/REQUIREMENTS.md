@@ -45,6 +45,12 @@ Layouts TetraTile ships natively because they're popular community conventions a
 - [ ] **NATIVE-02**: `TetraTileLayoutWang2Edge` subclass — 4×4 atlas, 16 unique tiles, 4-bit edge mask (CR31 N=1/E=2/S=4/W=8).
 - [ ] **NATIVE-03**: `TetraTileLayoutWang2Corner` subclass — 4×4 atlas, 16 unique tiles, 4-bit corner mask in CR31 cardinal naming (NE=1/SE=2/SW=4/NW=8). Visually compatible with DualGrid16 — different bit naming, same silhouettes.
 
+### Minimal 3×3 Layout (MIN3x3)
+
+Per D-24 — added during Phase 1 discuss session. Covers PixelLab Tileset 3×3 export + RPG Maker A2 + legacy Godot 3.x atlases.
+
+- [ ] **MIN3x3-01**: `TetraTileLayoutMinimal3x3` subclass — 3×3 atlas, 9 unique tiles, single-grid, 4-bit edge mask (T=1/E=2/B=4/W=8). Lands in Phase 2 alongside Wang2Edge.
+
 ### TileBitTools-Decoded Layouts (TBT)
 
 Layouts whose slot tables are transcribed from TileBitTools' MIT-licensed `.tres` files (with attribution).
@@ -53,6 +59,21 @@ Layouts whose slot tables are transcribed from TileBitTools' MIT-licensed `.tres
 - [ ] **TBT-02**: `TetraTileLayoutTilesetterBlob47` subclass — 11×5 atlas with discrete sub-block gaps, 47 unique tiles. Slot-to-mask table transcribed from `tile_bit_tools/tilesetter_blob.tres`.
 - [ ] **TBT-03**: `TetraTileLayoutBlob47Godot` subclass — TileBitTools' Godot blob template convention, 47 unique tiles. Slot-to-mask table transcribed from the matching TBT template `.tres`.
 - [ ] **TBT-04**: `addons/tetra_tile/ATTRIBUTION.md` credits TileBitTools (MIT, https://github.com/dandeliondino/tile_bit_tools) for the transcribed slot tables and links the upstream license file.
+
+### PixelLab Layouts (PIXLAB)
+
+Per D-25 — added during Phase 1 discuss session. Aseprite plugin native 8×8 atlas with variation banks; locked role-to-mask bijection from spike 003.
+
+- [ ] **PIXLAB-01**: `TetraTileLayoutPixelLabTopDown` subclass — 8×8 atlas, single-grid, 4-bit corner mask. Cell-to-role layout from `tileset_transform.lua` `tileset_output`. Role-to-mask = `[4, 10, 13, 12, 9, 14, 15, 7, 2, 3, 11, 5, 0, 8, 6, 1]`.
+- [ ] **PIXLAB-02**: `TetraTileLayoutPixelLabSideScroller` subclass — 8×8 atlas, single-grid, 4-bit corner mask. Cell-to-role layout from `tileset_transform.lua` `tileset_output_side`. Same role-to-mask bijection as PIXLAB-01.
+- [ ] **PIXLAB-03**: Both PixelLab layouts handle variation banks: when multiple cells map to the same mask, `mask_to_atlas` deterministically picks one keyed on `(coord, variation_seed)`. Differentiator from PixelLab's official exporter (which discards duplicates).
+- [ ] **PIXLAB-04**: Visual regression on a PixelLab Aseprite sample (8×8 PNG output) matches the Aseprite plugin's own canvas output for both top-down and side-scroller variants.
+
+### Variation-Seed Wiring (VAR-PIXEL)
+
+Per D-26 — added during Phase 1 discuss session. Phase 3.5 prerequisite; Phase 1 declares `variation_seed: int = 0` on `TetraTileAtlasContract` (CONTRACT-02) and `alternative_tile: int = 0` on `AtlasSlot` (LAYOUT-04) so this can wire up cleanly.
+
+- [ ] **VAR-PIXEL-01**: `mask_to_atlas` (or a sibling helper) accepts variation context (per the Phase 1 back-reference from layout to contract; locked planner decision for variation-pick threading) and returns a deterministic cell from `mask → cells[]` keyed on `(coord, variation_seed)`. Hash function is `hash(Vector4i(coord.x, coord.y, atlas_coords.x, atlas_coords.y) + variation_seed)` per PITFALLS.md §2 (variation determinism).
 
 ### Preview & Fallback (PREVIEW)
 
@@ -168,50 +189,56 @@ Which phases cover which requirements. Empty initially — populated by `gsd-roa
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CONTRACT-01 | TBD | Pending |
-| CONTRACT-02 | TBD | Pending |
-| CONTRACT-03 | TBD | Pending |
-| CONTRACT-04 | TBD | Pending |
-| CONTRACT-05 | TBD | Pending |
-| LAYOUT-01 | TBD | Pending |
-| LAYOUT-02 | TBD | Pending |
-| LAYOUT-03 | TBD | Pending |
-| LAYOUT-04 | TBD | Pending |
-| LAYOUT-05 | TBD | Pending |
-| TETRA-01 | TBD | Pending |
-| TETRA-02 | TBD | Pending |
-| TETRA-03 | TBD | Pending |
-| NATIVE-01 | TBD | Pending |
-| NATIVE-02 | TBD | Pending |
-| NATIVE-03 | TBD | Pending |
-| TBT-01 | TBD | Pending |
-| TBT-02 | TBD | Pending |
-| TBT-03 | TBD | Pending |
-| TBT-04 | TBD | Pending |
-| PREVIEW-01 | TBD | Pending |
-| PREVIEW-02 | TBD | Pending |
-| PREVIEW-03 | TBD | Pending |
-| PREVIEW-04 | TBD | Pending |
-| TEMPLATE-01 | TBD | Pending (already shipped: 5/8 PNGs in commit e86036f) |
-| TEMPLATE-02 | TBD | Pending |
-| TEMPLATE-03 | TBD | Pending |
-| TEMPLATE-04 | TBD | Pending |
-| DEMO-01 | TBD | Pending |
-| DEMO-02 | TBD | Pending |
-| DEMO-03 | TBD | Pending |
-| DOC-01 | TBD | Pending |
-| DOC-02 | TBD | Pending |
-| DOC-03 | TBD | Pending |
-| DOC-04 | TBD | Pending |
-| DOC-05 | TBD | Pending |
-| REL-01 | TBD | Pending |
-| REL-02 | TBD | Pending |
-| REL-03 | TBD | Pending |
+| CONTRACT-01 | 1 | Pending |
+| CONTRACT-02 | 1 | Pending |
+| CONTRACT-03 | 1 | Pending |
+| CONTRACT-04 | 1 | Pending |
+| CONTRACT-05 | 1 | Pending |
+| LAYOUT-01 | 1 | Pending |
+| LAYOUT-02 | 1 | Pending |
+| LAYOUT-03 | 1 | Pending |
+| LAYOUT-04 | 1 | Pending |
+| LAYOUT-05 | 1 | Pending |
+| TETRA-01 | 1 | Pending |
+| TETRA-02 | 1 | Pending |
+| TETRA-03 | 1 | Pending |
+| NATIVE-01 | 2 | Pending |
+| NATIVE-02 | 2 | Pending |
+| NATIVE-03 | 2 | Pending |
+| MIN3x3-01 | 2 | Pending |
+| TBT-01 | 3 | Pending |
+| TBT-02 | 3 | Pending |
+| TBT-03 | 3 | Pending |
+| TBT-04 | 3 | Pending |
+| PIXLAB-01 | 3.5 | Pending |
+| PIXLAB-02 | 3.5 | Pending |
+| PIXLAB-03 | 3.5 | Pending |
+| PIXLAB-04 | 3.5 | Pending |
+| VAR-PIXEL-01 | 3.5 | Pending |
+| PREVIEW-01 | 1 | Pending |
+| PREVIEW-02 | 2 | Pending |
+| PREVIEW-03 | 4 | Pending |
+| PREVIEW-04 | 4 | Pending |
+| TEMPLATE-01 | Pre-shipped | Pending (already shipped: 5/8 PNGs in commit e86036f) |
+| TEMPLATE-02 | 3 | Pending |
+| TEMPLATE-03 | Pre-shipped | Pending |
+| TEMPLATE-04 | 2 | Pending |
+| DEMO-01 | 5 | Pending |
+| DEMO-02 | 5 | Pending |
+| DEMO-03 | 5 | Pending |
+| DOC-01 | 5 | Pending |
+| DOC-02 | 5 | Pending |
+| DOC-03 | 5 | Pending |
+| DOC-04 | 5 | Pending |
+| DOC-05 | 3 | Pending |
+| REL-01 | 5 | Pending |
+| REL-02 | 5 | Pending |
+| REL-03 | 5 | Pending |
 
 **Coverage:**
-- v1 requirements: 39 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 39 ⚠️ — populated by gsd-roadmapper
+- v1 requirements: 45 total (39 original + 6 added per Phase 1 discuss session)
+- Mapped to phases: 45 (after this update)
+- Unmapped: 0
 
 ---
 *Requirements re-spun: 2026-04-25 after v0.2 pivot to layout library*

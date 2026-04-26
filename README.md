@@ -1,8 +1,10 @@
 # 🍀 TetraTile
 
-Lightweight **autotiling addon** for Godot designed to simplify tileset creation by using a 4-tile template instead of the traditional 47-tile blob set. It uses a **Dual-Grid logic engine** to generate complex tiling visuals from a minimal set of source assets.
+**Just paint your tiles — TetraTile picks the right ones for you.** A friendly autotiling addon for Godot 4.6 that takes the pain out of building tilesets. Paint with Godot's normal tile tools and TetraTile fills in the corners, edges, and transitions automatically.
 
-By utilizing the Dual Grid concept, TetraTile takes four base tiles, **Fill, Inner Corner, Border, and Outer Corner**, and expands them into a complete tileset with the same visual coverage as a traditional 47-tile set, but with significantly reduced asset requirements.
+**Start with as little as 4 tiles.** TetraTile's signature **Tetra** template needs only Fill, Inner Corner, Border, and Outer Corner to cover the exact same visuals as a traditional 47-tile blob set — a brand-new terrain can be in your game in minutes instead of hours. Drawing variations becomes painless too: tweak four tiles, get a whole new look.
+
+**Already have tiles in a different format? No problem.** TetraTile supports virtually every popular autotiling layout out of the box — **Tetra** (horizontal & vertical), **Dual Grid**, **Wang** (2-edge & 2-corner), the classic **47-tile blob**, and **Tilesetter**'s Wang and Blob atlases. Whatever convention your art was drawn for, TetraTile can paint with it. And if your favorite layout isn't built in, you can plug in a custom one of your own.
 
 <img src="addons/tetra_tile/templates/tetra_horizontal.png" width="256" alt="Tetra Horizontal Tileset Template">
 

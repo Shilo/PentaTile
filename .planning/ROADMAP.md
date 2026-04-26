@@ -23,6 +23,7 @@ The original v0.2 feature pillars (Y-axis variation, top tiles, non-rotating til
 - [ ] **Phase 1: Contract Skeleton + Tetra Layouts** — Introduce `TetraTileAtlasContract` + `TetraTileLayout` base + `AtlasSlot`. Ship Tetra Horizontal + Tetra Vertical as the first two layout subclasses. v0.1 visuals continue unchanged via the bundled default contract OR the null-fallback path.
 - [ ] **Phase 2: Native Layouts** — Ship DualGrid16, Wang2Edge, Wang2Corner subclasses with hand-authored slot tables. Each gets a bundled fallback TileSet so the prototyping UX works for these layouts.
 - [ ] **Phase 3: TileBitTools-Decoded Layouts** — Transcribe slot tables from TBT's MIT-licensed `tilesetter_blob.tres`, `tilesetter_wang.tres`, and the matching Godot blob template `.tres`. Ship Blob47Godot, TilesetterWang15, TilesetterBlob47. Generate the 3 missing template PNGs from the slot tables. Add `ATTRIBUTION.md`.
+- [ ] **Phase 3.5: PixelLab Layouts + Variation-Seed Wiring** — Ship `TetraTileLayoutPixelLabTopDown` and `TetraTileLayoutPixelLabSideScroller` (8×8 atlas, single-grid, 4-bit corner mask, variation-bank). Wire `variation_seed` deterministic-hash bucket-pick. Add `TetraTileLayoutMinimal3x3` if not already shipped in Phase 2.
 - [ ] **Phase 4: Fallback Routing** — Wire `TetraTileMapLayer` to use `layout.fallback_tile_set` when `tile_set == null`. Verify all 8 layouts paint correctly with their bundled fallback. Visual regression on the demo scene.
 - [ ] **Phase 5: Demo Refresh + Documentation + Release** — One updated demo scene showcasing all 8 layouts, README sections (Layouts / Upgrading / Authoring a Custom Layout), CHANGELOG, plugin.cfg bump, GitHub Release zip with `v0.2.0` tag.
 
@@ -54,11 +55,11 @@ Plans:
 
 ### Phase 2: Native Layouts
 
-**Goal**: Three TetraTile-native layout subclasses (DualGrid16, Wang2Edge, Wang2Corner) ship with hand-authored slot tables and bundled fallback TileSets. Each can be assigned to a `TetraTileAtlasContract` and used to paint with a matching atlas.
+**Goal**: Three TetraTile-native layout subclasses (DualGrid16, Wang2Edge, Wang2Corner) **plus Minimal3x3 (3×3 atlas, 9 tiles, single-grid, 4-bit edge mask — covers PixelLab Tileset 3×3 export + RPG Maker A2 + legacy Godot 3.x)** ship with hand-authored slot tables and bundled fallback TileSets. Each can be assigned to a `TetraTileAtlasContract` and used to paint with a matching atlas.
 
 **Depends on**: Phase 1 (the layout dispatch must exist before layout subclasses can plug in).
 
-**Requirements**: NATIVE-01, NATIVE-02, NATIVE-03, PREVIEW-02 (the bundled `fallback_tile_set` `.tres` files for the 5 native layouts), TEMPLATE-04 (visual regression for the native layouts; templates 01/03 already shipped in commit e86036f).
+**Requirements**: NATIVE-01, NATIVE-02, NATIVE-03, MIN3x3-01, PREVIEW-02 (the bundled `fallback_tile_set` `.tres` files for the 5 native layouts), TEMPLATE-04 (visual regression for the native layouts; templates 01/03 already shipped in commit e86036f).
 
 **Success Criteria** (what must be TRUE):
 1. DualGrid16 layout, with a 16-tile authored atlas, paints all 16 mask states correctly across the demo (each `r*4 + c` slot renders the expected silhouette per the corner-mask convention TL=1/TR=2/BL=4/BR=8).
@@ -83,6 +84,22 @@ Plans:
 3. `TetraTileLayoutBlob47Godot`'s slot table matches TBT's Godot template row-for-row; a 47-tile atlas authored to TBT's Godot convention paints correctly across all 47 mask states.
 4. `addons/tetra_tile/ATTRIBUTION.md` exists, credits TileBitTools by name with a link to https://github.com/dandeliondino/tile_bit_tools, copies the MIT license terms or links the upstream `LICENSE`, and identifies which TBT files were transcribed.
 5. The 3 missing template PNGs (`tilesetter_wang_15.png`, `tilesetter_blob_47.png`, `blob_47_godot.png`) are produced by `_generate_greybox_templates.py` (deterministic, regenerable) and committed alongside the layout Resources.
+
+**Plans**: TBD
+
+### Phase 3.5: PixelLab Layouts + Variation-Seed Wiring
+
+**Goal**: Ship `TetraTileLayoutPixelLabTopDown` and `TetraTileLayoutPixelLabSideScroller` subclasses. Both consume PixelLab Aseprite plugin native 8×8 atlas output with variation banks. Both share the locked role-to-mask bijection `[4, 10, 13, 12, 9, 14, 15, 7, 2, 3, 11, 5, 0, 8, 6, 1]` (corner mask). Wire `variation_seed` deterministic-hash bucket-pick: `mask → cells[]; pick = cells[hash(coord, variation_seed) % cells.size()]`.
+
+**Depends on**: Phase 1 (architecture), Phase 2 or Phase 3 (single-grid pipeline first consumed by Wang2Corner in Phase 2).
+
+**Requirements**: PIXLAB-01, PIXLAB-02, PIXLAB-03, PIXLAB-04, VAR-PIXEL-01.
+
+**Success Criteria** (what must be TRUE):
+1. `TetraTileLayoutPixelLabTopDown.compute_mask` and `mask_to_atlas` consume the locked role-to-mask mapping; visual regression on a PixelLab 8×8 sample matches the Aseprite plugin output.
+2. `TetraTileLayoutPixelLabSideScroller` shares the role-to-mask mapping; cell-to-role differs (the side-scroller variant). Visual regression on a side-scroller PixelLab 8×8 sample passes.
+3. Variation-bank: when a mask has multiple cells (PixelLab variations), `mask_to_atlas` returns a deterministic pick keyed on `(coord, variation_seed)`. Same `(coord, seed)` always returns the same cell across `rebuild()` invocations (no shimmering).
+4. Setting `variation_seed = N` produces a different deterministic pick than `variation_seed = N+1`, verified visually on a uniform painted region.
 
 **Plans**: TBD
 
@@ -128,25 +145,27 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Contract Skeleton + Tetra Layouts | 0/TBD | Not started | - |
+| 1. Contract Skeleton + Tetra Layouts | 0/5 | In progress | - |
 | 2. Native Layouts | 0/TBD | Not started | - |
 | 3. TileBitTools-Decoded Layouts | 0/TBD | Not started | - |
+| 3.5. PixelLab Layouts + Variation-Seed Wiring | 0/TBD | Not started | - |
 | 4. Fallback Routing | 0/TBD | Not started | - |
 | 5. Demo Refresh + Documentation + Release | 0/TBD | Not started | - |
 
 ## Coverage
 
-All 39 v1 requirements mapped to exactly one phase. No orphans, no duplicates.
+All 45 v1 requirements (39 original + 6 added per Phase 1 discuss session, D-24..D-27) mapped to exactly one phase. No orphans, no duplicates.
 
 | Phase | Requirements (count) |
 |-------|----------------------|
 | 1. Contract Skeleton + Tetra Layouts | CONTRACT-01..05, LAYOUT-01..05, TETRA-01..03, PREVIEW-01 (14) |
-| 2. Native Layouts | NATIVE-01..03, PREVIEW-02 (partial), TEMPLATE-04 (partial) (5) |
+| 2. Native Layouts | NATIVE-01..03, MIN3x3-01, PREVIEW-02 (partial), TEMPLATE-04 (partial) (6) |
 | 3. TileBitTools-Decoded Layouts | TBT-01..04, TEMPLATE-02, DOC-05 (6) |
+| 3.5. PixelLab Layouts + Variation-Seed Wiring | PIXLAB-01..04, VAR-PIXEL-01 (5) |
 | 4. Fallback Routing | PREVIEW-03, PREVIEW-04 (2) |
 | 5. Demo Refresh + Documentation + Release | DEMO-01..03, DOC-01..04, REL-01..03 (10) |
 | **Pre-shipped (out-of-band, commit e86036f)** | TEMPLATE-01, TEMPLATE-03 (2) |
-| **Total** | **39 / 39** |
+| **Total** | **39 + 6 = 45 / 45** |
 
 > TEMPLATE-01 and TEMPLATE-03 already shipped in commit e86036f (5 of 8 greybox templates + the generator script). Counted as covered; the remaining 3 templates ship in Phase 3 as part of TEMPLATE-02.
 
@@ -155,7 +174,8 @@ All 39 v1 requirements mapped to exactly one phase. No orphans, no duplicates.
 The PROJECT.md identity constraint — "TetraTile must remain visibly smaller and simpler than TileMapDual" — is checked at four points across the roadmap:
 
 - **End of Phase 1:** LOC checkpoint after the contract surface lands. The base class + AtlasSlot + TetraHorizontal/Vertical + integration in TetraTileMapLayer is the largest schema addition; if Phase 1 already pushes the budget, downstream phases have less room.
-- **End of Phase 3:** LOC checkpoint after all 8 layouts ship. Each layout is roughly 40–80 LOC; the cumulative footprint should still stay well under TileMapDual.
+- **End of Phase 3:** LOC checkpoint after the standard 8 blob/wang/tetra layouts ship. Each layout is roughly 40–80 LOC; the cumulative footprint should still stay well under TileMapDual.
+- **End of Phase 3.5:** LOC contribution from the two PixelLab layouts plus the `variation_seed` deterministic-hash wiring (~80–120 LOC total for both layouts + variation pick). Re-check the cumulative footprint after the 11-layout milestone closes.
 - **End of Phase 4:** Compare the runtime hot path (`_update_cells` → `layout.compute_mask` → `layout.mask_to_atlas` → `set_cell`) against v0.1's straight-line `match` to confirm no significant perf regression at demo scale.
 - **Phase 5 final audit:** Total `addons/tetra_tile/` LOC compared against TileMapDual's equivalent surface; result included in the release notes.
 
