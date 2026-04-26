@@ -1,7 +1,7 @@
 ## RPG Maker Autotile Family — Format Audit + Possible Implementation Paths
 
 **Researched:** 2026-04-26 (subagent web research + two reader-supplied URLs)
-**Confidence:** HIGH on the per-version atlas dimensions and composition model. MEDIUM on "what TetraTile should ship" — three viable paths exist, each with different identity-guardrail tradeoffs.
+**Confidence:** HIGH on the per-version atlas dimensions and composition model. MEDIUM on "what PentaTile should ship" — three viable paths exist, each with different identity-guardrail tradeoffs.
 **Status:** REFERENCE ONLY for v0.2.0. The new Phase 3 (Single-Tile Layout) does NOT ship RPG Maker support. This document captures the findings so a future milestone can pick up cleanly without re-doing the research.
 
 ---
@@ -12,9 +12,9 @@
 
 The official RPG Maker MZ blog confirms this in plain English: *"Stop thinking of the auto-tile as sets of 48×48 tiles. Instead, each tile is made up of 4 mini-tiles of 24×24 pixels… This is how the editor thinks about autotiles."* ([rpgmakerweb.com](https://www.rpgmakerweb.com/blog/classic-tutorial-how-autotiles-work))
 
-**This is architecturally incompatible with TetraTile's current dispatch.** The v0.2 layout system assumes whole-tile slots — `mask_to_atlas(mask) -> AtlasSlot{atlas_coords, transform_flags, alternative_tile}`. RPG Maker rendering needs **four sub-tile lookups per cell** plus per-quadrant blitting. Adding it natively means a parallel render path next to `_paint_with_slot()`.
+**This is architecturally incompatible with PentaTile's current dispatch.** The v0.2 layout system assumes whole-tile slots — `mask_to_atlas(mask) -> AtlasSlot{atlas_coords, transform_flags, alternative_tile}`. RPG Maker rendering needs **four sub-tile lookups per cell** plus per-quadrant blitting. Adding it natively means a parallel render path next to `_paint_with_slot()`.
 
-**Industry pattern (this matters):** no major engine does runtime quad-composition for RPG Maker formats natively. Tiled, Unity, GameMaker, Defold, and standalone tools (Tilesetter, autotiler.js, eishiya/tiled-expand-autotile) all settled on the same pattern: **expand once at import time, render flat thereafter.** This is the path that fits TetraTile's identity guardrail.
+**Industry pattern (this matters):** no major engine does runtime quad-composition for RPG Maker formats natively. Tiled, Unity, GameMaker, Defold, and standalone tools (Tilesetter, autotiler.js, eishiya/tiled-expand-autotile) all settled on the same pattern: **expand once at import time, render flat thereafter.** This is the path that fits PentaTile's identity guardrail.
 
 ---
 
@@ -72,26 +72,26 @@ Authoritative open spec: [yxbh/tileset-format-specs — RPG Maker MV/MZ autotile
 | **GameMaker Studio 2** | No (independent autotile system) | Marketplace asset: [`Zanto/RPG Maker XP to GMS2 Autotile`](https://marketplace.gamemaker.io/assets/6206/rpg-maker-xp-to-gms2-autotile) — converter |
 | **Unity** | No | Asset Store: [Autotile Importer for RPG Maker-Compatible Tilesets](https://assetstore.unity.com/packages/tools/sprite-management/autotile-importer-for-rpg-maker-compatible-tilesets-image-103504) — paid importer (XP/VX/MV, A1–A4) |
 | **Defold** | No | Pre-bake via [Tilesetter](https://www.tilesetter.org/) (which also exports to GMS2/Godot/Unity) |
-| **Godot 4** | No | TBD — TetraTile would be the first |
+| **Godot 4** | No | TBD — PentaTile would be the first |
 
 The clear pattern: **no major engine adopts RPG Maker's exact 6-quad source format natively.** Everyone either bakes the blob ahead-of-time or ships a converter. Excalibur.js ([Autotiling Technique](https://excaliburjs.com/blog/Autotiling%20Technique/)) and standalone tools like [`itsjavi/autotiler`](https://github.com/itsjavi/autotiler) implement the 47-tile blob conceptually rather than the RPG Maker source format.
 
 ---
 
-## Possible implementation paths for TetraTile
+## Possible implementation paths for PentaTile
 
 Three architecturally distinct options, sorted by identity-guardrail risk:
 
 ### Option 1 — Offline RPG Maker importer (LOW risk, RECOMMENDED for v0.3+)
 
-**What it is:** an edit-time tool (GDScript editor plugin or standalone script) that reads an A2/A4/XP autotile sheet, runs the `FLOOR_AUTOTILE_TABLE` / `WALL_AUTOTILE_TABLE` lookups, blits 47 (or 16) output tiles to a new flat atlas PNG, and emits a `TetraTileAtlasContract` pointing at one of TetraTile's existing flat-blob layouts (`Blob47Godot`, or a new `RPGMaker47` if the slot table differs).
+**What it is:** an edit-time tool (GDScript editor plugin or standalone script) that reads an A2/A4/XP autotile sheet, runs the `FLOOR_AUTOTILE_TABLE` / `WALL_AUTOTILE_TABLE` lookups, blits 47 (or 16) output tiles to a new flat atlas PNG, and emits a `PentaTileAtlasContract` pointing at one of PentaTile's existing flat-blob layouts (`Blob47Godot`, or a new `RPGMaker47` if the slot table differs).
 
 **Why this fits:**
 - Zero changes to runtime (`_update_cells` stays untouched).
 - Reuses the v0.2 layout library directly. The user gets a regular flat 47-tile atlas at the end.
 - Matches what every other engine in the ecosystem did. Proven pattern.
 - Naturally handles A2, A4 wall-tops, A4 wall-sides, XP, VX, VX Ace via different source-format readers all writing to the same flat-atlas output.
-- Animation (A1 water 3-frame, RM2K water 4-frame) maps cleanly to TetraTile's `alternative_tile` variation banks once `variation_seed` lands (Phase 3.5).
+- Animation (A1 water 3-frame, RM2K water 4-frame) maps cleanly to PentaTile's `alternative_tile` variation banks once `variation_seed` lands (Phase 3.5).
 
 **Why it's still non-trivial:**
 - Image processing in GDScript — `Image.blit_rect` per quadrant. Not hard, but ~150–250 LOC in the importer alone.
@@ -104,7 +104,7 @@ Three architecturally distinct options, sorted by identity-guardrail risk:
 
 ### Option 2 — Runtime quarter-tile compositor (HIGH risk, DEFERRED)
 
-**What it is:** a parallel render path inside `TetraTileMapLayer` that, for `RotationMode.QUARTER_TILE` (or a `TetraTileLayoutRPGMakerA2` subclass), paints **four sub-tile cells per logic cell** by sampling four source quadrants and placing each at quarter-tile offsets on a dedicated quadrant overlay layer.
+**What it is:** a parallel render path inside `PentaTileMapLayer` that, for `RotationMode.QUARTER_TILE` (or a `PentaTileLayoutRPGMakerA2` subclass), paints **four sub-tile cells per logic cell** by sampling four source quadrants and placing each at quarter-tile offsets on a dedicated quadrant overlay layer.
 
 **Why this is risky:**
 - Forks the dispatcher. `_paint_via_layout` would need a "four sub-cells per display cell" branch alongside the existing whole-tile branch. The current layer already has a primary + diagonal-overlay layer pair; quad rendering may need a third layer or a completely different display-coordinate scheme.
@@ -123,7 +123,7 @@ Three architecturally distinct options, sorted by identity-guardrail risk:
 **Why it's still risky:**
 - Requires a `canvas_item` shader on the visual TileMapLayer with per-cell `INSTANCE_CUSTOM` data. Godot 4 supports this via `set_cell_alternative_tile` + custom data layers, but the integration with `TileSetAtlasSource` is awkward — alt-IDs + transform flags already use the same int.
 - Not portable to non-shader contexts (mobile fallbacks, headless rendering).
-- "TetraTile must remain visibly smaller and simpler than TileMapDual" — adding a shader path crosses that line.
+- "PentaTile must remain visibly smaller and simpler than TileMapDual" — adding a shader path crosses that line.
 
 Listed for completeness; not recommended.
 
@@ -131,11 +131,11 @@ Listed for completeness; not recommended.
 
 ## Recommendation
 
-**For TetraTile's v0.3+ (when RPG Maker support is reopened): pursue Option 1 (offline importer).**
+**For PentaTile's v0.3+ (when RPG Maker support is reopened): pursue Option 1 (offline importer).**
 
 Concrete next-milestone scope sketch:
-1. New layout subclass `TetraTileLayoutRPGMaker47` — slot table identical to `Blob47Godot` or transcribed fresh from the `FLOOR_AUTOTILE_TABLE`. The runtime layout *is* a flat-blob layout; "RPG Maker" is a property of the importer, not of the runtime.
-2. New editor tool `addons/tetra_tile/tools/rpg_maker_importer.gd` (`@tool` script). Inputs: source PNG + version/format dropdown. Outputs: flat blob PNG + matching `TetraTileAtlasContract` `.tres`.
+1. New layout subclass `PentaTileLayoutRPGMaker47` — slot table identical to `Blob47Godot` or transcribed fresh from the `FLOOR_AUTOTILE_TABLE`. The runtime layout *is* a flat-blob layout; "RPG Maker" is a property of the importer, not of the runtime.
+2. New editor tool `addons/penta_tile/tools/rpg_maker_importer.gd` (`@tool` script). Inputs: source PNG + version/format dropdown. Outputs: flat blob PNG + matching `PentaTileAtlasContract` `.tres`.
 3. A4 walls handled by a separate tool pass writing to a 16-tile flat layout (likely `Wang2Edge` reused) — not to the same 47-blob.
 4. Animation deferred until `variation_seed` lands and the variation-bank pattern is proven on PixelLab (Phase 3.5).
 
@@ -152,7 +152,7 @@ Total scope estimate: ~400–600 LOC for the importer, ~80 LOC for the layout su
 - `golddotasksquestions` posted two corrected bitmask images ([imgur 1](https://i.imgur.com/Yg1uZxl.png), [imgur 2](https://i.imgur.com/PgRw5vk.png)) that worked once cell size was clarified to 24×24
 - Follow-up comment confirmed wall sections need a separate 2×2 autotile (the A4 wall-side / `WALL_AUTOTILE_TABLE` distinction surfacing in practice)
 
-**Practical lesson for TetraTile:** users naturally try to import RPG Maker sheets directly and get burned by the cell-size question. Any future RPG Maker support should make sub-tile size visible in the inspector, ideally via the layout's `description` field.
+**Practical lesson for PentaTile:** users naturally try to import RPG Maker sheets directly and get burned by the cell-size question. Any future RPG Maker support should make sub-tile size visible in the inspector, ideally via the layout's `description` field.
 
 ---
 

@@ -1,6 +1,6 @@
 # TileBitTools Deep Audit — Source, Templates, Patterns
 
-**Purpose:** map TileBitTools' addon structure, template inventory, and customization model so TetraTile's v0.2 layout-Resource library can adopt the patterns that fit and ignore the ones that don't. The user explicitly cited TileBitTools as the gold-standard reference for "heavy customization and multiple popular templates"; this audit converts that pointer into a concrete spec.
+**Purpose:** map TileBitTools' addon structure, template inventory, and customization model so PentaTile's v0.2 layout-Resource library can adopt the patterns that fit and ignore the ones that don't. The user explicitly cited TileBitTools as the gold-standard reference for "heavy customization and multiple popular templates"; this audit converts that pointer into a concrete spec.
 
 **Repo:** `https://github.com/dandeliondino/tile_bit_tools`
 **Owner:** dandeliondino
@@ -9,7 +9,7 @@
 **Stack:** pure GDScript (~3,500 LOC), Godot 4.x EditorPlugin
 **Audited:** 2026-04-25 from the `main` branch tree
 
-> **Headline reframing:** TileBitTools is **not** a runtime layout-library addon like TetraTile aspires to be. It is an **edit-time inspector plugin** that mutates Godot's stock TileSet `terrain_set` / `terrain` / `terrain_peering_bits` metadata in place. Its "templates" are `.tres` Resources that encode peering-bit configurations to *apply to* a Godot terrain set; they are **not** atlas-image templates. This is the central architectural fork TetraTile must navigate: TileBitTools chose the "click-author through Godot's terrain system, but faster" path; TetraTile's v0.1 chose the "skip Godot's terrain system entirely" path. The two designs are complementary, not equivalent.
+> **Headline reframing:** TileBitTools is **not** a runtime layout-library addon like PentaTile aspires to be. It is an **edit-time inspector plugin** that mutates Godot's stock TileSet `terrain_set` / `terrain` / `terrain_peering_bits` metadata in place. Its "templates" are `.tres` Resources that encode peering-bit configurations to *apply to* a Godot terrain set; they are **not** atlas-image templates. This is the central architectural fork PentaTile must navigate: TileBitTools chose the "click-author through Godot's terrain system, but faster" path; PentaTile's v0.1 chose the "skip Godot's terrain system entirely" path. The two designs are complementary, not equivalent.
 
 > **Confidence:** HIGH on file layout, README contents, .tres structure, and per-template peering-bit encoding (all read directly from the live repo). MEDIUM on the user-flow click counts and dialog UX (read from the wiki + source, not exercised in a live editor). LOW on Tilesetter compatibility claims that the README makes (TileBitTools does not document its own Tilesetter alignment beyond the template description text).
 
@@ -26,9 +26,9 @@
 7. [Customization model — Project Settings + Tags + Custom templates](#7-customization-model--project-settings--tags--custom-templates)
 8. [User-facing workflow (apply / save / edit)](#8-user-facing-workflow-apply--save--edit)
 9. [The 47-blob "Godot community template" question](#9-the-47-blob-godot-community-template-question)
-10. [Patterns TetraTile should adopt](#10-patterns-tetratile-should-adopt)
-11. [Anti-patterns TetraTile should NOT copy](#11-anti-patterns-tetratile-should-not-copy)
-12. [Finalized v0.2 TetraTile layout-library mapping table](#12-finalized-v02-tetratile-layout-library-mapping-table)
+10. [Patterns PentaTile should adopt](#10-patterns-tetratile-should-adopt)
+11. [Anti-patterns PentaTile should NOT copy](#11-anti-patterns-tetratile-should-not-copy)
+12. [Finalized v0.2 PentaTile layout-library mapping table](#12-finalized-v02-tetratile-layout-library-mapping-table)
 13. [Honest gaps](#13-honest-gaps)
 
 ---
@@ -69,7 +69,7 @@ v0.1.1  (2023-03-09)  Initial Release (v0.1.1)
 
 > ***As of 4/2024, this repo is no longer being actively maintained.***
 
-This matters for TetraTile because (a) any architectural pattern we lift is unlikely to receive further upstream changes that would create maintenance friction, and (b) any bug we inherit from copying patterns we'll have to own ourselves.
+This matters for PentaTile because (a) any architectural pattern we lift is unlikely to receive further upstream changes that would create maintenance friction, and (b) any bug we inherit from copying patterns we'll have to own ourselves.
 
 ---
 
@@ -122,7 +122,7 @@ The README does NOT name a specific Godot 4.x minor version. The Asset Library e
 
 ### License (verbatim)
 
-The addon ships a copy of the MIT License at `addons/tile_bit_tools/LICENSE` (1070 bytes), with copyright attributed to `dandeliondino` (2023). This means TetraTile can lift code patterns or even whole files (with attribution) without licensing friction.
+The addon ships a copy of the MIT License at `addons/tile_bit_tools/LICENSE` (1070 bytes), with copyright attributed to `dandeliondino` (2023). This means PentaTile can lift code patterns or even whole files (with attribution) without licensing friction.
 
 ### Credits worth noting
 
@@ -235,7 +235,7 @@ addons/tile_bit_tools/
 | `bit_data_draw` (subviewport renderer) | ~270 | bit_data_draw, bit_data_draw_node |
 | **Total GDScript** | **~3,825 LOC** | 25+ scripts |
 
-For comparison: TetraTile v0.1.0 is **~261 LOC** total. TileBitTools is **roughly 15× the size of v0.1 TetraTile**. This is a different scale of project — useful for showing what's possible, but TetraTile must NOT scale to match (per PROJECT.md's "smaller and simpler than TileMapDual" identity guardrail).
+For comparison: PentaTile v0.1.0 is **~261 LOC** total. TileBitTools is **roughly 15× the size of v0.1 PentaTile**. This is a different scale of project — useful for showing what's possible, but PentaTile must NOT scale to match (per PROJECT.md's "smaller and simpler than TileMapDual" identity guardrail).
 
 ---
 
@@ -373,7 +373,7 @@ func _parse_end(object: Object) -> void:
     # adds the TBT panel BELOW Godot's stock per-tile inspector
 ```
 
-It also walks the editor's internal scene tree to find `TileSetEditor`, `TileSetAtlasSourceEditor`, and `TileAtlasView` nodes, then attaches a shared `TBTPluginControl` to the editor's base control. **This is fragile** — relies on internal class names that could change between Godot versions — but it's also the only way to integrate a contextual UI inside a stock editor panel. TetraTile must decide whether to copy this fragility or stay clean of editor internals.
+It also walks the editor's internal scene tree to find `TileSetEditor`, `TileSetAtlasSourceEditor`, and `TileAtlasView` nodes, then attaches a shared `TBTPluginControl` to the editor's base control. **This is fragile** — relies on internal class names that could change between Godot versions — but it's also the only way to integrate a contextual UI inside a stock editor panel. PentaTile must decide whether to copy this fragility or stay clean of editor internals.
 
 ### Configuration files
 
@@ -464,7 +464,7 @@ The 16 entries cover the 16 corner-mask permutations exactly.
 **Description (verbatim):**
 > "Like all corner-and-side-matching templates, this 47/48-tile template has flexible uses and can make complex shapes. It is good for terrains, paths and walls."
 
-**Note:** the example PNG `godot3_3x3_minimal.png` is **208×192 px (13×12 atlas grid)** — that's larger than the .tres's 12×4 = 48 cells. The example PNG bundles multiple terrains (grass + dirt + water) into one image; the template only addresses the grass terrain in a 12-cell stripe. TetraTile's lesson: example images and templates can target different visual scopes.
+**Note:** the example PNG `godot3_3x3_minimal.png` is **208×192 px (13×12 atlas grid)** — that's larger than the .tres's 12×4 = 48 cells. The example PNG bundles multiple terrains (grass + dirt + water) into one image; the template only addresses the grass terrain in a 12-cell stripe. PentaTile's lesson: example images and templates can target different visual scopes.
 
 ### 5.4 `simple_4-tile_(inside_corners).tres`
 
@@ -501,7 +501,7 @@ Symmetric counterpart to 5.5. Same dimensions, same description boilerplate, com
 
 ### 5.7 `tilesetter_blob.tres`
 
-**This is the headline template** — the one most directly relevant to TetraTile's `TetraTileLayoutTilesetterBlob47`.
+**This is the headline template** — the one most directly relevant to PentaTile's `PentaTileLayoutTilesetterBlob47`.
 
 | Field | Value |
 |---|---|
@@ -532,9 +532,9 @@ This is the **discrete sub-block layout** the TILESETTER_AND_GODOT.md audit flag
 - Top-right corner (cols 10, rows 0-1) is empty
 - Bottom row (row 4) is mostly empty except for cols 4-8 (5 cells), which form the "stray single tile cluster" the description warns about
 
-This is **Tilesetter's exported PNG layout, encoded directly into the .tres** — meaning the dandeliondino author DID empirically determine Tilesetter's slot order and bake it in. TetraTile can use this `.tres` as a Rosetta Stone: read the (col, row) → peering bits mapping, derive the (col, row) → mask mapping, and that's the slot order for `TetraTileLayoutTilesetterBlob47`.
+This is **Tilesetter's exported PNG layout, encoded directly into the .tres** — meaning the dandeliondino author DID empirically determine Tilesetter's slot order and bake it in. PentaTile can use this `.tres` as a Rosetta Stone: read the (col, row) → peering bits mapping, derive the (col, row) → mask mapping, and that's the slot order for `PentaTileLayoutTilesetterBlob47`.
 
-> **MAJOR INSIGHT:** the empirical fingerprinting work that TILESETTER_AND_GODOT.md said TetraTile needs to do — **TileBitTools has already done it** for Tilesetter Blob and Tilesetter Wang. The MIT license means we can lift the `_tiles` table verbatim, decode it once into TetraTile's mask-to-slot table, and never run Tilesetter ourselves. This is a major v0.2 timeline win.
+> **MAJOR INSIGHT:** the empirical fingerprinting work that TILESETTER_AND_GODOT.md said PentaTile needs to do — **TileBitTools has already done it** for Tilesetter Blob and Tilesetter Wang. The MIT license means we can lift the `_tiles` table verbatim, decode it once into PentaTile's mask-to-slot table, and never run Tilesetter ourselves. This is a major v0.2 timeline win.
 
 **Sample peering bits for `Vector2i(1, 1)` (the empty bottom-right corner):**
 
@@ -552,7 +552,7 @@ Vector2i(3, 3): terrain=0, peering = { 0:1, 3:1, 4:1, 7:1, 8:1, 11:1, 12:1, 15:1
               = the "fully connected" tile
 ```
 
-Decoding the full table is a TetraTile v0.2 implementation task; the .tres provides the canonical reference.
+Decoding the full table is a PentaTile v0.2 implementation task; the .tres provides the canonical reference.
 
 ### 5.8 `tilesetter_wang.tres`
 
@@ -568,7 +568,7 @@ Decoding the full table is a TetraTile v0.2 implementation task; the .tres provi
 **Description (verbatim):**
 > "Corners autotile in Tilesetter's layout. In Tilesetter, select the center tile, build borders for 'Wang', then select the tiles and export as 'Image'. Does not include the stray single tile. Select that tile separately, and click 'Fill'."
 
-**Critical finding:** Tilesetter's Wang export is **15 tiles, not 16**. The "stray single tile" is the all-empty / fully-isolated tile that gets handled separately. This contradicts every previous claim in TetraTile research that "Tilesetter Wang is 16 tiles." It is in fact 15 tiles + 1 separately-filled tile.
+**Critical finding:** Tilesetter's Wang export is **15 tiles, not 16**. The "stray single tile" is the all-empty / fully-isolated tile that gets handled separately. This contradicts every previous claim in PentaTile research that "Tilesetter Wang is 16 tiles." It is in fact 15 tiles + 1 separately-filled tile.
 
 **Atlas occupancy (5×3 grid, fully populated):**
 
@@ -579,7 +579,7 @@ row 1  # # # # #
 row 2  # # # # #
 ```
 
-15 tiles across `Vector2i(0,0)` through `Vector2i(4,2)`. Decoded mask values from the peering bits would give the (col, row) → corner-mask table for `TetraTileLayoutTilesetterWang16` (or rather `TetraTileLayoutTilesetterWang15`).
+15 tiles across `Vector2i(0,0)` through `Vector2i(4,2)`. Decoded mask values from the peering bits would give the (col, row) → corner-mask table for `PentaTileLayoutTilesetterWang16` (or rather `PentaTileLayoutTilesetterWang15`).
 
 ### 5.9 `tilesetter_wang_3-terrain.tres`
 
@@ -611,7 +611,7 @@ row10  .  .  .  .  .  .  #  #  #  #  #  #
 row11  .  .  .  .  .  .  #  #  #  #  #  #
 ```
 
-This is the **multi-terrain Tilesetter export**: three colors (terrains 0, 1, 2) interleaved across 81 atlas slots, with terrain transitions between any two of the three. **PROJECT.md explicitly rules out multi-terrain support**, so this template is informational only — TetraTile won't ship `TetraTileLayoutTilesetterWang3Terrain`. But it's worth noting that TileBitTools' Resource schema (`template_terrain_count`, `terrain_colors` dict, terrain_mapping in apply) **scales to N terrains for free** — the same Resource type holds 1, 2, or 3+ terrains. TetraTile's layout Resources, if they followed the same pattern, would inherit the same scaling.
+This is the **multi-terrain Tilesetter export**: three colors (terrains 0, 1, 2) interleaved across 81 atlas slots, with terrain transitions between any two of the three. **PROJECT.md explicitly rules out multi-terrain support**, so this template is informational only — PentaTile won't ship `PentaTileLayoutTilesetterWang3Terrain`. But it's worth noting that TileBitTools' Resource schema (`template_terrain_count`, `terrain_colors` dict, terrain_mapping in apply) **scales to N terrains for free** — the same Resource type holds 1, 2, or 3+ terrains. PentaTile's layout Resources, if they followed the same pattern, would inherit the same scaling.
 
 ### 5.10 `tilesetter_wang_3-terrain_transitions.tres`
 
@@ -631,7 +631,7 @@ A complementary template; transition tiles between the three terrains. `template
 **Description (verbatim):**
 > "Full 256-tile Corners and Sides mode autotile. 256-tile templates match individual diagonal connnections. They are NOT compatible with Godot 4 and require a plugin such as Terrain Autotiler to use. To automatically generate this layout, use TilePipe2's 'template_256_16x16.png' template and export tile as a 'texture'."
 
-**The `"Plugin Required"` tag is doing real work** — TileBitTools admits up front that this template doesn't work with stock Godot 4 and points the user at [`dandeliondino/terrain-autotiler`](https://github.com/dandeliondino/terrain-autotiler) (the same author's separate project for full 256-tile blob support). TetraTile should NOT ship a 256-tile template — both because it goes beyond v0.1's "lean" stance and because it would force depending on a separate runtime.
+**The `"Plugin Required"` tag is doing real work** — TileBitTools admits up front that this template doesn't work with stock Godot 4 and points the user at [`dandeliondino/terrain-autotiler`](https://github.com/dandeliondino/terrain-autotiler) (the same author's separate project for full 256-tile blob support). PentaTile should NOT ship a 256-tile template — both because it goes beyond v0.1's "lean" stance and because it would force depending on a separate runtime.
 
 ### 5.12 `tilepipe2_256_tile_32x8.tres`
 
@@ -639,16 +639,16 @@ Same as #5.11 but with a 32×8 atlas layout instead of 16×16. Both files exist 
 
 ### Template inventory summary
 
-| Template | Mode | Tiles | Atlas | TetraTile relevance |
+| Template | Mode | Tiles | Atlas | PentaTile relevance |
 |---|---|---|---|---|
-| `godot3_2x2` | MATCH_CORNERS | 16 | 4×4 | Equivalent to TetraTile `Wang2Corner`-style |
-| `godot3_3x3_16_tiles` | MATCH_SIDES | 16 | 4×4 | Equivalent to TetraTile `Wang2Edge` |
+| `godot3_2x2` | MATCH_CORNERS | 16 | 4×4 | Equivalent to PentaTile `Wang2Corner`-style |
+| `godot3_3x3_16_tiles` | MATCH_SIDES | 16 | 4×4 | Equivalent to PentaTile `Wang2Edge` |
 | `godot3_3x3_minimal` | MATCH_CORNERS_AND_SIDES | 47 | 12×4 (one gap) | Native Godot 47-blob layout — distinct convention |
 | `simple_4-tile_(inside_corners)` | MATCH_CORNERS | 4 | 2×2 | Subset of Tetra's 4-tile contract |
 | `simple_9-tile_(inside_corners)` | MATCH_CORNERS | 9 | 3×3 | Spritesheet-shape pattern |
 | `simple_9-tile_(outside_corners)` | MATCH_CORNERS | 9 | 3×3 | Spritesheet-shape pattern |
-| `tilesetter_blob` | MATCH_CORNERS_AND_SIDES | 47 | 11×5 (gaps) | **Direct match for `TetraTileLayoutTilesetterBlob47`** |
-| `tilesetter_wang` | MATCH_CORNERS | **15** | 5×3 | **Direct match for `TetraTileLayoutTilesetterWang15`** |
+| `tilesetter_blob` | MATCH_CORNERS_AND_SIDES | 47 | 11×5 (gaps) | **Direct match for `PentaTileLayoutTilesetterBlob47`** |
+| `tilesetter_wang` | MATCH_CORNERS | **15** | 5×3 | **Direct match for `PentaTileLayoutTilesetterWang15`** |
 | `tilesetter_wang_3-terrain` | MATCH_CORNERS | 81 | 12×12 (gaps) | Out of scope (multi-terrain) |
 | `tilesetter_wang_3-terrain_transitions` | MATCH_CORNERS | varies | varies | Out of scope (multi-terrain) |
 | `tilepipe2_256_tile_16x16` | MATCH_CORNERS_AND_SIDES | 256 | 16×16 | Out of scope (256-blob, plugin-required) |
@@ -682,7 +682,7 @@ All seven examples use **16-pixel tiles** and credit Kenney's CC0 Pixel Shmup pa
 - `tilesetter_wang.png` is **6×3 = 18 cells** but `tilesetter_wang.tres` is 15 cells. The extra 3 are the "stray fill tile" the description references plus padding/decoration.
 - `godot3_3x3_minimal.png` is **13×12 = 156 cells** showing three terrains in one image; the .tres only references 47 cells of one terrain.
 
-**Lesson for TetraTile:** the artist-facing reference PNG and the engineer-facing layout Resource serve different purposes. TileBitTools keeps them adjacent (sibling folders) but loosely coupled (the .tres references `example_folder_path` as a string, not as a strict atlas mapping). TetraTile's templates folder should follow the same loose-coupling: the layout Resource declares a slot table; the template PNG illustrates that slot table for artists; they don't have to be byte-identical.
+**Lesson for PentaTile:** the artist-facing reference PNG and the engineer-facing layout Resource serve different purposes. TileBitTools keeps them adjacent (sibling folders) but loosely coupled (the .tres references `example_folder_path` as a string, not as a strict atlas mapping). PentaTile's templates folder should follow the same loose-coupling: the layout Resource declares a slot table; the template PNG illustrates that slot table for artists; they don't have to be byte-identical.
 
 ---
 
@@ -707,7 +707,7 @@ addons/tile_bit_tools/
     └── template_terrain_4            : Color = #66CCEE  (cyan)
 ```
 
-The colors are intentionally chosen from [Paul Tol's "bright" color-blind-friendly palette](https://personal.sron.nl/~pault/) — **a small but signal-rich UX choice TetraTile should consider mirroring** if the layout library ever has to render multi-terrain previews.
+The colors are intentionally chosen from [Paul Tol's "bright" color-blind-friendly palette](https://personal.sron.nl/~pault/) — **a small but signal-rich UX choice PentaTile should consider mirroring** if the layout library ever has to render multi-terrain previews.
 
 ### 7.2 Template tags (5 auto-tags + N custom tags)
 
@@ -734,7 +734,7 @@ Plus **custom tags from `_custom_tags : Array[String]`** in each `TemplateBitDat
 | `"Incomplete Autotile"` | simple_*, tilesetter_wang_3-terrain_transitions | `NodeWarning` (yellow) |
 | `"Plugin Required"` | tilepipe2_* | `NodeWarning` (yellow) |
 
-The `Incomplete Autotile` and `Plugin Required` tags are **disclosure tags** — they tell the user up front that the template won't work standalone or won't work with stock Godot. TetraTile should consider a similar tag — e.g., `"Empirical"` for layouts where the slot mapping is reverse-engineered from another tool, `"v0.3+"` for layouts deferred from v0.2.
+The `Incomplete Autotile` and `Plugin Required` tags are **disclosure tags** — they tell the user up front that the template won't work standalone or won't work with stock Godot. PentaTile should consider a similar tag — e.g., `"Empirical"` for layouts where the slot mapping is reverse-engineered from another tool, `"v0.3+"` for layouts deferred from v0.2.
 
 The picker UI lets the user filter by multiple tags (chip-style). Templates appear in the dropdown only if they match ALL selected tags.
 
@@ -764,7 +764,7 @@ The metadata captured at save time (verbatim from save_template_dialog.tscn stru
 
 The dialog also displays an **auto-generated preview**: a `BitDataDrawNode` (`controls/bit_data_draw/bit_data_draw.gd`, 237 LOC) renders a SubViewport showing each peering bit as a colored corner / edge, giving the user a quick visual confirmation before saving.
 
-This is the single most polished UX feature in the addon. **Whether TetraTile ships anything like it depends entirely on whether layout Resources are user-authorable (they're currently designed as built-in only)**. See §10 for the recommendation.
+This is the single most polished UX feature in the addon. **Whether PentaTile ships anything like it depends entirely on whether layout Resources are user-authorable (they're currently designed as built-in only)**. See §10 for the recommendation.
 
 ---
 
@@ -803,7 +803,7 @@ func apply_bit_data() -> void:
     # ... iterate context.tiles, call tile_data.set_terrain_peering_bit()
 ```
 
-The author shipped this as a known limitation. **For TetraTile this is a useful warning** — if any v0.2 customization knob mutates user TileSet data in place, document the no-undo fact loudly.
+The author shipped this as a known limitation. **For PentaTile this is a useful warning** — if any v0.2 customization knob mutates user TileSet data in place, document the no-undo fact loudly.
 
 ### 8.3 Save a custom template
 
@@ -836,7 +836,7 @@ It does NOT produce:
 
 **There is none.** TileBitTools is `@tool` only. The plugin exits cleanly via `_exit_tree()` without leaving anything behind in the running scene. This is a clean separation: edit-time-only tooling, runtime gets stock Godot terrain rendering.
 
-For TetraTile this is an important distinction: TetraTile v0.1 has runtime code (`tetra_tile_map_layer.gd`); TileBitTools has only edit-time code. Any layout-Resource library TetraTile builds inherits this split — the layout Resources themselves can be runtime-loadable (since they're just data), but a "save custom layout" UI would be edit-time-only.
+For PentaTile this is an important distinction: PentaTile v0.1 has runtime code (`penta_tile_map_layer.gd`); TileBitTools has only edit-time code. Any layout-Resource library PentaTile builds inherits this split — the layout Resources themselves can be runtime-loadable (since they're just data), but a "save custom layout" UI would be edit-time-only.
 
 ---
 
@@ -863,11 +863,11 @@ The **discrete sub-blocks** the user described are the visible groupings inside 
 
 The "Godot community" attribution is accurate in a soft sense: this layout is the de-facto standard for any Godot 4 project that uses Tilesetter (which is many of them). It is NOT an official Godot template — Godot ships no template — but it IS the most commonly-encountered 47-blob layout in the Godot ecosystem because Tilesetter is the most popular generator. TileBitTools' choice to include it cements that.
 
-The CR31 7×7 / 6×8 layouts and the Excalibur 12×4 layout from TILESETTER_AND_GODOT.md are **different** conventions, used by different communities. Tilesetter's layout (11×5 with the bottom-row cluster) is its own. TetraTile should ship Tilesetter's as the primary 47-blob layout because that's what Godot users encounter most often.
+The CR31 7×7 / 6×8 layouts and the Excalibur 12×4 layout from TILESETTER_AND_GODOT.md are **different** conventions, used by different communities. Tilesetter's layout (11×5 with the bottom-row cluster) is its own. PentaTile should ship Tilesetter's as the primary 47-blob layout because that's what Godot users encounter most often.
 
 ---
 
-## 10. Patterns TetraTile should adopt
+## 10. Patterns PentaTile should adopt
 
 Five concrete patterns, in priority order:
 
@@ -875,16 +875,16 @@ Five concrete patterns, in priority order:
 
 **Why:** separates the "live editor selection" concept from the "serialized template on disk" concept while sharing the bit-storage primitive. Godot 4's `@tool` script inheritance handles this cleanly.
 
-**TetraTile mapping:**
+**PentaTile mapping:**
 
 ```
 Resource
-  └── TetraTileLayout                  # base — defines the abstract slot ↔ mask interface
-       ├── TetraTileLayoutBuiltIn      # concrete subclass for shipped layouts (Tetra4, DualGrid16, Wang2Edge, etc.)
-       └── TetraTileLayoutCustom       # concrete subclass user can author (deferred to v0.3+)
+  └── PentaTileLayout                  # base — defines the abstract slot ↔ mask interface
+       ├── PentaTileLayoutBuiltIn      # concrete subclass for shipped layouts (Penta4, DualGrid16, Wang2Edge, etc.)
+       └── PentaTileLayoutCustom       # concrete subclass user can author (deferred to v0.3+)
 ```
 
-The parallel to TileBitTools is loose — TetraTile doesn't have an "editor selection" concept the way TileBitTools does — but the inheritance pattern is still useful: a base class with shared primitives, concrete subclasses for different lifecycles.
+The parallel to TileBitTools is loose — PentaTile doesn't have an "editor selection" concept the way TileBitTools does — but the inheritance pattern is still useful: a base class with shared primitives, concrete subclasses for different lifecycles.
 
 **Recommendation: YES, adopt.**
 
@@ -892,7 +892,7 @@ The parallel to TileBitTools is loose — TetraTile doesn't have an "editor sele
 
 **Why:** TileBitTools' `_custom_tags = ["Tilesetter"]`, `["Godot 3"]`, `["TilePipe2"]` immediately tells the user "this template comes from / matches that tool." Filtering by tag becomes the discovery primitive.
 
-**TetraTile mapping:** every `TetraTileLayoutXxx` Resource should expose a `tags : PackedStringArray` field. Suggested initial vocabulary:
+**PentaTile mapping:** every `PentaTileLayoutXxx` Resource should expose a `tags : PackedStringArray` field. Suggested initial vocabulary:
 
 ```
 Tool tags:        "Tilesetter", "Excalibur", "RPGMaker", "Tiled", "LDtk"
@@ -903,16 +903,16 @@ Status tags:      "Empirical" (slot mapping reverse-engineered),
                   "Multi-Terrain" (out of v0.2 scope, informational only)
 ```
 
-**Recommendation: YES, adopt.** Implement as a `tags : Array[StringName]` `@export` field on `TetraTileLayout`.
+**Recommendation: YES, adopt.** Implement as a `tags : Array[StringName]` `@export` field on `PentaTileLayout`.
 
 ### Pattern 3: Sibling examples folder per template
 
 **Why:** TileBitTools puts each template's example PNG in `examples/<name>/<name>.png` with a sibling `ABOUT.txt`. This mirrors the way artists actually file reference images.
 
-**TetraTile mapping:** the existing `addons/tetra_tile/templates/` folder should split into:
+**PentaTile mapping:** the existing `addons/penta_tile/templates/` folder should split into:
 
 ```
-addons/tetra_tile/templates/
+addons/penta_tile/templates/
 ├── README.md                   # already exists, artist-facing reference
 ├── tetra_horizontal/
 │   ├── tetra_horizontal.png    # blank template (slot-numbered)
@@ -927,7 +927,7 @@ addons/tetra_tile/templates/
 ... (one folder per layout)
 ```
 
-The current proposal in [`addons/tetra_tile/templates/README.md`](../../../addons/tetra_tile/templates/README.md) puts everything flat in one folder. The TileBitTools pattern is cleaner for users browsing the addon. **HOWEVER**, this also adds N folders to the addon root, which conflicts with the "smaller than TileMapDual" guardrail. Compromise: ship the layout `.tres` files in a flat `addons/tetra_tile/layouts/` folder, and ship blank+example PNGs together in `addons/tetra_tile/templates/<name>/`. Keep the folder count bounded.
+The current proposal in [`addons/penta_tile/templates/README.md`](../../../addons/penta_tile/templates/README.md) puts everything flat in one folder. The TileBitTools pattern is cleaner for users browsing the addon. **HOWEVER**, this also adds N folders to the addon root, which conflicts with the "smaller than TileMapDual" guardrail. Compromise: ship the layout `.tres` files in a flat `addons/penta_tile/layouts/` folder, and ship blank+example PNGs together in `addons/penta_tile/templates/<name>/`. Keep the folder count bounded.
 
 **Recommendation: YES, adopt with the compromise.** Layouts in flat `layouts/`, templates+examples in nested `templates/<name>/`.
 
@@ -935,7 +935,7 @@ The current proposal in [`addons/tetra_tile/templates/README.md`](../../../addon
 
 **Why:** `"Incomplete Autotile"`, `"Plugin Required"` warn the user upfront that a template won't work standalone. The icon (Godot's `NodeWarning` yellow triangle) makes the warning visible.
 
-**TetraTile mapping:** for layouts where the slot order is reverse-engineered (Tilesetter Wang/Blob), tag them `"Empirical"`. For layouts that need additional setup (e.g., the diagonals-overlay rule for Tetra4), document that in the description.
+**PentaTile mapping:** for layouts where the slot order is reverse-engineered (Tilesetter Wang/Blob), tag them `"Empirical"`. For layouts that need additional setup (e.g., the diagonals-overlay rule for Penta4), document that in the description.
 
 **Recommendation: YES, adopt.** Add `"Empirical"` and `"Reverse-Engineered"` to the tag vocabulary.
 
@@ -943,13 +943,13 @@ The current proposal in [`addons/tetra_tile/templates/README.md`](../../../addon
 
 **Why:** Godot users find addon settings under `Project → Project Settings → <Addon Name>` more readily than in custom resource files. ProjectSettings keys are versioned with `project.godot`, which the user is already managing in source control.
 
-**TetraTile mapping:** for v0.2 the only meaningful addon-level setting might be **`addons/tetra_tile/output/show_debug_logs` : bool = false** to surface the runtime cell-rebuild diagnostics. If the layout library ever adds inspector preview rendering, **`addons/tetra_tile/colors/preview_*`** keys would mirror TileBitTools.
+**PentaTile mapping:** for v0.2 the only meaningful addon-level setting might be **`addons/penta_tile/output/show_debug_logs` : bool = false** to surface the runtime cell-rebuild diagnostics. If the layout library ever adds inspector preview rendering, **`addons/penta_tile/colors/preview_*`** keys would mirror TileBitTools.
 
 **Recommendation: PARTIAL ADOPT.** Worth adding the `output/show_debug_logs` key in v0.2; defer color settings until inspector preview rendering exists.
 
 ---
 
-## 11. Anti-patterns TetraTile should NOT copy
+## 11. Anti-patterns PentaTile should NOT copy
 
 Five concrete patterns to *avoid*, with rationale.
 
@@ -957,21 +957,21 @@ Five concrete patterns to *avoid*, with rationale.
 
 TileBitTools is **97% UI code, 3% data model**. The `TemplateBitData` schema is 105 LOC; everything else (popups, scenes, inspector hooks, theme harmonization, preview viewports) exists to make that 105 LOC pleasant to interact with. For an inspector-plugin the ratio is justifiable; for a runtime addon it isn't.
 
-PROJECT.md is explicit: "TetraTile must remain visibly smaller and simpler than TileMapDual." A custom-template authoring UI would push TetraTile across that line. **Defer custom-layout authoring to v0.3+ at earliest, possibly indefinitely.**
+PROJECT.md is explicit: "PentaTile must remain visibly smaller and simpler than TileMapDual." A custom-template authoring UI would push PentaTile across that line. **Defer custom-layout authoring to v0.3+ at earliest, possibly indefinitely.**
 
-**Recommendation: DO NOT COPY.** Ship layout Resources as built-in only for v0.2; users can author custom Resources by extending `TetraTileLayout` and writing GDScript, no UI required.
+**Recommendation: DO NOT COPY.** Ship layout Resources as built-in only for v0.2; users can author custom Resources by extending `PentaTileLayout` and writing GDScript, no UI required.
 
 ### Anti-pattern 2: EditorInspectorPlugin that walks Godot's internal scene tree
 
 `inspector_plugin.gd` (353 LOC) reaches into the running Godot editor and finds nodes by class name (`TileSetEditor`, `TileSetAtlasSourceEditor`, `TileAtlasView`, `AtlasTileProxyObject`). This is a deep coupling to engine internals. Each Godot 4.x release risks breaking it. The plugin's archived status (no longer maintained) suggests this was indeed painful to keep working.
 
-**Recommendation: DO NOT COPY.** TetraTile already operates as a `TileMapLayer` subclass, which uses Godot's *public* APIs only. Don't add an inspector plugin in v0.2; the layout Resource picker can be a normal `@export` slot on `TetraTileMapLayer`.
+**Recommendation: DO NOT COPY.** PentaTile already operates as a `TileMapLayer` subclass, which uses Godot's *public* APIs only. Don't add an inspector plugin in v0.2; the layout Resource picker can be a normal `@export` slot on `PentaTileMapLayer`.
 
 ### Anti-pattern 3: No-undo destructive edits
 
-TileBitTools' "Apply Changes" writes to `TileData` directly with no undo. The wiki warns the user, but accidents happen. For an inspector plugin this is acceptable; for any TetraTile feature that mutates user data it would be a regression.
+TileBitTools' "Apply Changes" writes to `TileData` directly with no undo. The wiki warns the user, but accidents happen. For an inspector plugin this is acceptable; for any PentaTile feature that mutates user data it would be a regression.
 
-**Recommendation: DO NOT COPY.** TetraTile v0.2 should treat the layout Resource as read-only configuration and never mutate the user's TileSet. If a future "convert tileset to TetraTile layout" feature exists, it should produce a *new* TileSet rather than mutating the existing one, so undo/git remain meaningful.
+**Recommendation: DO NOT COPY.** PentaTile v0.2 should treat the layout Resource as read-only configuration and never mutate the user's TileSet. If a future "convert tileset to PentaTile layout" feature exists, it should produce a *new* TileSet rather than mutating the existing one, so undo/git remain meaningful.
 
 ### Anti-pattern 4: `_custom_tags : Array` (untyped)
 
@@ -981,56 +981,56 @@ TileBitTools uses `@export var _custom_tags := []` — an untyped Array. This wo
 
 ### Anti-pattern 5: Mutating peering bits in place at all
 
-This is the deepest disagreement: **TileBitTools' core value-add IS the in-place mutation of Godot's terrain peering bits.** TetraTile's v0.1 sells the opposite: skip peering bits entirely. Adopting TileBitTools' "click-author Godot's terrain" model would erase TetraTile's distinguishing identity.
+This is the deepest disagreement: **TileBitTools' core value-add IS the in-place mutation of Godot's terrain peering bits.** PentaTile's v0.1 sells the opposite: skip peering bits entirely. Adopting TileBitTools' "click-author Godot's terrain" model would erase PentaTile's distinguishing identity.
 
-**Recommendation: DO NOT COPY.** TetraTile must keep "no per-tile peering-bit authoring required" as the headline contract. The layout Resources are read at runtime by `TetraTileMapLayer`; they never write to user TileSets.
+**Recommendation: DO NOT COPY.** PentaTile must keep "no per-tile peering-bit authoring required" as the headline contract. The layout Resources are read at runtime by `PentaTileMapLayer`; they never write to user TileSets.
 
 ---
 
-## 12. Finalized v0.2 TetraTile layout-library mapping table
+## 12. Finalized v0.2 PentaTile layout-library mapping table
 
 Bringing together the audit findings, the v0.2 layout library should ship the following Resources. The mapping column shows which TileBitTools template (if any) provides the canonical reference for slot order. The "How to ship" column tells implementers whether the slot table can be authored directly or must be derived from TBT.
 
-| TetraTile Resource | Matches TileBitTools template | Mask system | Tile count | How to ship in v0.2 |
+| PentaTile Resource | Matches TileBitTools template | Mask system | Tile count | How to ship in v0.2 |
 |---|---|---|---|---|
-| `TetraTileLayoutTetra4Horizontal` | (none — TetraTile-native) | 4-bit corner with rotation | 4 | Already exists; lock to v0.1's TL=1, TR=2, BL=4, BR=8 |
-| `TetraTileLayoutTetra4Vertical` | (none — TetraTile-native) | 4-bit corner with rotation | 4 | Same convention as horizontal, transposed |
-| `TetraTileLayoutDualGrid16` | (none — TetraTile-native) | 4-bit corner | 16 | Author directly using TetraTile's TL=1, TR=2, BL=4, BR=8 corner convention |
-| `TetraTileLayoutWang2Edge` | `godot3_3x3_16_tiles` (loose match — same mask, possibly different slot order) | 4-bit edge | 16 | Author directly using CR31 N=1, E=2, S=4, W=8 edge convention; cross-check slot order against TBT's .tres |
-| `TetraTileLayoutWang2Corner` | `godot3_2x2` (loose match — same mask, possibly different slot order) | 4-bit corner | 16 | Author directly using CR31 NE=1, SE=2, SW=4, NW=8 corner convention; cross-check slot order against TBT's .tres |
-| `TetraTileLayoutSimple4InsideCorners` | `simple_4-tile_(inside_corners)` (direct match) | 4-bit corner | 4 | Decode TBT's .tres directly into TetraTile's slot table |
-| `TetraTileLayoutSimple9InsideCorners` | `simple_9-tile_(inside_corners)` (direct match) | 4-bit corner | 9 | Decode TBT's .tres |
-| `TetraTileLayoutSimple9OutsideCorners` | `simple_9-tile_(outside_corners)` (direct match) | 4-bit corner | 9 | Decode TBT's .tres |
-| `TetraTileLayoutGodot3Minimal` | `godot3_3x3_minimal` (direct match) | 8-bit Moore | 47 | Decode TBT's .tres — gives a Godot-native 47-blob slot order distinct from Tilesetter's |
-| **`TetraTileLayoutTilesetterBlob47`** | **`tilesetter_blob` (direct match)** | 8-bit Moore | 47 | **Decode TBT's .tres directly — eliminates the empirical-fingerprinting step from TILESETTER_AND_GODOT.md** |
-| **`TetraTileLayoutTilesetterWang15`** | **`tilesetter_wang` (direct match — note: 15 tiles, NOT 16)** | 4-bit corner | 15 | **Decode TBT's .tres directly** |
-| `TetraTileLayoutExcaliburBlob47` | (none in TileBitTools; cross-reference with [Excalibur autotiling blog post](https://excaliburjs.com/blog/Autotiling%20Technique/)) | 8-bit Moore | 47 | Author directly from Excalibur's published 12×4 layout |
+| `PentaTileLayoutPenta4Horizontal` | (none — PentaTile-native) | 4-bit corner with rotation | 4 | Already exists; lock to v0.1's TL=1, TR=2, BL=4, BR=8 |
+| `PentaTileLayoutPenta4Vertical` | (none — PentaTile-native) | 4-bit corner with rotation | 4 | Same convention as horizontal, transposed |
+| `PentaTileLayoutDualGrid16` | (none — PentaTile-native) | 4-bit corner | 16 | Author directly using PentaTile's TL=1, TR=2, BL=4, BR=8 corner convention |
+| `PentaTileLayoutWang2Edge` | `godot3_3x3_16_tiles` (loose match — same mask, possibly different slot order) | 4-bit edge | 16 | Author directly using CR31 N=1, E=2, S=4, W=8 edge convention; cross-check slot order against TBT's .tres |
+| `PentaTileLayoutWang2Corner` | `godot3_2x2` (loose match — same mask, possibly different slot order) | 4-bit corner | 16 | Author directly using CR31 NE=1, SE=2, SW=4, NW=8 corner convention; cross-check slot order against TBT's .tres |
+| `PentaTileLayoutSimple4InsideCorners` | `simple_4-tile_(inside_corners)` (direct match) | 4-bit corner | 4 | Decode TBT's .tres directly into PentaTile's slot table |
+| `PentaTileLayoutSimple9InsideCorners` | `simple_9-tile_(inside_corners)` (direct match) | 4-bit corner | 9 | Decode TBT's .tres |
+| `PentaTileLayoutSimple9OutsideCorners` | `simple_9-tile_(outside_corners)` (direct match) | 4-bit corner | 9 | Decode TBT's .tres |
+| `PentaTileLayoutGodot3Minimal` | `godot3_3x3_minimal` (direct match) | 8-bit Moore | 47 | Decode TBT's .tres — gives a Godot-native 47-blob slot order distinct from Tilesetter's |
+| **`PentaTileLayoutTilesetterBlob47`** | **`tilesetter_blob` (direct match)** | 8-bit Moore | 47 | **Decode TBT's .tres directly — eliminates the empirical-fingerprinting step from TILESETTER_AND_GODOT.md** |
+| **`PentaTileLayoutTilesetterWang15`** | **`tilesetter_wang` (direct match — note: 15 tiles, NOT 16)** | 4-bit corner | 15 | **Decode TBT's .tres directly** |
+| `PentaTileLayoutExcaliburBlob47` | (none in TileBitTools; cross-reference with [Excalibur autotiling blog post](https://excaliburjs.com/blog/Autotiling%20Technique/)) | 8-bit Moore | 47 | Author directly from Excalibur's published 12×4 layout |
 
 ### Layouts EXPLICITLY OUT of v0.2 scope
 
 | Resource | Why out |
 |---|---|
-| `TetraTileLayoutTilesetterWang3Terrain` | Multi-terrain — PROJECT.md guardrail |
-| `TetraTileLayoutTilePipe2_256` | 256-blob — requires terrain-autotiler runtime, conflicts with "lean" stance |
-| `TetraTileLayoutGodotNative` | Godot doesn't have a layout — peering bits are per-tile metadata |
-| `TetraTileLayoutSubBlob20` / `TetraTileLayoutMicroBlob13` | Quarter-tile compositor not in v0.2 |
-| `TetraTileLayoutRPGMakerA2` / `A4` | Subtile compositor not in v0.2 |
+| `PentaTileLayoutTilesetterWang3Terrain` | Multi-terrain — PROJECT.md guardrail |
+| `PentaTileLayoutTilePipe2_256` | 256-blob — requires terrain-autotiler runtime, conflicts with "lean" stance |
+| `PentaTileLayoutGodotNative` | Godot doesn't have a layout — peering bits are per-tile metadata |
+| `PentaTileLayoutSubBlob20` / `PentaTileLayoutMicroBlob13` | Quarter-tile compositor not in v0.2 |
+| `PentaTileLayoutRPGMakerA2` / `A4` | Subtile compositor not in v0.2 |
 | Tiled `.tsx` importer | Rule importer, not a layout |
 | LDtk `.ldtk` importer | Rule importer + rule runtime |
 
 ### Build-order recommendation
 
 1. **First wave** (zero new external dependencies, leverage existing v0.1 work):
-   - `TetraTileLayoutTetra4Horizontal` / `Vertical` — port from v0.1
-   - `TetraTileLayoutDualGrid16` — author directly, TetraTile-native convention
+   - `PentaTileLayoutPenta4Horizontal` / `Vertical` — port from v0.1
+   - `PentaTileLayoutDualGrid16` — author directly, PentaTile-native convention
 2. **Second wave** (decode TileBitTools .tres files):
-   - `TetraTileLayoutTilesetterBlob47` ← decode `tilesetter_blob.tres`
-   - `TetraTileLayoutTilesetterWang15` ← decode `tilesetter_wang.tres`
-   - `TetraTileLayoutGodot3Minimal` ← decode `godot3_3x3_minimal.tres`
-   - `TetraTileLayoutSimple9*` ← decode the three simple .tres files
+   - `PentaTileLayoutTilesetterBlob47` ← decode `tilesetter_blob.tres`
+   - `PentaTileLayoutTilesetterWang15` ← decode `tilesetter_wang.tres`
+   - `PentaTileLayoutGodot3Minimal` ← decode `godot3_3x3_minimal.tres`
+   - `PentaTileLayoutSimple9*` ← decode the three simple .tres files
 3. **Third wave** (independent authoring, well-documented sources):
-   - `TetraTileLayoutWang2Edge` / `TetraTileLayoutWang2Corner` ← CR31 standard
-   - `TetraTileLayoutExcaliburBlob47` ← Excalibur blog post
+   - `PentaTileLayoutWang2Edge` / `PentaTileLayoutWang2Corner` ← CR31 standard
+   - `PentaTileLayoutExcaliburBlob47` ← Excalibur blog post
 
 The first wave validates the Resource API. The second wave doubles the count by lifting from TileBitTools (under MIT, with attribution). The third wave fills out the popular community conventions.
 
@@ -1038,21 +1038,21 @@ The first wave validates the Resource API. The second wave doubles the count by 
 
 ## 13. Honest gaps
 
-1. **Per-template peering-bit decoder not yet implemented.** The audit confirms TileBitTools' .tres files contain the canonical Tilesetter slot mappings, but actually decoding them into TetraTile's `mask → Vector2i` lookup requires a small one-time tool: read the .tres dictionary, decode each `Vector2i(col, row) → peering_bits` pair into `(col, row) → mask`. This is a one-afternoon implementation task; not done yet.
+1. **Per-template peering-bit decoder not yet implemented.** The audit confirms TileBitTools' .tres files contain the canonical Tilesetter slot mappings, but actually decoding them into PentaTile's `mask → Vector2i` lookup requires a small one-time tool: read the .tres dictionary, decode each `Vector2i(col, row) → peering_bits` pair into `(col, row) → mask`. This is a one-afternoon implementation task; not done yet.
 
-2. **The Godot CellNeighbor enum is direction-coded, not bit-weighted.** TileBitTools stores peering bits as `{ 0: terrain_id, 3: terrain_id, 4: terrain_id, 7: terrain_id, 8: terrain_id, 11: terrain_id, 12: terrain_id, 15: terrain_id }` where the keys are direction enum values (0=R, 3=BR_corner, 4=B, 7=BL_corner, 8=L, 11=TL_corner, 12=T, 15=TR_corner), not bit weights. Translating to TetraTile's mask integers requires a fixed mapping `{enum_value: bit_position}` that TetraTile's bit convention defines.
+2. **The Godot CellNeighbor enum is direction-coded, not bit-weighted.** TileBitTools stores peering bits as `{ 0: terrain_id, 3: terrain_id, 4: terrain_id, 7: terrain_id, 8: terrain_id, 11: terrain_id, 12: terrain_id, 15: terrain_id }` where the keys are direction enum values (0=R, 3=BR_corner, 4=B, 7=BL_corner, 8=L, 11=TL_corner, 12=T, 15=TR_corner), not bit weights. Translating to PentaTile's mask integers requires a fixed mapping `{enum_value: bit_position}` that PentaTile's bit convention defines.
 
 3. **Did not exhaustively read all 12 .tres files cell-by-cell.** I parsed atlas occupancy from all of them, but the per-cell peering-bits transcription is partial (see §5.7's `Vector2i(1,1)` and `Vector2i(3,3)` samples). Full decoding is the v0.2 implementation step.
 
-4. **Did not fingerprint the `inspector_plugin.gd` against Godot 4.6 specifically.** The plugin walks the editor scene tree by class name. I trust the README's "Godot 4.x compatible" claim but did not verify that all referenced internal class names (`TileSetEditor`, `TileSetAtlasSourceEditor`, `TileAtlasView`, `AtlasTileProxyObject`, `TileSetAtlasSourceProxyObject`) still exist in Godot 4.6. Since TetraTile won't be copying the inspector-plugin pattern (per anti-pattern §11.2), this gap is non-blocking.
+4. **Did not fingerprint the `inspector_plugin.gd` against Godot 4.6 specifically.** The plugin walks the editor scene tree by class name. I trust the README's "Godot 4.x compatible" claim but did not verify that all referenced internal class names (`TileSetEditor`, `TileSetAtlasSourceEditor`, `TileAtlasView`, `AtlasTileProxyObject`, `TileSetAtlasSourceProxyObject`) still exist in Godot 4.6. Since PentaTile won't be copying the inspector-plugin pattern (per anti-pattern §11.2), this gap is non-blocking.
 
-5. **The 256-tile `tilepipe2_*` templates were not deeply analyzed.** I confirmed dimensions (16×16 and 32×8) and tile count (256). The actual peering bit encodings are a 22 KB .tres each — over twenty times larger than the 47-blob template. Decoding them is feasible if TetraTile ever reverses on the "out-of-scope" decision, but for v0.2 the analysis stops at "256 tiles, plugin-required, out of scope."
+5. **The 256-tile `tilepipe2_*` templates were not deeply analyzed.** I confirmed dimensions (16×16 and 32×8) and tile count (256). The actual peering bit encodings are a 22 KB .tres each — over twenty times larger than the 47-blob template. Decoding them is feasible if PentaTile ever reverses on the "out-of-scope" decision, but for v0.2 the analysis stops at "256 tiles, plugin-required, out of scope."
 
 6. **Did not test apply-template UX in a live Godot 4.6 editor.** The wiki and source describe the workflow; I did not exercise it. Click counts in §8.1 are inferred from source structure, not measured.
 
-7. **The `editor_bit_data.gd` / `bit_data.gd` distinction is partially documented.** I read both files but didn't trace the full lifecycle (extract from live tiles → preview → save as TemplateBitData). Full understanding would require running the addon. For TetraTile this is non-blocking — TetraTile won't be extracting bit data from live tiles.
+7. **The `editor_bit_data.gd` / `bit_data.gd` distinction is partially documented.** I read both files but didn't trace the full lifecycle (extract from live tiles → preview → save as TemplateBitData). Full understanding would require running the addon. For PentaTile this is non-blocking — PentaTile won't be extracting bit data from live tiles.
 
-8. **The OpenGameArt 7×7 / CR31 6×8 layouts are NOT in TileBitTools.** TileBitTools ships ONE 47-blob convention (`godot3_3x3_minimal`) and ONE 47-blob in Tilesetter convention (`tilesetter_blob`). It does NOT ship the cr31/OpenGameArt 7×7 or CR31 6×8 conventions. If TetraTile wants those, the slot tables come from [BorisTheBrave's reference](https://www.boristhebrave.com/permanent/24/06/cr31/stagecast/wang/blob.html), not from TileBitTools.
+8. **The OpenGameArt 7×7 / CR31 6×8 layouts are NOT in TileBitTools.** TileBitTools ships ONE 47-blob convention (`godot3_3x3_minimal`) and ONE 47-blob in Tilesetter convention (`tilesetter_blob`). It does NOT ship the cr31/OpenGameArt 7×7 or CR31 6×8 conventions. If PentaTile wants those, the slot tables come from [BorisTheBrave's reference](https://www.boristhebrave.com/permanent/24/06/cr31/stagecast/wang/blob.html), not from TileBitTools.
 
 9. **The `assets/tutorials/apply_template.gif` was not viewed.** The animated workflow demo is 1.7 MB at `assets/tutorials/apply_template.gif`. Description-only documentation is sufficient for this audit.
 
@@ -1104,7 +1104,7 @@ peering keys: 0, 4, 8, 12
             = E, S, W, N
 ```
 
-To convert a TileBitTools .tres entry to a TetraTile mask, walk the peering dict, look up each key in the table above, and OR in the appropriate bit weight from TetraTile's chosen bit convention (e.g., for Wang2Edge with CR31: N=1, E=2, S=4, W=8).
+To convert a TileBitTools .tres entry to a PentaTile mask, walk the peering dict, look up each key in the table above, and OR in the appropriate bit weight from PentaTile's chosen bit convention (e.g., for Wang2Edge with CR31: N=1, E=2, S=4, W=8).
 
 ---
 

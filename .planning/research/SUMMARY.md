@@ -1,13 +1,13 @@
 # Project Research Summary
 
-**Project:** TetraTile v0.2.0 — atlas-contract expansion
+**Project:** PentaTile v0.2.0 — atlas-contract expansion
 **Domain:** Godot 4.6 dual-grid autotiling addon (pure GDScript, no GDExtension)
 **Researched:** 2026-04-25
 **Confidence:** HIGH (Godot 4.6 APIs verified via Context7 + official docs; competitor inventory cross-checked against TileMapDual / Better Terrain repos)
 
 ## Executive Summary
 
-TetraTile is a lean dual-grid autotiler for Godot 4.6 whose v0.1 selling point is "single public node, native `TileMapLayer.set_cell()` painting drives autotiling, ~261 LOC." v0.2 expands the addon's atlas contract along three intertwined axes — Y-axis variation, top tiles, and non-rotating tilesets — without losing the "smaller and leaner than TileMapDual" identity. All four researchers converged on the same shape: a typed `Resource` subclass (`TetraTileAtlasContract`) hung off `TetraTileMapLayer` as an `@export`, with directional/per-tile semantics layered on top of the existing 16-state mask + two-internal-layer composition pipeline. Variation must be implemented inside the addon (Godot's `TileData.probability` is consumed only by the editor's scattering paint tool, never at `set_cell()` time) and must be deterministic per cell coord, otherwise every `rebuild()` will visually shimmer.
+PentaTile is a lean dual-grid autotiler for Godot 4.6 whose v0.1 selling point is "single public node, native `TileMapLayer.set_cell()` painting drives autotiling, ~261 LOC." v0.2 expands the addon's atlas contract along three intertwined axes — Y-axis variation, top tiles, and non-rotating tilesets — without losing the "smaller and leaner than TileMapDual" identity. All four researchers converged on the same shape: a typed `Resource` subclass (`PentaTileAtlasContract`) hung off `PentaTileMapLayer` as an `@export`, with directional/per-tile semantics layered on top of the existing 16-state mask + two-internal-layer composition pipeline. Variation must be implemented inside the addon (Godot's `TileData.probability` is consumed only by the editor's scattering paint tool, never at `set_cell()` time) and must be deterministic per cell coord, otherwise every `rebuild()` will visually shimmer.
 
 The recommended approach is a five-phase build that lands the contract skeleton first (de-risks everything), then variation, then non-rotating mode, then top tiles + per-tile custom_data_layers + v0.1-shape detection, with the demo refresh + release prep as a fifth consuming phase. The atlas contract Resource is the keystone — every other feature reads through it. Per-tile semantics that the contract itself doesn't enumerate (e.g., "is this tile a top cap?", "lock rotation on this tile?") are best authored as TileSet `custom_data_layers` so users tag tiles inside Godot's existing TileSet UI; the contract-Resource and custom-data-layer mechanisms are complementary rather than competing.
 
@@ -24,12 +24,12 @@ No third-party libraries enter the project — the entire stack is Godot 4.6 nat
 - **GDScript 2** — `@tool`, `class_name`, typed `Array[Resource]`, `@export_group`/`@export_subgroup` give every authoring surface the milestone needs without `EditorInspectorPlugin`.
 - **`TileMapLayer`** (already in use) — single ingress (`set_cell`) and single egress (`_update_cells`) for the addon's autotile loop.
 - **`TileSetAtlasSource` + `alternative_tile` int packing** — encodes both rotation (`TRANSFORM_FLIP_H=4096 | TRANSFORM_FLIP_V=8192 | TRANSFORM_TRANSPOSE=16384`) and the variation alt-ID (low bits) in one parameter, OR'd together.
-- **Native `Resource` subclassing** — `class_name TetraTileAtlasContract extends Resource` exported on the node is the idiomatic 4.6 way to do "declare what you have," with no custom inspector plugin needed.
-- **`TileData.probability`** — read-only weights authored in the stock TileSet inspector; TetraTile runs its own weighted-RNG inside `_update_cells()` because Godot does NOT auto-pick at `set_cell()` time (editor-paint-tool-only behavior, verified in `tutorials/2d/using_tilemaps.html`).
+- **Native `Resource` subclassing** — `class_name PentaTileAtlasContract extends Resource` exported on the node is the idiomatic 4.6 way to do "declare what you have," with no custom inspector plugin needed.
+- **`TileData.probability`** — read-only weights authored in the stock TileSet inspector; PentaTile runs its own weighted-RNG inside `_update_cells()` because Godot does NOT auto-pick at `set_cell()` time (editor-paint-tool-only behavior, verified in `tutorials/2d/using_tilemaps.html`).
 - **`RandomNumberGenerator`** seeded by `hash(cell_coords)` — gives free per-coord determinism that Godot's stock terrain randomization lacks (proposal #10948 confirms the long-standing engine gap).
-- **`TileSet.custom_data_layers`** — used only for per-tile semantics the contract Resource cannot enumerate (e.g., a `tetra_lock_rotation: bool` tag on a specific tile).
+- **`TileSet.custom_data_layers`** — used only for per-tile semantics the contract Resource cannot enumerate (e.g., a `penta_lock_rotation: bool` tag on a specific tile).
 
-**Distribution:** GitHub Release with `tetra_tile-v0.2.0.zip` containing `addons/tetra_tile/` at archive root. `plugin.cfg` `version` field bumped to `0.2.0`, `script=""` preserved (no EditorPlugin entrypoint needed). Do NOT add `min_godot_version` / `compatibility_minimum` — neither is a real `plugin.cfg` field.
+**Distribution:** GitHub Release with `penta_tile-v0.2.0.zip` containing `addons/penta_tile/` at archive root. `plugin.cfg` `version` field bumped to `0.2.0`, `script=""` preserved (no EditorPlugin entrypoint needed). Do NOT add `min_godot_version` / `compatibility_minimum` — neither is a real `plugin.cfg` field.
 
 See full detail in `.planning/research/STACK.md`.
 
@@ -55,23 +55,23 @@ The audience is the author's own platformer games. Quality bar is "works in my g
 
 **Anti-features (deliberately NOT built — must stay aligned with PROJECT.md Out of Scope):**
 - Terrain peering metadata (Godot stock + TileMapDual) — would inherit 5-bit-per-side complexity.
-- Terrain rule tries / "best fit" search (Better Terrain) — implies a search graph; TetraTile's `_update_cells()` is O(1) per cell by design.
+- Terrain rule tries / "best fit" search (Better Terrain) — implies a search graph; PentaTile's `_update_cells()` is O(1) per cell by design.
 - Multi-terrain transitions — explicit out-of-scope per PROJECT.md.
 - Watcher / signal-fanout systems — TileMapDual's issue tracker shows the cost (leaks #75, exported-build crashes #73/#76, HTML5 export failures #59).
 - Persistent coordinate cache — adds memory leak risk and lifecycle bugs at zero scale benefit (~100–1k cell target).
 - Custom drawing API (`draw_cell`, `fill_tile`, `BetterTerrain.set_cell`) — every parallel painting path defeats the v0.1 win.
 - Editor dock / inspector plugin / custom dock for atlas configuration — Asset Library polish, not needed.
-- Full MkDocs site / Asset Library submission / formal test suite (GUT) / tileset converter (Wang/blob → TetraTile) / shader fallback for diagonals / auto-collision / large-map perf benchmarks — all explicit Out of Scope per PROJECT.md.
+- Full MkDocs site / Asset Library submission / formal test suite (GUT) / tileset converter (Wang/blob → PentaTile) / shader fallback for diagonals / auto-collision / large-map perf benchmarks — all explicit Out of Scope per PROJECT.md.
 
 See full detail in `.planning/research/FEATURES.md`.
 
 ### Architecture Approach
 
-The v0.2.0 architecture is strictly additive over v0.1: the existing logic-layer-plus-two-visual-layers composition stays, the 16-state mask table stays, and `_update_cells()` stays the single egress. New surface area is one `Resource` subclass (`TetraTileAtlasContract`), one nested `Resource` subclass (`AtlasSlot`), an optional third internal `_top_layer` (lazy-created only when the contract opts in), and two new methods on `TetraTileMapLayer` (`_resolve_slot(mask)` dispatching by `RotationMode`, and `_pick_alternative(slot, coord)` running the deterministic-hash weighted picker).
+The v0.2.0 architecture is strictly additive over v0.1: the existing logic-layer-plus-two-visual-layers composition stays, the 16-state mask table stays, and `_update_cells()` stays the single egress. New surface area is one `Resource` subclass (`PentaTileAtlasContract`), one nested `Resource` subclass (`AtlasSlot`), an optional third internal `_top_layer` (lazy-created only when the contract opts in), and two new methods on `PentaTileMapLayer` (`_resolve_slot(mask)` dispatching by `RotationMode`, and `_pick_alternative(slot, coord)` running the deterministic-hash weighted picker).
 
 **Major components:**
-1. **`TetraTileMapLayer`** (extended, ~350 LOC est.) — public node; owns logic cells, internal visual layers, contract reference. Public surface unchanged except for one new `@export atlas_contract: TetraTileAtlasContract`.
-2. **`TetraTileAtlasContract`** (NEW Resource, ~60 LOC) — declares atlas shape: `version: int`, `rotation_mode: {SYMMETRIC, NON_ROTATING}`, four named symmetric slots, `mask_slots: Array[AtlasSlot]` for non-rotating mode (16 entries), optional `top_overlay_slot`, `variation_seed: int`.
+1. **`PentaTileMapLayer`** (extended, ~350 LOC est.) — public node; owns logic cells, internal visual layers, contract reference. Public surface unchanged except for one new `@export atlas_contract: PentaTileAtlasContract`.
+2. **`PentaTileAtlasContract`** (NEW Resource, ~60 LOC) — declares atlas shape: `version: int`, `rotation_mode: {SYMMETRIC, NON_ROTATING}`, four named symmetric slots, `mask_slots: Array[AtlasSlot]` for non-rotating mode (16 entries), optional `top_overlay_slot`, `variation_seed: int`.
 3. **`AtlasSlot`** (NEW Resource, ~30 LOC) — `atlas_coords`, `transform_flags`, `alternative_count`, optional `diagonal_complement_atlas_coords` for masks 6/9 in non-rotating mode. Separate file because inner classes that extend Resource cannot serialize their custom properties.
 4. **`_resolve_slot(mask)`** — mode-dispatched lookup. `SYMMETRIC` reads four named slots and computes a transform; `NON_ROTATING` reads `mask_slots[mask]` directly with `transform=0`. Both return the same shape.
 5. **`_pick_alternative(slot, coord)`** — `hash(Vector4i(coord.x, coord.y, atlas_coords.x, atlas_coords.y) + variation_seed)` → `RandomNumberGenerator.seed` → `rand_weighted(weights_from_TileData_probability)`. Pure function; no cache.
@@ -98,15 +98,15 @@ The four researchers agree on most points but propose subtly different mechanism
 
 ### 1. Where the atlas contract lives — typed Resource is the primary path; TileSet custom_data_layers are a complementary annex
 
-**Divergence:** STACK and ARCHITECTURE both recommend a typed `TetraTileAtlasContract extends Resource`. FEATURES additionally proposes augmenting with TileSet `custom_data_layers` (`tetra_role`, `tetra_lock_rotation`). PITFALLS warns that Resource property renames silently orphan saved scenes (issues #92068, #84981).
+**Divergence:** STACK and ARCHITECTURE both recommend a typed `PentaTileAtlasContract extends Resource`. FEATURES additionally proposes augmenting with TileSet `custom_data_layers` (`penta_role`, `penta_lock_rotation`). PITFALLS warns that Resource property renames silently orphan saved scenes (issues #92068, #84981).
 
-**Recommended path (PRIMARY): typed `Resource` subclass.** One `.tres` per layer, attached via `@export var atlas_contract: TetraTileAtlasContract`. Holds: `version: int = 1`, `rotation_mode`, four named `AtlasSlot` references for SYMMETRIC mode, `mask_slots: Array[AtlasSlot]` of length 16 for NON_ROTATING mode, optional `top_overlay_slot`, `variation_seed: int`. This is the source of truth that `_resolve_slot()` reads.
+**Recommended path (PRIMARY): typed `Resource` subclass.** One `.tres` per layer, attached via `@export var atlas_contract: PentaTileAtlasContract`. Holds: `version: int = 1`, `rotation_mode`, four named `AtlasSlot` references for SYMMETRIC mode, `mask_slots: Array[AtlasSlot]` of length 16 for NON_ROTATING mode, optional `top_overlay_slot`, `variation_seed: int`. This is the source of truth that `_resolve_slot()` reads.
 
-**Recommended path (COMPLEMENTARY): TileSet `custom_data_layers` for per-tile semantics that the contract does NOT enumerate.** `tetra_role: String` (per-tile) — useful for the v0.1→v0.2 detection heuristic and for users who prefer to tag tiles inside Godot's existing TileSet UI. `tetra_lock_rotation: bool` (per-tile) — opt-out for individual tiles in an otherwise SYMMETRIC contract. Read at paint time only as a per-tile filter on the candidate set; **never** as the source of contract shape.
+**Recommended path (COMPLEMENTARY): TileSet `custom_data_layers` for per-tile semantics that the contract does NOT enumerate.** `penta_role: String` (per-tile) — useful for the v0.1→v0.2 detection heuristic and for users who prefer to tag tiles inside Godot's existing TileSet UI. `penta_lock_rotation: bool` (per-tile) — opt-out for individual tiles in an otherwise SYMMETRIC contract. Read at paint time only as a per-tile filter on the candidate set; **never** as the source of contract shape.
 
 **Tradeoff for the roadmapper:** The contract Resource is migration-friendlier (single `.tres` retargetable across atlases) but exposed to property-rename traps. Custom data layers are coupled to atlas image refactors (path notation `x:y/alt/key` breaks if the user re-arranges the atlas) but are stable across contract-class evolution. The hybrid takes the best of both: contract owns shape (high-churn surface), custom data layers own per-tile flags (low-churn surface).
 
-**Build-order implication:** Phase 1 ships the Resource only. Custom data layers (`tetra_role` / `tetra_lock_rotation`) are added in Phase 4 where they earn their keep. Phase 1 should NOT introduce v0.1-detection; that lands in Phase 4 because v0.1-detection is what `tetra_role`'s absence signals.
+**Build-order implication:** Phase 1 ships the Resource only. Custom data layers (`penta_role` / `penta_lock_rotation`) are added in Phase 4 where they earn their keep. Phase 1 should NOT introduce v0.1-detection; that lands in Phase 4 because v0.1-detection is what `penta_role`'s absence signals.
 
 ### 2. Mask table size for non-rotating tilesets — 16 runtime entries; non-rotating is generated mechanically from rotating
 
@@ -114,7 +114,7 @@ The four researchers agree on most points but propose subtly different mechanism
 
 **Reconciliation:** ARCHITECTURE describes the **runtime lookup table** (`mask_slots: Array[AtlasSlot]` of length 16). PITFALLS describes the **authoring/validation matrix** the user sees (16 masks × 4 orientation slots = 64 conceptual cells, used to compute the 16-entry runtime table at contract-load time). They are not in conflict.
 
-**Recommended path:** Runtime is 16 entries. Authoring is "the user supplies up to 16 unique atlas coords for non-rotating mode; the rotating-symmetric 4-tile fallback is computed mechanically from those." A `_build_lookup_table()` method on `TetraTileMapLayer`, called on contract load, walks the rotating 16-entry table and substitutes user-supplied non-rotating slots where present, falling back to the rotated rotating slot otherwise. The 64-row authoring matrix that PITFALLS warns about does NOT exist as a hand-written table — it is generated.
+**Recommended path:** Runtime is 16 entries. Authoring is "the user supplies up to 16 unique atlas coords for non-rotating mode; the rotating-symmetric 4-tile fallback is computed mechanically from those." A `_build_lookup_table()` method on `PentaTileMapLayer`, called on contract load, walks the rotating 16-entry table and substitutes user-supplied non-rotating slots where present, falling back to the rotated rotating slot otherwise. The 64-row authoring matrix that PITFALLS warns about does NOT exist as a hand-written table — it is generated.
 
 ### 3. Variation determinism — hardcode for v0.2; expose ONE `variation_seed` knob; defer "seeding strategy contract knob" to v0.3+
 
@@ -139,7 +139,7 @@ The four researchers agree on most points but propose subtly different mechanism
 | 1 | Contract skeleton | Introduce Resources; SYMMETRIC mode reads from contract instead of hardcoded constants. Behavior unchanged. **Gates everything else.** |
 | 2 | Y-axis variation | Smallest new feature, exercises Godot's alt-tile API in isolation, surfaces transform-bit collision (Pitfall 3) before non-rotating lands. |
 | 3 | Non-rotating mode | Largest schema change but conceptually simple once contract + variation are in place. `mask_slots[16]` + generated lookup + diagonal complement. |
-| 4 | Top tiles + v0.1-shape detection + per-tile custom_data_layers | Bundled because they all touch the resolver's specific-then-generic fallback chain. Lazy `_top_layer` + `tetra_role` / `tetra_lock_rotation` + v0.1-detection branch. |
+| 4 | Top tiles + v0.1-shape detection + per-tile custom_data_layers | Bundled because they all touch the resolver's specific-then-generic fallback chain. Lazy `_top_layer` + `penta_role` / `penta_lock_rotation` + v0.1-detection branch. |
 | 5 | Demo refresh + release prep | One expanded demo, README upgrade paragraph, plugin.cfg bump, CHANGELOG, GitHub Release. |
 
 This converges on ARCHITECTURE's ordering with FEATURES' Phase 4 grouping.
@@ -149,10 +149,10 @@ This converges on ARCHITECTURE's ordering with FEATURES' Phase 4 grouping.
 **Divergence:** FEATURES proposes a v0.1-shape detection branch in the resolver. ARCHITECTURE proposes shipping a bundled default contract `.tres` plus a one-`if` fallback for `atlas_contract == null`.
 
 **Reconciliation:** Both coexist and serve different audiences.
-- **Bundled default contract `.tres`** (PRIMARY) — `addons/tetra_tile/tetra_tile_default_contract.tres` ships with SYMMETRIC mode and v0.1 slot assignments. Users upgrade by referencing it from their scene. Demo references it. README documents this as the explicit, intended migration path.
-- **v0.1-shape detection branch** (BACKUP) — one-`if` branch in `_resolve_slot_legacy()` that detects "atlas has 4 tiles in canonical order AND `atlas_contract == null` AND no `tetra_role` custom_data_layer is defined" and treats it as the v0.1 contract. Handles users who upgrade the addon without touching their scenes. Lifetime: one minor version (kept through v0.2.x), then removed.
+- **Bundled default contract `.tres`** (PRIMARY) — `addons/penta_tile/penta_tile_default_contract.tres` ships with SYMMETRIC mode and v0.1 slot assignments. Users upgrade by referencing it from their scene. Demo references it. README documents this as the explicit, intended migration path.
+- **v0.1-shape detection branch** (BACKUP) — one-`if` branch in `_resolve_slot_legacy()` that detects "atlas has 4 tiles in canonical order AND `atlas_contract == null` AND no `penta_role` custom_data_layer is defined" and treats it as the v0.1 contract. Handles users who upgrade the addon without touching their scenes. Lifetime: one minor version (kept through v0.2.x), then removed.
 
-**Roadmap implication:** Both land in Phase 5, not earlier. Phase 1 establishes the `atlas_contract == null → v0.1-hardcoded-fallback` branch, but the v0.1-shape detection heuristic and the bundled `.tres` are user-facing concerns that ship together with the README "Upgrading from 0.1.x" paragraph in Phase 5. The detection heuristic itself is added in Phase 4 because that's when `tetra_role` custom_data_layer (the negative signal) is introduced.
+**Roadmap implication:** Both land in Phase 5, not earlier. Phase 1 establishes the `atlas_contract == null → v0.1-hardcoded-fallback` branch, but the v0.1-shape detection heuristic and the bundled `.tres` are user-facing concerns that ship together with the README "Upgrading from 0.1.x" paragraph in Phase 5. The detection heuristic itself is added in Phase 4 because that's when `penta_role` custom_data_layer (the negative signal) is introduced.
 
 ## Implications for Roadmap
 
@@ -161,10 +161,10 @@ This converges on ARCHITECTURE's ordering with FEATURES' Phase 4 grouping.
 **Rationale:** Every other feature depends on the typed Resource being in place. Doing it first lets variation, non-rotating, and top tiles land as small additive changes against a stable schema.
 
 **Delivers:**
-- `addons/tetra_tile/tetra_tile_atlas_contract.gd` — Resource with `version`, `rotation_mode`, four named symmetric slots, empty `mask_slots`, null `top_overlay_slot`, `variation_seed`.
-- `addons/tetra_tile/tetra_tile_atlas_slot.gd` — Resource with `atlas_coords`, `transform_flags`, `alternative_count: int = 1`, `diagonal_complement_atlas_coords`.
-- `addons/tetra_tile/tetra_tile_default_contract.tres` — bundled default reproducing v0.1 HORIZONTAL behavior.
-- `@export var atlas_contract` on `TetraTileMapLayer` with disconnect-before-reconnect setter + idempotence guard.
+- `addons/penta_tile/penta_tile_atlas_contract.gd` — Resource with `version`, `rotation_mode`, four named symmetric slots, empty `mask_slots`, null `top_overlay_slot`, `variation_seed`.
+- `addons/penta_tile/penta_tile_atlas_slot.gd` — Resource with `atlas_coords`, `transform_flags`, `alternative_count: int = 1`, `diagonal_complement_atlas_coords`.
+- `addons/penta_tile/penta_tile_default_contract.tres` — bundled default reproducing v0.1 HORIZONTAL behavior.
+- `@export var atlas_contract` on `PentaTileMapLayer` with disconnect-before-reconnect setter + idempotence guard.
 - `_resolve_slot(mask)` reading from contract in SYMMETRIC mode; legacy hardcoded fallback when `atlas_contract == null`.
 
 **Addresses:** "Declare what you have" atlas contract (FEATURES P1).
@@ -194,7 +194,7 @@ This converges on ARCHITECTURE's ordering with FEATURES' Phase 4 grouping.
 - Diagonal complement field on `AtlasSlot` for masks 6/9.
 - `update_configuration_warnings()` validator (errors on missing slots, lists specific missing masks).
 - Mask 0 special case at FIRST line of paint function: `if mask == 0: erase; return`.
-- Demo: 16-tile non-rotating atlas (`tetra_tile_directional.png/.tres`) renders correctly.
+- Demo: 16-tile non-rotating atlas (`penta_tile_directional.png/.tres`) renders correctly.
 
 **Avoids:** Pitfall 4 (table errors — generated, not hand-written; validator catches gaps; mask 0 special-cased).
 
@@ -206,9 +206,9 @@ This converges on ARCHITECTURE's ordering with FEATURES' Phase 4 grouping.
 - `top_overlay_slot: AtlasSlot` on contract (optional / null = no top tiles).
 - Lazy `_top_layer: TileMapLayer` (`INTERNAL_MODE_FRONT`) created only when `top_overlay_slot != null`.
 - Top-mask paint rule for masks 4 / 8 / 12 (explicit, never inferred — MEDIUM confidence; validate against demo art before committing — possibly extend to 5/7/13).
-- TileSet custom_data_layer schema: `tetra_role: String`, `tetra_lock_rotation: bool`.
+- TileSet custom_data_layer schema: `penta_role: String`, `penta_lock_rotation: bool`.
 - v0.1-shape detection in `_resolve_slot_legacy()`.
-- Demo: `tetra_tile_grass_top.png/.tres` with platformer grass cap; player walks on top correctly.
+- Demo: `penta_tile_grass_top.png/.tres` with platformer grass cap; player walks on top correctly.
 
 **Avoids:** Pitfall 7 (over-clever auto-detect — top assignment is explicit per-mask in the contract).
 
@@ -217,11 +217,11 @@ This converges on ARCHITECTURE's ordering with FEATURES' Phase 4 grouping.
 **Rationale:** Demo benefits from API stability across all features. Release prep is a single pass at the end.
 
 **Delivers:**
-- One expanded demo with three side-by-side `TetraTileMapLayer` nodes (legacy 4-tile via bundled default, variation, non-rotating, top-tile) OR runtime contract switching.
+- One expanded demo with three side-by-side `PentaTileMapLayer` nodes (legacy 4-tile via bundled default, variation, non-rotating, top-tile) OR runtime contract switching.
 - README "Upgrading from 0.1.x" paragraph documenting both migration paths (bundled default `.tres` PRIMARY; v0.1-shape detection BACKUP).
 - `plugin.cfg` `version` bumped to `0.2.0`; description updated.
 - CHANGELOG.md entry per breaking field rename.
-- GitHub Release `tetra_tile-v0.2.0.zip` with `addons/tetra_tile/` at archive root.
+- GitHub Release `penta_tile-v0.2.0.zip` with `addons/penta_tile/` at archive root.
 - Git tag `v0.2.0` (no `-pre`/`-alpha`/`-dev`).
 
 **Avoids:** Pitfall 6 (migration EditorScript runs cleanly on demo before release), Pitfall 8 (final LOC audit).
@@ -244,7 +244,7 @@ Phase 1 (contract skeleton) ──┬──> Phase 2 (variation) ──┬──
 ### Research Flags
 
 **Phases likely needing deeper research during planning** (`/gsd-research-phase`):
-- **Phase 4 (top tiles + custom_data_layers + v0.1-shape detection)** — three open questions: (1) which masks count as "top edge" — 4/8/12 only, or also 5/7/13 for partial caps? (MEDIUM confidence per ARCHITECTURE, validate against demo art). (2) How does the resolver's specific-then-generic fallback chain interact with per-tile `tetra_lock_rotation`? (3) v0.1-shape detection heuristic strictness.
+- **Phase 4 (top tiles + custom_data_layers + v0.1-shape detection)** — three open questions: (1) which masks count as "top edge" — 4/8/12 only, or also 5/7/13 for partial caps? (MEDIUM confidence per ARCHITECTURE, validate against demo art). (2) How does the resolver's specific-then-generic fallback chain interact with per-tile `penta_lock_rotation`? (3) v0.1-shape detection heuristic strictness.
 - **Phase 3 (non-rotating mode)** — generated lookup mechanics need pinning (transpose-vs-flip rotation-sense bugs in the merge); validator UX in inspector for partial atlases.
 
 **Phases with standard patterns** (skip research):
@@ -277,7 +277,7 @@ Phase 1 (contract skeleton) ──┬──> Phase 2 (variation) ──┬──
 - Context7: `/godotengine/godot-docs` — Resource subclass patterns, `_update_cells`, `set_cell`.
 - Official Godot 4.6 docs: `class_tilemaplayer`, `class_tilesetatlassource`, `class_tiledata`, `class_tileset`, `class_randomnumbergenerator`.
 - Official Godot 4.6 tutorials: `using_tilesets.html`, `using_tilemaps.html` (scattering = editor-only), `gdscript_exports.html`, `making_plugins.html`, `installing_plugins.html`, `inspector_plugins.html`, `resources.md`.
-- TetraTile codebase: `.planning/codebase/ARCHITECTURE.md`, `.planning/codebase/CONCERNS.md`, `addons/tetra_tile/tetra_tile_map_layer.gd`.
+- PentaTile codebase: `.planning/codebase/ARCHITECTURE.md`, `.planning/codebase/CONCERNS.md`, `addons/penta_tile/penta_tile_map_layer.gd`.
 - Project constraints: `.planning/PROJECT.md`.
 
 ### Secondary (MEDIUM confidence)

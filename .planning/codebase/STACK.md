@@ -25,7 +25,7 @@
 - Godot Engine 4.6 - Game development framework
 
 **Key Classes:**
-- `TileMapLayer` - Base class for `TetraTileMapLayer` (extends via script)
+- `TileMapLayer` - Base class for `PentaTileMapLayer` (extends via script)
 - `TileSetAtlasSource` - Atlas tile management
 - `TileSet` - Tileset configuration
 - `Node2D` - Scene tree hierarchy for demo content
@@ -55,15 +55,15 @@
 
 **Build:**
 - `project.godot` - Main engine configuration
-  - Application name: "TetraTile"
-  - Main scene: `res://addons/tetra_tile/demo/tetra_tile_demo.tscn`
+  - Application name: "PentaTile"
+  - Main scene: `res://addons/penta_tile/demo/penta_tile_demo.tscn`
   - Feature set: `4.6`, `GL Compatibility`
   - Physics engine: Jolt Physics (3D, not used in 2D addon)
   - Rendering method: `gl_compatibility`
 
 **Addon Configuration:**
-- `addons/tetra_tile/plugin.cfg` - Addon metadata
-  - Name: TetraTile
+- `addons/penta_tile/plugin.cfg` - Addon metadata
+  - Name: PentaTile
   - Version: 0.1.0
   - Author: Shilo
   - Entry point: None (script-based, no plugin class)
@@ -85,12 +85,12 @@
 
 **Asset Pipeline:**
 - PNG textures (embedded, no external asset pipeline required)
-- TileSet definition files (`tetra_tile_ground.tres`)
+- TileSet definition files (`penta_tile_ground.tres`)
 - Scene files (`.tscn` - text-based TSCN format)
 - Sprite2D, TileMapLayer, and CharacterBody2D visual editor support
 
 **Tooling:**
-- `@tool` script annotation - `TetraTileMapLayer` runs in-editor for live preview
+- `@tool` script annotation - `PentaTileMapLayer` runs in-editor for live preview
 - Built-in signal/property system for inspector tweaking
 - Editor script caching (`.godot/editor/` directory)
 

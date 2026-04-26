@@ -54,17 +54,17 @@ Each sub-region is either **blue** (`#478cbf`, peering bit set) or **white** (em
 
 ## 2. Better Terrain (Portponky) — the click-driven peering-bit territory to avoid
 
-Repo: https://github.com/Portponky/better-terrain. **4,158 LOC GDScript** across 9 files (~16× larger than TetraTile v0.1.0). 60% is editor-side UI for click-painting peering bits.
+Repo: https://github.com/Portponky/better-terrain. **4,158 LOC GDScript** across 9 files (~16× larger than PentaTile v0.1.0). 60% is editor-side UI for click-painting peering bits.
 
 ### Key takeaways
 
 - **No template-image authoring exists in Better Terrain.** Every peering bit is assigned by clicking a polygon overlay on each tile. Validates that template-image decoding is genuinely orthogonal prior art.
 - **Match modes:** `MATCH_TILES` (sides + corners; replaces Godot's blob47), `MATCH_VERTICES` (corners only; replaces Godot's wang-corner), `CATEGORY` (abstract grouping; never placed), `DECORATION` (sparse overlay tiles, treated as empty by other terrains).
 - **Stores peering as `Object.set_meta` Dictionary** keyed by `CellNeighbor` integers (0–15). Each direction holds an Array of accepted terrain IDs (multi-match). Avoids Godot's native peering-bit fields.
-- **Symmetry types:** `NONE / MIRROR / FLIP / REFLECT / ROTATE_CW / ROTATE_CCW / ROTATE_180 / ALL / ROTATE_ALL`. Useful design reference if TetraTile ever surfaces explicit symmetry per slot — but TetraTile's "rotation-reuse via TRANSFORM_FLIP_*" already covers this implicitly for the Tetra layouts.
+- **Symmetry types:** `NONE / MIRROR / FLIP / REFLECT / ROTATE_CW / ROTATE_CCW / ROTATE_180 / ALL / ROTATE_ALL`. Useful design reference if PentaTile ever surfaces explicit symmetry per slot — but PentaTile's "rotation-reuse via TRANSFORM_FLIP_*" already covers this implicitly for the Tetra layouts.
 - **README quote:** stock Godot terrains have "tricky behaviors", are "quite slow", and the API "is difficult to use at runtime."
 
-### What TetraTile borrows (zero, deliberately)
+### What PentaTile borrows (zero, deliberately)
 
 Better Terrain is exactly what `PROJECT.md`'s identity guardrail warns against: peering tries, watcher/signal infrastructure, ~1,000 LOC editor dock. The `CATEGORY` and `DECORATION` concepts are interesting parking-lot items for v0.3+ multi-terrain work, but nothing here imports into v0.2 scope.
 
@@ -76,25 +76,25 @@ Already covered in `GODOT_TERRAIN.md`. Key facts relevant to the decoder:
 
 - **Center is implicit** via `TileData.terrain` (the tile's identity field). No clickable center polygon. The center bit is "this terrain", set automatically once `terrain_set` + `terrain` are assigned.
 - **`MATCH_SIDES` has disputed semantics** — issue #79411 still open as of fetch, no PR, no maintainer fix. Community guidance is to prefer `MATCH_CORNERS_AND_SIDES` or `MATCH_CORNERS`; avoid `MATCH_SIDES`.
-- **Authoring burden:** 376+ click-bits per terrain for a single 47-tile blob set. This is the headline pain TetraTile attacks.
+- **Authoring burden:** 376+ click-bits per terrain for a single 47-tile blob set. This is the headline pain PentaTile attacks.
 
 ---
 
-## 4. Synthesis for TetraTile's decoder
+## 4. Synthesis for PentaTile's decoder
 
 ### Adopt dandeliondino's marker geometry verbatim
 
 - 9-region sample plan (1 center + 4 corners + 4 edges) at fixed positions.
-- White/blue/grey palette, BUT TetraTile decodes by **alpha** rather than by exact blue match — this lets users paint over the templates with any opaque color while preserving the encoding.
-- **Center can be ignored by TetraTile.** Per the user's stated intuition (and consistent with the dual-grid logic): if any peering bit is set, the cell is filled; if no peering bits are set, mask = 0 = no draw. We don't need to author or decode a center bit.
+- White/blue/grey palette, BUT PentaTile decodes by **alpha** rather than by exact blue match — this lets users paint over the templates with any opaque color while preserving the encoding.
+- **Center can be ignored by PentaTile.** Per the user's stated intuition (and consistent with the dual-grid logic): if any peering bit is set, the cell is filled; if no peering bits are set, mask = 0 = no draw. We don't need to author or decode a center bit.
 
-So the TetraTile decoder samples **8 anchors per slot** (not 9): 4 corner-quadrant centers + 4 edge midpoints. Layout subclass declares which subset matters.
+So the PentaTile decoder samples **8 anchors per slot** (not 9): 4 corner-quadrant centers + 4 edge midpoints. Layout subclass declares which subset matters.
 
 ### Per-layout sample subset
 
 | Layout | Sampled anchors | Why |
 |--------|-----------------|-----|
-| TetraHorizontal / TetraVertical | 4 corners | Mask is 4-bit corner (TL/TR/BL/BR) |
+| PentaHorizontal / PentaVertical | 4 corners | Mask is 4-bit corner (TL/TR/BL/BR) |
 | DualGrid16 | 4 corners | Same — dual-grid corner mask |
 | Wang2Corner | 4 corners | CR31 corner naming, same physical anchors |
 | Wang2Edge | 4 edges | Mask is 4-bit edge (N/E/S/W) |
@@ -105,9 +105,9 @@ The 8-anchor sampler covers every planned v0.2 layout. Tile count derivation fal
 
 ---
 
-## 5. Dual-grid vs single-grid — the distinction TetraTile must surface
+## 5. Dual-grid vs single-grid — the distinction PentaTile must surface
 
-**TetraTile v0.1 is dual-grid.** Logic cells live at the layer level; visual cells are offset by half a tile, so display cells live at 4-corner intersections of logic cells. The mask at each display cell is computed from the 4 surrounding logic cells.
+**PentaTile v0.1 is dual-grid.** Logic cells live at the layer level; visual cells are offset by half a tile, so display cells live at 4-corner intersections of logic cells. The mask at each display cell is computed from the 4 surrounding logic cells.
 
 **Most layouts in v0.2 are NOT dual-grid.** Wang-edge, Wang-corner (in the CR31 single-grid convention), Blob47 — all of these compute the mask from a logic cell's OWN neighbors (4 sides for Wang-edge; 4 corners for Wang-corner; 8 for Blob47), and the painted tile lives at the SAME coordinate as the logic cell.
 
@@ -115,8 +115,8 @@ The 8-anchor sampler covers every planned v0.2 layout. Tile count derivation fal
 
 | Layout | Mask | Grid model |
 |--------|------|------------|
-| TetraHorizontal | 4-bit corner | **Dual-grid** (v0.1 inheritance) |
-| TetraVertical | 4-bit corner | **Dual-grid** (v0.1 inheritance) |
+| PentaHorizontal | 4-bit corner | **Dual-grid** (v0.1 inheritance) |
+| PentaVertical | 4-bit corner | **Dual-grid** (v0.1 inheritance) |
 | DualGrid16 | 4-bit corner | **Dual-grid** (the "DG16" name is literal) |
 | Wang2Corner | 4-bit corner | Single-grid |
 | Wang2Edge | 4-bit edge | Single-grid |
@@ -135,12 +135,12 @@ The 8-anchor sampler covers every planned v0.2 layout. Tile count derivation fal
 ### Recommended API
 
 ```gdscript
-# tetra_tile_layout.gd  (base)
+# penta_tile_layout.gd  (base)
 @export var description: String = ""
 # ... existing exports ...
 
 func is_dual_grid() -> bool:
-    push_error("TetraTileLayout subclass must override is_dual_grid()")
+    push_error("PentaTileLayout subclass must override is_dual_grid()")
     return false
 
 func compute_mask(coord: Vector2i, sample_fn: Callable) -> int:
@@ -154,7 +154,7 @@ func mask_to_atlas(mask: int) -> AtlasSlot:
 
 `is_dual_grid()` (or equivalent property) is a virtual on the base class. Subclasses override with a single literal return. Inspector doesn't need to expose it as a per-instance toggle — it's an architectural decision baked into the layout subclass.
 
-### Architectural impact on TetraTileMapLayer
+### Architectural impact on PentaTileMapLayer
 
 `_update_cells()` needs two paint pipelines:
 
@@ -163,13 +163,13 @@ func mask_to_atlas(mask: int) -> AtlasSlot:
 
 The layer's `_resolve_layout()` reads `layout.is_dual_grid()` and routes accordingly. The two pipelines share the erase + `_pick_alternative` infrastructure but differ in (a) which cells are affected by a given logic-cell change, (b) where the visual tile is painted (display cell vs logic cell), and (c) whether the diagonal-overlay layer is needed (single-grid layouts encode all states explicitly so masks 6/9 don't need composition).
 
-This is a real expansion of `tetra_tile_map_layer.gd`. Probably +60–80 LOC for the single-grid pipeline. Still well under TileMapDual's surface area.
+This is a real expansion of `penta_tile_map_layer.gd`. Probably +60–80 LOC for the single-grid pipeline. Still well under TileMapDual's surface area.
 
 ---
 
 ## 6. What this means for Phase 1
 
-The base `TetraTileLayout` Resource needs at minimum:
+The base `PentaTileLayout` Resource needs at minimum:
 
 - `compute_mask(coord, sample_fn) -> int` virtual
 - `mask_to_atlas(mask) -> AtlasSlot` virtual
@@ -179,13 +179,13 @@ The base `TetraTileLayout` Resource needs at minimum:
 - `description: String` export
 - (Optional, for the auto-decoder) `decoder_image: Texture2D` export — when null, the addon decodes from `template_image`; when set, the user's explicit decoder overrides
 
-`TetraTileLayoutTetraHorizontal` and `TetraTileLayoutTetraVertical` (Phase 1 deliverables) both override `is_dual_grid()` to return `true`. Their `compute_mask` is the existing 4-bit corner OR; their `mask_to_atlas` produces the 16-state table (with rotation reuse encoded via `transform_flags` on the AtlasSlot).
+`PentaTileLayoutPentaHorizontal` and `PentaTileLayoutPentaVertical` (Phase 1 deliverables) both override `is_dual_grid()` to return `true`. Their `compute_mask` is the existing 4-bit corner OR; their `mask_to_atlas` produces the 16-state table (with rotation reuse encoded via `transform_flags` on the AtlasSlot).
 
 Phase 1 must ship the dual-grid pipeline (that's just preserving v0.1's behavior under the new architecture). The single-grid pipeline can ship in Phase 1 OR Phase 2 — Phase 2's first single-grid layout (DualGrid16 doesn't count, it's also dual-grid; first true single-grid is Wang2Corner) is when the pipeline is genuinely needed.
 
 ### Recommendation: ship single-grid pipeline in Phase 1
 
-Even though no Phase-1 layout uses single-grid, shipping the pipeline now means Phase 2's three layouts are pure subclass adds with no `tetra_tile_map_layer.gd` changes. Phase 1 stays the load-bearing architecture phase; Phases 2/3 stay layout-only.
+Even though no Phase-1 layout uses single-grid, shipping the pipeline now means Phase 2's three layouts are pure subclass adds with no `penta_tile_map_layer.gd` changes. Phase 1 stays the load-bearing architecture phase; Phases 2/3 stay layout-only.
 
 ---
 

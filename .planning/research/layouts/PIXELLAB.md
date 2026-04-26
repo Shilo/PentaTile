@@ -15,11 +15,11 @@ PixelLab supports tile generation via two surfaces (web editor and Aseprite plug
 3. **Tileset 3×3 export** = 9-tile Match Sides 3×3 minimal = needs new `Minimal3x3` layout
 4. **Aseprite plugin native** (pre-export) = **proprietary 8×8 atlas with variation banks** = needs two new layouts (`PixelLabTopDown` + `PixelLabSideScroller`)
 
-The web editor outputs ONLY one of the three standard exports. The Aseprite plugin shows the native 8×8 atlas before export — and that's where TetraTile's value-add is biggest, because PixelLab's own exporter discards the variation tiles when collapsing the 8×8 down to a standard format.
+The web editor outputs ONLY one of the three standard exports. The Aseprite plugin shows the native 8×8 atlas before export — and that's where PentaTile's value-add is biggest, because PixelLab's own exporter discards the variation tiles when collapsing the 8×8 down to a standard format.
 
 **Updated coverage status:**
 
-| PixelLab output | Source | TetraTile coverage |
+| PixelLab output | Source | PentaTile coverage |
 |-----------------|--------|---------------------|
 | Tileset Wang export | web + Aseprite | ✓ `DualGrid16` (Phase 2) |
 | Tileset 15 export | web + Aseprite | ✓ `TilesetterWang15` (Phase 3) |
@@ -73,17 +73,17 @@ Verified by spike 003 against 16 PixelLab samples — 12 fully match, 4 partial 
 
 Many cells share the same role-ID. Top-down has 28 cells of role 6 (mask 15 = bulk interior fill). Side-scroller has 16 of role 12 (mask 0 = sky/empty) and 13 of role 6 (ground bulk).
 
-PixelLab's own exporter discards these duplicates (`tileset_transform.lua:73` — "first occurrence only"). **TetraTile reads the full 8×8 and uses the duplicates as variation_seed-keyed variants.** This is meaningful value beyond mere compatibility.
+PixelLab's own exporter discards these duplicates (`tileset_transform.lua:73` — "first occurrence only"). **PentaTile reads the full 8×8 and uses the duplicates as variation_seed-keyed variants.** This is meaningful value beyond mere compatibility.
 
 ---
 
-## Architecture for TetraTile
+## Architecture for PentaTile
 
 ### Two new single-grid layout subclasses
 
 ```gdscript
-class_name TetraTileLayoutPixelLabTopDown
-extends TetraTileLayout
+class_name PentaTileLayoutPixelLabTopDown
+extends PentaTileLayout
 
 const _CELL_TO_ROLE := [
     6, 6, 6, 6, 6, 6, 6, 6,
@@ -113,15 +113,15 @@ func mask_to_atlas(mask: int) -> AtlasSlot:
     return AtlasSlot.new(atlas_coords=cell, ...)
 ```
 
-Same shape for `TetraTileLayoutPixelLabSideScroller` — only `_CELL_TO_ROLE` differs. The role-to-mask mapping is shared.
+Same shape for `PentaTileLayoutPixelLabSideScroller` — only `_CELL_TO_ROLE` differs. The role-to-mask mapping is shared.
 
-Alternative: one combined `TetraTileLayoutPixelLab` with `mode: { TOP_DOWN, SIDE_SCROLLER }` enum. Either works architecturally; two subclasses give a cleaner inspector picker.
+Alternative: one combined `PentaTileLayoutPixelLab` with `mode: { TOP_DOWN, SIDE_SCROLLER }` enum. Either works architecturally; two subclasses give a cleaner inspector picker.
 
 ### Constraints / limitations
 
 - **`reference_image_size` 16 or 32 px** supported. The Aseprite plugin currently doesn't expose other sizes for tileset generation.
 - **`transition_size = 1.0`** (top-down beta) extends the canvas with an extra strip the local Lua doesn't describe — server-side layout. Skip these samples; document as "transition_size 0/0.25/0.5 only" in v0.2.
-- **PixelLab version coupling.** The hardcoded layout tables are versioned with the Aseprite plugin. If PixelLab ships a new plugin version with different layouts, TetraTile's tables silently misread. Mitigation: include a `pixellab_version: int = 1` field on the layout subclass; bump when we update.
+- **PixelLab version coupling.** The hardcoded layout tables are versioned with the Aseprite plugin. If PixelLab ships a new plugin version with different layouts, PentaTile's tables silently misread. Mitigation: include a `pixellab_version: int = 1` field on the layout subclass; bump when we update.
 
 ---
 
@@ -143,7 +143,7 @@ Alternative: one combined `TetraTileLayoutPixelLab` with `mode: { TOP_DOWN, SIDE
 
 - 3×3 atlas, 9-tile Match Sides 3×3 minimal
 - Single-grid 4-bit edge mask (N/E/S/W), only 9 of 16 mask states covered
-- **Adds `TetraTileLayoutMinimal3x3`** to v0.2 scope (was previously deferred to v0.3)
+- **Adds `PentaTileLayoutMinimal3x3`** to v0.2 scope (was previously deferred to v0.3)
 - Also covers legacy Godot 3.x atlases and RPG Maker A2 ground sets
 
 ---
@@ -154,7 +154,7 @@ Per the brainstorm, v0.2 grows from 8 to 11 layouts:
 
 | Layout | Phase | Status |
 |--------|-------|--------|
-| TetraHorizontal / TetraVertical | 1 | Existing |
+| PentaHorizontal / PentaVertical | 1 | Existing |
 | DualGrid16 | 2 | Existing |
 | Wang2Corner / Wang2Edge | 2 | Existing |
 | **Minimal3x3** (NEW) | 2 or 3 | Added — covers PixelLab 3×3 export + RPG Maker A2 + legacy Godot 3.x |
@@ -174,9 +174,9 @@ A common confusion: "side-scroller" and "top-down" tilesets look different and s
 
 - Both PixelLab native modes use the **same Wang-16 corner mask topology** (16 mask states, 4-bit corner).
 - They differ in **cell-position-to-role layout** within the 8×8 canvas (different art-prompt arrangement) and in **art content** (gravity-oriented vs rotation-symmetric).
-- TetraTile treats them as separate subclasses purely because the cell positions differ, not because the masks do.
+- PentaTile treats them as separate subclasses purely because the cell positions differ, not because the masks do.
 
-So while PixelLab gets two TetraTile subclasses, layouts like `DualGrid16` work for both top-down and side-scroller content as long as the user authors appropriate art.
+So while PixelLab gets two PentaTile subclasses, layouts like `DualGrid16` work for both top-down and side-scroller content as long as the user authors appropriate art.
 
 ---
 
@@ -186,13 +186,13 @@ So while PixelLab gets two TetraTile subclasses, layouts like `DualGrid16` work 
 - An **MCP server** (`github.com/pixellab-code/pixellab-mcp`) exposes generation to AI agents — produces images, not Godot resources.
 - Engine name-checked in PixelLab docs: **Sprite Fusion only.** Not Godot, Unity, Tiled, or LDtk.
 
-TetraTile is the Godot integration — no first-party tool to compete with.
+PentaTile is the Godot integration — no first-party tool to compete with.
 
 ---
 
 ## Marketing line for the README
 
-> **PixelLab interop:** TetraTile reads PixelLab's full 8×8 native generation including the variation tiles the official exporter discards. Drop a PixelLab Aseprite output into your scene with a `TetraTileLayoutPixelLabTopDown` or `…SideScroller` contract — get up to 28 variants of the bulk fill for free.
+> **PixelLab interop:** PentaTile reads PixelLab's full 8×8 native generation including the variation tiles the official exporter discards. Drop a PixelLab Aseprite output into your scene with a `PentaTileLayoutPixelLabTopDown` or `…SideScroller` contract — get up to 28 variants of the bulk fill for free.
 
 ---
 

@@ -1,10 +1,10 @@
 ---
 title: Autotiling Layout Taxonomy
-project: TetraTile v0.2.x — Layout Library Milestone
+project: PentaTile v0.2.x — Layout Library Milestone
 researched: 2026-04-25
 researcher: layouts-1
 mode: ecosystem
-overall_confidence: HIGH on top-tier layouts (tetra, dual-grid 16, blob/47, marching squares, RPG Maker A2/A4); MEDIUM on Godot-4 terrain mode internals (Match Sides) and platformer top-cap conventions; LOW on a few historical layouts (CR31's 3-edge / 3-corner / 4-order, Tilesetter's per-edge "Sources").
+overall_confidence: HIGH on top-tier layouts (penta, dual-grid 16, blob/47, marching squares, RPG Maker A2/A4); MEDIUM on Godot-4 terrain mode internals (Match Sides) and platformer top-cap conventions; LOW on a few historical layouts (CR31's 3-edge / 3-corner / 4-order, Tilesetter's per-edge "Sources").
 primary_disambiguation_source: BorisTheBrave, "Classification of Tilesets" (2021-11-14) — https://www.boristhebrave.com/2021/11/14/classification-of-tilesets/
 quality_gate:
   layouts_documented: 18
@@ -56,7 +56,7 @@ Source: [BorisTheBrave: Classification of Tilesets (2021)](https://www.boristheb
 
 ## Layout 1 — Tetra (this addon)
 
-**Aliases:** TetraTile, "4-tile dual-grid", "minimal corner-mask set."
+**Aliases:** PentaTile, "4-tile dual-grid", "minimal corner-mask set."
 
 **Mask system:** 4-bit corner mask (TL=1, TR=2, BL=4, BR=8) → 16 states. Identical input to marching squares; the difference is the *atlas* and the rotation-reuse strategy.
 
@@ -71,8 +71,8 @@ Source: [BorisTheBrave: Classification of Tilesets (2021)](https://www.boristheb
 - Order is canonical and exposed via the `atlas_layout` enum (`HORIZONTAL` / `VERTICAL`).
 
 **Where it's used:**
-- TetraTile addon (this project), Godot 4.6.
-- The 4-tile reduction is also documented as the BorisTheBrave "marching squares with rotation" reduction (which gives 6 tiles; tetra further reduces to 4 by treating "border" as one archetype with transforms applying to all four edge orientations and using the 2-layer overlay for the ambiguous diagonals).
+- PentaTile addon (this project), Godot 4.6.
+- The 4-tile reduction is also documented as the BorisTheBrave "marching squares with rotation" reduction (which gives 6 tiles; penta further reduces to 4 by treating "border" as one archetype with transforms applying to all four edge orientations and using the 2-layer overlay for the ambiguous diagonals).
 - Comparable in spirit to the "5-tile dual-grid AutoTiler" Godot Asset Library entry (#4183) which exposes 5 tiles + transparent.
 
 **Strengths:**
@@ -85,7 +85,7 @@ Source: [BorisTheBrave: Classification of Tilesets (2021)](https://www.boristheb
 - The 2-layer composition for masks 6/9 is unique to this addon. Other systems express those states with a fully-authored tile (blob/47) or treat them as visual artifacts (dual-grid 16).
 - No multi-terrain story.
 
-**Reference image:** `addons/tetra_tile/tetra_tile_template.png` (in this repo).
+**Reference image:** `addons/penta_tile/penta_tile_template.png` (in this repo).
 
 **Confidence:** HIGH — this is the source-of-truth code in the addon.
 
@@ -111,7 +111,7 @@ Source: [BorisTheBrave: Classification of Tilesets (2021)](https://www.boristheb
 - TileMapDual ships preset templates per grid type (square, isometric, hex vertical, hex horizontal). Square preset is essentially a 4×4 with transparent at index 0.
 
 **Where it's used:**
-- **TileMapDual** (Godot, pablogila) — direct competitor to TetraTile. Verified mask system, claims "only 15 tiles needed."
+- **TileMapDual** (Godot, pablogila) — direct competitor to PentaTile. Verified mask system, claims "only 15 tiles needed."
 - **jess-hammer/dual-grid-tilemap-system-godot** (Godot 4.4 C# reference impl) — "set of 16 hard-coded rules… maximum of only 16 tiles required (you could cut that number down to 6 if your tiles have symmetry)."
 - **Excalibur.js Dual Tilemap Autotiling Technique** — JS/web, the 5-tile + transparent variant.
 - **5-Tile Dual-Grid AutoTiler** (Godot Asset Library #4183).
@@ -126,7 +126,7 @@ Source: [BorisTheBrave: Classification of Tilesets (2021)](https://www.boristheb
 
 **Weaknesses:**
 - Visual layer is offset by half a tile, which can confuse collision authoring and Z-sort logic if not handled.
-- "Disconnected diagonals" (masks 6 and 9 in TL/TR/BL/BR convention) are visually ambiguous: do you draw two outer corners meeting at a point, or a single weird diamond? Different implementations choose differently. (TetraTile composes with two layers; TileMapDual draws a dedicated diagonal tile.)
+- "Disconnected diagonals" (masks 6 and 9 in TL/TR/BL/BR convention) are visually ambiguous: do you draw two outer corners meeting at a point, or a single weird diamond? Different implementations choose differently. (PentaTile composes with two layers; TileMapDual draws a dedicated diagonal tile.)
 - 16 rules to enumerate; one bug in the lookup table corrupts every diagonal in the game.
 
 **Reference image:**
@@ -414,7 +414,7 @@ CR31's convention reads bits clockwise from N (N=1, NE=2, E=4, SE=8, S=16, SW=32
 **Weaknesses:**
 - Tile count explodes with terrain count (N⁴).
 - Most engines don't support multi-terrain natively at the autotile level — Godot's terrain peering bits attempt it but require N-terrain × 16 peering combinations per terrain to be authored.
-- Out of scope for TetraTile per project constraints (no multi-terrain story).
+- Out of scope for PentaTile per project constraints (no multi-terrain story).
 
 **Reference image:** Tilesetter docs has 3-terrain examples — https://www.tilesetter.org/docs/generating_tilesets
 
@@ -582,11 +582,11 @@ CR31's convention reads bits clockwise from N (N=1, NE=2, E=4, SE=8, S=16, SW=32
 **Weaknesses:**
 - Hard-coded 48-px tile size in MV/MZ.
 - Sub-blob composition baked into engine.
-- Out of scope for TetraTile (no animation requirement, no 48×48 hard size).
+- Out of scope for PentaTile (no animation requirement, no 48×48 hard size).
 
 **Reference image:** RPG Maker official asset standards: https://rpgmakerofficial.com/product/MZ_help-en/01_11_01.html
 
-**Confidence:** HIGH on existence. MEDIUM on TetraTile relevance (animation is out of scope).
+**Confidence:** HIGH on existence. MEDIUM on PentaTile relevance (animation is out of scope).
 
 ---
 
@@ -708,7 +708,7 @@ Each row's left/right tiles handle horizontal connectivity to adjacent wall bloc
 
 **Strengths:** Simple drop-in.
 
-**Weaknesses:** Not actually an autotile format. Including it means "support normal tiles without autotiling," which TetraTile already does (the user can place a non-fill tile via standard `set_cell`).
+**Weaknesses:** Not actually an autotile format. Including it means "support normal tiles without autotiling," which PentaTile already does (the user can place a non-fill tile via standard `set_cell`).
 
 **Reference image:** Invenblocker's templates.
 
@@ -733,7 +733,7 @@ Each row's left/right tiles handle horizontal connectivity to adjacent wall bloc
 - Platformer-game asset packs on Itch.io, OpenGameArt — most popular pattern by far for sidescrollers.
 - Cave Story (referenced via Cave Story tribute site).
 - Mapledev's "How to Design a Platformer Tileset" tutorial — 9-slice corner system is the canonical reference.
-- Kenney's pico-8 platformer pack (used in TetraTile's demo!) — this is exactly why TetraTile needs top-tile support.
+- Kenney's pico-8 platformer pack (used in PentaTile's demo!) — this is exactly why PentaTile needs top-tile support.
 
 **Strengths:**
 - Visually familiar — every platformer player recognizes "grass on top, dirt below" instantly.
@@ -742,7 +742,7 @@ Each row's left/right tiles handle horizontal connectivity to adjacent wall bloc
 
 **Weaknesses:**
 - Breaks pure rotation symmetry — TR ≠ TL flipped, because the top has grass.
-- Requires a "which way is up" convention baked into the autotiler. TetraTile v0.1's rotation reuse fights this directly.
+- Requires a "which way is up" convention baked into the autotiler. PentaTile v0.1's rotation reuse fights this directly.
 - No standard mask system — the grass-on-dirt pattern is an art convention overlaid on whatever mask system the engine uses.
 
 **Reference image:** https://www.tumblr.com/mapledev/10406905135/howtotileset
@@ -768,7 +768,7 @@ Each row's left/right tiles handle horizontal connectivity to adjacent wall bloc
 
 **Strengths:**
 - Maximum tile reuse via transforms.
-- TetraTile v0.1 is optimized for this case.
+- PentaTile v0.1 is optimized for this case.
 - Compatible with any underlying mask system.
 
 **Weaknesses:**
@@ -927,7 +927,7 @@ Layouts 16 (A3 walls), 18 (A5 normal).
 
 **Cluster F — N-color multi-terrain:**
 Layout 9.
-**Mask scales with terrain count.** Out of TetraTile scope per project constraints, but architecturally fits Cluster B/C with wider per-corner/per-edge state.
+**Mask scales with terrain count.** Out of PentaTile scope per project constraints, but architecturally fits Cluster B/C with wider per-corner/per-edge state.
 
 ### Architectural Implication
 
@@ -957,15 +957,15 @@ These could not be pinned down with high confidence in this research pass. Phase
 
 1. **Godot 4 "Match Sides" exact mask semantics.** Issue #79411 disputes whether MS is really 4-edge or something else. Documentation contradicts reporter. Need to read engine source to verify.
 
-2. **Canonical bit ordering for 47-tile blob.** Three different conventions (CR31, Excalibur/jaconir, Enichan). Picking one for TetraTile is a *decision*, not a *discovery*. Recommend: support all three via a `bit_layout` enum on the contract, defaulting to CR31 because that's the literature standard.
+2. **Canonical bit ordering for 47-tile blob.** Three different conventions (CR31, Excalibur/jaconir, Enichan). Picking one for PentaTile is a *decision*, not a *discovery*. Recommend: support all three via a `bit_layout` enum on the contract, defaulting to CR31 because that's the literature standard.
 
-3. **Tilesetter "per-edge Sources" property.** The Tilesetter docs reference a "Sources" system for choosing per-edge atlases. Could not find a complete spec. Relevant if TetraTile wants compatibility with Tilesetter exports; not relevant for v0.2 scope.
+3. **Tilesetter "per-edge Sources" property.** The Tilesetter docs reference a "Sources" system for choosing per-edge atlases. Could not find a complete spec. Relevant if PentaTile wants compatibility with Tilesetter exports; not relevant for v0.2 scope.
 
 4. **CR31's 3-edge / 3-corner / 4-order tiles.** Boris's mirror references these but the linked pages were 404 / unreachable in this research pass. Probably 81 / 81 / 256 tiles respectively (3³ and 4⁴ generalizations). Not relevant for v0.2; relevant if multi-terrain is ever scoped in.
 
 5. **Exact RPG Maker A3 / A4 grid breakdown.** Atlas dimensions confirmed (768×384 / 768×720) but the exact tile-per-set arithmetic varies per docs. Implementing A3/A4 requires reading actual RPG Maker MV/MZ files to verify, not just blog posts.
 
-6. **Stardew Valley / Terraria autotile internals.** Both are reportedly some flavor of blob/47 with custom variations, but neither publishes formal docs. Not relevant for TetraTile compatibility goals.
+6. **Stardew Valley / Terraria autotile internals.** Both are reportedly some flavor of blob/47 with custom variations, but neither publishes formal docs. Not relevant for PentaTile compatibility goals.
 
 7. **Platformer top-cap convention's relationship to mask 4/8/12.** ARCHITECTURE.md flagged 4/8/12 as the "top edge" mask states. This document does not validate that against actual platformer art — must be done in Phase 4 with the Kenney pico-8 demo asset.
 
@@ -973,7 +973,7 @@ These could not be pinned down with high confidence in this research pass. Phase
 
 9. **Tiled "Wang IDs" 8-tuple format and how engines consume it.** Tiled docs describe the metadata format but the rendering engines (Godot, Unity, custom) each implement Wang lookup differently. Compatibility with Tiled exports is layout-tooling work, not v0.2 scope.
 
-10. **Whether "Match Sides" Godot 4 mode is genuinely useful or vestigial.** Bug tracker chatter suggests few users adopt it. If TetraTile only supports two of the three Godot 4 terrain modes, MS is the safest to skip.
+10. **Whether "Match Sides" Godot 4 mode is genuinely useful or vestigial.** Bug tracker chatter suggests few users adopt it. If PentaTile only supports two of the three Godot 4 terrain modes, MS is the safest to skip.
 
 ---
 

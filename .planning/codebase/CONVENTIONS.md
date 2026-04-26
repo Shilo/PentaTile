@@ -5,12 +5,12 @@
 ## Naming Patterns
 
 **Files:**
-- GDScript files use `snake_case` (e.g., `tetra_tile_map_layer.gd`, `demo_player.gd`, `demo_runtime_painter.gd`)
-- Scene files use `snake_case` (e.g., `tetra_tile_demo.tscn`)
+- GDScript files use `snake_case` (e.g., `penta_tile_map_layer.gd`, `demo_player.gd`, `demo_runtime_painter.gd`)
+- Scene files use `snake_case` (e.g., `penta_tile_demo.tscn`)
 - Configuration files use standard names (`plugin.cfg`, `.editorconfig`, `.gitattributes`)
 
 **Classes:**
-- Class names use `PascalCase` and are declared with `class_name` directive (e.g., `TetraTileMapLayer` in `tetra_tile_map_layer.gd`)
+- Class names use `PascalCase` and are declared with `class_name` directive (e.g., `PentaTileMapLayer` in `penta_tile_map_layer.gd`)
 
 **Functions:**
 - Private functions start with underscore and use `snake_case` (e.g., `_ready()`, `_update_cells()`, `_ensure_visual_layers()`, `_queue_rebuild()`)
@@ -43,11 +43,11 @@
 - Type inference used for simple local variables
 
 **Attributes/Decorators:**
-- `@tool` decorator used on scripts that work in editor (e.g., `TetraTileMapLayer`)
+- `@tool` decorator used on scripts that work in editor (e.g., `PentaTileMapLayer`)
 - `@icon()` decorator applied to node classes with custom icons
 - `@export` decorator used for properties exposed in inspector
 - `@export_range()` decorator used to constrain numeric ranges (e.g., `@export_range(0.0, 1.0, 0.01)`)
-- `@onready` decorator used for node references initialized after scene tree entry (e.g., `@onready var tetra_map: TetraTileMapLayer = get_node(map_path)`)
+- `@onready` decorator used for node references initialized after scene tree entry (e.g., `@onready var tetra_map: PentaTileMapLayer = get_node(map_path)`)
 
 **Setter Patterns:**
 - Property setters trigger deferred rebuild or state synchronization:
@@ -87,7 +87,7 @@
 **Framework:** Built-in `print()` and `push_error()` functions (standard Godot logging)
 
 **Patterns:**
-- No formal logging observed in production code (`tetra_tile_map_layer.gd`)
+- No formal logging observed in production code (`penta_tile_map_layer.gd`)
 - Demo code uses no logging
 - Error reporting relies on Godot's console output
 
@@ -109,7 +109,7 @@
 
 ## Function Design
 
-**Size:** Functions are small and focused. Most functions in `tetra_tile_map_layer.gd` are 1-15 lines.
+**Size:** Functions are small and focused. Most functions in `penta_tile_map_layer.gd` are 1-15 lines.
 
 **Parameters:**
 - Functions accept only necessary parameters
@@ -124,12 +124,12 @@
 ## Module Design
 
 **Single Responsibility:**
-- `TetraTileMapLayer` (`tetra_tile_map_layer.gd`) - core dual-grid autotiling logic
+- `PentaTileMapLayer` (`penta_tile_map_layer.gd`) - core dual-grid autotiling logic
 - `DemoPlayer` (`demo_player.gd`) - simple physics and input handling for demo
 - `DemoRuntimePainter` (`demo_runtime_painter.gd`) - runtime painting interaction handler
 
 **Exports:**
-- Primary class exported via `class_name TetraTileMapLayer`
+- Primary class exported via `class_name PentaTileMapLayer`
 - Public API exposed through exported properties and public methods (`rebuild()`)
 - Internal implementation hidden via underscore-prefixed methods and variables
 

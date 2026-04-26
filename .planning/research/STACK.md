@@ -4,7 +4,7 @@
 **Researched:** 2026-04-25
 **Confidence:** HIGH (Godot 4.6 API surface verified via Context7 `/websites/godotengine_en_4_6` and direct fetches from `docs.godotengine.org/en/4.6`)
 
-> Scope: this milestone (v0.2.0) expands the atlas contract to support Y-axis variation, top tiles, and non-rotating tilesets, while keeping TetraTile leaner than TileMapDual. The "stack" here is mostly Godot 4.6 internals — there are no third-party libraries to choose. The interesting decisions are which Godot APIs to ride and which authoring surfaces to expose.
+> Scope: this milestone (v0.2.0) expands the atlas contract to support Y-axis variation, top tiles, and non-rotating tilesets, while keeping PentaTile leaner than TileMapDual. The "stack" here is mostly Godot 4.6 internals — there are no third-party libraries to choose. The interesting decisions are which Godot APIs to ride and which authoring surfaces to expose.
 
 ## Recommended Stack
 
@@ -16,8 +16,8 @@
 | GDScript | 2 (4.6) | All addon code | `@tool`, `class_name`, typed arrays (`Array[Vector2i]`), strongly-typed `Resource` subclasses, and `@export_group`/`@export_subgroup` give us all the inspector surface we need. Sticks to project constraint: no C#, no GDExtension. |
 | `TileMapLayer` | Godot 4.6 native | Logic layer + 2 internal visual layers | The native API the user paints with. `set_cell(coords, source_id, atlas_coords, alternative_tile)` is the single ingress; `_update_cells()` is the single egress. Continuing to ride it is a milestone constraint. |
 | `TileSetAtlasSource` | Godot 4.6 native | Atlas tiles + alternative tiles + transforms | The `alternative_tile` parameter on `set_cell()` is the **one** channel we have to encode both rotation (via `TRANSFORM_FLIP_H \| TRANSFORM_FLIP_V \| TRANSFORM_TRANSPOSE` flags) and Y-axis variation (via real alternative IDs). They combine via bitwise OR. v0.1.0 already uses this for rotation; v0.2.0 extends it for variation. |
-| `TileData` | Godot 4.6 native | Per-(tile, alternative) metadata | Hosts `probability: float` (default `1.0`, "Relative probability of this tile being selected when drawing a pattern of random tiles") and the user's custom data layers. This is where TetraTile reads variation weights from at `_update_cells()` time. |
-| Native `Resource` subclassing | Godot 4.6 GDScript | "Atlas contract" data shape | A single `class_name TetraTileAtlasContract extends Resource` exported on the node lets the user describe what the atlas contains in the inspector, without reaching for `EditorInspectorPlugin` polish. This is the key shape change vs v0.1.0's strict 4-tile assumption. |
+| `TileData` | Godot 4.6 native | Per-(tile, alternative) metadata | Hosts `probability: float` (default `1.0`, "Relative probability of this tile being selected when drawing a pattern of random tiles") and the user's custom data layers. This is where PentaTile reads variation weights from at `_update_cells()` time. |
+| Native `Resource` subclassing | Godot 4.6 GDScript | "Atlas contract" data shape | A single `class_name PentaTileAtlasContract extends Resource` exported on the node lets the user describe what the atlas contains in the inspector, without reaching for `EditorInspectorPlugin` polish. This is the key shape change vs v0.1.0's strict 4-tile assumption. |
 
 ### Supporting Libraries
 
@@ -26,16 +26,16 @@ There are no third-party libraries in scope. Everything is built from Godot's st
 | Library | Version | Purpose | When to Use |
 |---------|---------|---------|-------------|
 | `RandomNumberGenerator` | Godot 4.6 native | Deterministic per-cell variation | When picking alternative tiles for variation. Seed from cell coords (`hash(Vector2i(x, y))`) so variation is stable across `_update_cells()` invocations on the same cell — otherwise dragging through a tile would flicker the variation each frame. |
-| `EditorInspectorPlugin` | Godot 4.6 native | (Defer) custom inspector widgets | **Do NOT use this milestone.** A standard `@export var atlas_contract: TetraTileAtlasContract` plus `@export_group` annotations on the contract Resource gives the user every knob they need (rotation lock, variation rules, slot enable/disable) without writing or maintaining a custom inspector. EditorInspectorPlugin is the right tool when you need to render bespoke UI for a value type — not when you just need grouped, typed exports. |
+| `EditorInspectorPlugin` | Godot 4.6 native | (Defer) custom inspector widgets | **Do NOT use this milestone.** A standard `@export var atlas_contract: PentaTileAtlasContract` plus `@export_group` annotations on the contract Resource gives the user every knob they need (rotation lock, variation rules, slot enable/disable) without writing or maintaining a custom inspector. EditorInspectorPlugin is the right tool when you need to render bespoke UI for a value type — not when you just need grouped, typed exports. |
 
 ### Development Tools
 
 | Tool | Purpose | Notes |
 |------|---------|-------|
-| Godot Editor 4.6.2 | Authoring + live preview | The `@tool` annotation on `TetraTileMapLayer` already makes the contract rebuild in-editor. Keep it. |
-| Built-in TileSet editor | Authoring alternatives + probability | Variation authoring stays in Godot's existing TileSet editor: right-click base tile → "Create an Alternative Tile" → set `probability` in the inspector. TetraTile reads those probabilities at runtime; we add **no** custom variation UI. |
-| GitHub Releases | Distribution | Single artifact per tag: `tetra_tile-vX.Y.Z.zip` containing an `addons/tetra_tile/` folder at archive root (per Godot's "Installing plugins" docs: extract the ZIP, move the `addons/` folder into the project). |
-| Git tags | Versioning | `vX.Y.Z` simple semver — no `-pre`, `-alpha`, `-dev` suffixes per project constraint. Bump `addons/tetra_tile/plugin.cfg`'s `version` field in the same commit as the tag. |
+| Godot Editor 4.6.2 | Authoring + live preview | The `@tool` annotation on `PentaTileMapLayer` already makes the contract rebuild in-editor. Keep it. |
+| Built-in TileSet editor | Authoring alternatives + probability | Variation authoring stays in Godot's existing TileSet editor: right-click base tile → "Create an Alternative Tile" → set `probability` in the inspector. PentaTile reads those probabilities at runtime; we add **no** custom variation UI. |
+| GitHub Releases | Distribution | Single artifact per tag: `penta_tile-vX.Y.Z.zip` containing an `addons/penta_tile/` folder at archive root (per Godot's "Installing plugins" docs: extract the ZIP, move the `addons/` folder into the project). |
+| Git tags | Versioning | `vX.Y.Z` simple semver — no `-pre`, `-alpha`, `-dev` suffixes per project constraint. Bump `addons/penta_tile/plugin.cfg`'s `version` field in the same commit as the tag. |
 
 ## Installation
 
@@ -44,7 +44,7 @@ No external packages — everything ships in Godot 4.6.
 ```bash
 # No npm / pip / cargo install. Addon dependencies are only:
 #   - Godot 4.6.x stable (already a project constraint)
-#   - The addons/tetra_tile/ folder (already in this repo)
+#   - The addons/penta_tile/ folder (already in this repo)
 ```
 
 ## API Surface — Verified Signatures (Godot 4.6)
@@ -107,10 +107,10 @@ alternative_tile**. The official tutorial confirms scattering "is taken into acc
 only by the Paint, Line, Rectangle, and Bucket Fill tools — and "Eraser mode does not
 take randomization and scattering into account."
 
-This has a load-bearing implication for TetraTile: **we must run the weighted-RNG
+This has a load-bearing implication for PentaTile: **we must run the weighted-RNG
 ourselves** inside `_update_cells()` when picking an alternative for a Y-variant.
 Reading `probability` off each alternate's `TileData` is the right input — Godot already
-authors it in the inspector — but TetraTile does the actual selection. This keeps us
+authors it in the inspector — but PentaTile does the actual selection. This keeps us
 aligned with the engine's authoring UX (no custom variation inspector) while honoring the
 mandate to "ride Godot's built-in TileSetAtlasSource alternate-tile probability."
 
@@ -124,9 +124,9 @@ HIGH on `set_cell()` not auto-randomizing (signature takes a specific `alternati
 **Use a strongly-typed `Resource` subclass, not custom data layers, for the contract itself.**
 
 ```gdscript
-# addons/tetra_tile/tetra_tile_atlas_contract.gd
+# addons/penta_tile/penta_tile_atlas_contract.gd
 @tool
-class_name TetraTileAtlasContract
+class_name PentaTileAtlasContract
 extends Resource
 
 enum AtlasLayout { HORIZONTAL, VERTICAL, GRID }
@@ -142,12 +142,12 @@ enum SymmetryMode { ROTATIONAL, NON_ROTATING }
 # (top/bottom/left/right) instead of a single rotated slot.
 
 @export_group("Slots")
-@export var slots: Array[TetraTileSlot] = []
+@export var slots: Array[PentaTileSlot] = []
 # Each slot declares: role (Fill / InnerCorner / Border / OuterCorner / TopBorder / ...),
 # atlas_coords, allow_rotation, allow_y_variation, top_tile flag.
 ```
 
-`TetraTileSlot` is itself a `Resource` subclass exported as `Array[TetraTileSlot]`,
+`PentaTileSlot` is itself a `Resource` subclass exported as `Array[PentaTileSlot]`,
 which Godot 4.6 renders as an inline editable list in the inspector with no custom
 inspector code required. This is the idiomatic GDScript-2 way to do "declare what
 you have" — verified in
@@ -167,10 +167,10 @@ documented 4.6 APIs).
 
 | Recommended | Alternative | When to Use Alternative |
 |-------------|-------------|-------------------------|
-| `Array[TetraTileSlot]` Resource subclass for the contract | Use only `TileSet` custom data layers, no contract Resource | If we wanted **zero** addon-side schema and to push everything into the TileSet inspector. Rejected because slot ordering, the symmetry mode, and atlas layout are addon-shape concerns that don't belong on per-tile data. |
-| `Array[TetraTileSlot]` Resource subclass | `Dictionary` with string keys | If we wanted dynamic schemas. Rejected: typed Resources give inspector grouping, drag-and-drop reuse across scenes, and compile-time field checks. Dictionaries get none of that. |
+| `Array[PentaTileSlot]` Resource subclass for the contract | Use only `TileSet` custom data layers, no contract Resource | If we wanted **zero** addon-side schema and to push everything into the TileSet inspector. Rejected because slot ordering, the symmetry mode, and atlas layout are addon-shape concerns that don't belong on per-tile data. |
+| `Array[PentaTileSlot]` Resource subclass | `Dictionary` with string keys | If we wanted dynamic schemas. Rejected: typed Resources give inspector grouping, drag-and-drop reuse across scenes, and compile-time field checks. Dictionaries get none of that. |
 | Manual weighted-RNG in `_update_cells()` driven by `TileData.probability` | Auto-create `TileSetAtlasSource` animation frames for variation | Animation frames cycle on a timer, not per-cell. They'd give every cell the same animated variation, defeating the purpose. Probability + RNG is the only path to spatial-only variation. |
-| `@export var atlas_contract: TetraTileAtlasContract` | Custom `EditorInspectorPlugin` | Use a custom inspector if v0.3+ wants drag-to-reorder slot UI, atlas thumbnail previews, or "auto-import this PNG" buttons. Out of scope for v0.2.0 — explicitly so. |
+| `@export var atlas_contract: PentaTileAtlasContract` | Custom `EditorInspectorPlugin` | Use a custom inspector if v0.3+ wants drag-to-reorder slot UI, atlas thumbnail previews, or "auto-import this PNG" buttons. Out of scope for v0.2.0 — explicitly so. |
 | Continue riding `_update_cells(coords, forced_cleanup)` | Watch `tile_set.changed` and `tile_map.changed` signals | Rejected: the project's "lean" constraint forbids signal fanout / watcher infrastructure. `_update_cells` is the documented hook and already works. |
 | Plain `set_cell()` with packed `alternative_tile` int | Two separate set_cell calls (one for transform, one for variant) | Not an option — `alternative_tile` is a single int. The bitwise composition (alt ID OR'd with TRANSFORM_* flags) is the only path. |
 
@@ -181,7 +181,7 @@ documented 4.6 APIs).
 | C# / GDExtension / native modules | Project constraint: pure GDScript only. Adds a build step and excludes pure-GDScript-only Godot users. | GDScript 2 with typed arrays and Resource subclasses. |
 | Custom RNG library / addon | Godot ships `RandomNumberGenerator` and `@GlobalScope.randi()`/`randi_range()`. Pulling in a library adds dependency surface for a 5-line problem. | `var rng := RandomNumberGenerator.new(); rng.seed = hash(cell_coords)`. Seeded per-cell ensures stability across redraws. |
 | `EditorInspectorPlugin` for v0.2.0 | Heavyweight: requires an EditorPlugin entrypoint (`script=` in `plugin.cfg`), `_can_handle()`, `_parse_property()`, custom controls. The v0.2.0 contract is just typed exports — no custom widgets needed. | Plain `@export`, `@export_group`, `@export_subgroup`, `@export_range`, `Array[Resource]`. |
-| Asset Library submission | Out of scope per `PROJECT.md`. Polishing for AssetLib (icons, screenshots, descriptions per their guidelines) is wasted effort this milestone. | GitHub-only release. The `addons/tetra_tile/` folder at ZIP root is sufficient for `git clone` users and ZIP-download users alike. |
+| Asset Library submission | Out of scope per `PROJECT.md`. Polishing for AssetLib (icons, screenshots, descriptions per their guidelines) is wasted effort this milestone. | GitHub-only release. The `addons/penta_tile/` folder at ZIP root is sufficient for `git clone` users and ZIP-download users alike. |
 | `min_godot_version` / `compatibility_minimum` in `plugin.cfg` | Not a real `plugin.cfg` field. The proposal to add one (godotengine/godot-proposals#8653) is archived without a documented implementation. `compatibility_minimum` exists in `.gdextension` files, NOT `.cfg`. Putting it in `plugin.cfg` does nothing — Godot ignores unknown keys, so no error, but no enforcement either. | Document "Requires Godot 4.6+" in `README.md` and the GitHub release notes. Optionally `assert(Engine.get_version_info().minor >= 6)` in `_ready()` if we want a runtime guard. |
 | `TileMap` (deprecated parent class) | Deprecated; multiple `TileMapLayer` nodes are the official replacement. v0.1.0 is already on `TileMapLayer` — keep it that way. | `TileMapLayer` (already in use). |
 | `visible = false` to hide the logic layer | Triggers `_update_cells(_, forced_cleanup=true)`, wiping our visual layers. v0.1.0 already documents this gotcha. | `self_modulate.a = 0.0` (current solution). Document this in the contract Resource so users don't override it. |
@@ -201,17 +201,17 @@ documented 4.6 APIs).
 
 **If the user wants both top-tile + Y-variation in one atlas:**
 - They author two slots: `border_top` (with N alternates, varied probability) and `border_bottom` (different alternates if non-rotating, or "use border_top rotated 180°" if rotational).
-- The contract supports this naturally because slots are independent rows in `Array[TetraTileSlot]`.
+- The contract supports this naturally because slots are independent rows in `Array[PentaTileSlot]`.
 
 ## Distribution Mechanics — Concrete
 
-### `addons/tetra_tile/plugin.cfg` (current → v0.2.0 target)
+### `addons/penta_tile/plugin.cfg` (current → v0.2.0 target)
 
 The current file (verified):
 
 ```ini
 [plugin]
-name="TetraTile"
+name="PentaTile"
 description="A lightweight dual-grid autotiling layer built around four atlas tiles."
 author="Shilo"
 version="0.1.0"
@@ -222,7 +222,7 @@ script=""
 
 ```ini
 [plugin]
-name="TetraTile"
+name="PentaTile"
 description="A lightweight dual-grid autotiling layer for Godot 4.6 with declarative atlas contracts, Y-axis variation, and top-tile / non-rotating tileset support."
 author="Shilo"
 version="0.2.0"
@@ -231,7 +231,7 @@ script=""
 
 Notes (HIGH confidence — verified in `tutorials/plugins/editor/making_plugins.html`):
 
-- `script=""` (empty) is intentional. We have no `EditorPlugin` entrypoint because we don't need editor UI hooks — `TetraTileMapLayer` is a `@tool` Node, not an editor plugin. Setting `script=""` (empty) matches the v0.1.0 setup and is supported.
+- `script=""` (empty) is intentional. We have no `EditorPlugin` entrypoint because we don't need editor UI hooks — `PentaTileMapLayer` is a `@tool` Node, not an editor plugin. Setting `script=""` (empty) matches the v0.1.0 setup and is supported.
 - The `version` field is a free-form string. Update it to match the git tag.
 - Update the `description` to mention the new capabilities (variation, top tiles, non-rotating) so the GitHub mirror's plugin metadata reflects v0.2.0's value prop.
 - Do NOT add `min_godot_version` / `compatibility_minimum` — not a real field for `plugin.cfg`. Document the requirement in README.
@@ -244,7 +244,7 @@ Notes (HIGH confidence — verified in `tutorials/plugins/editor/making_plugins.
 # 3. Commit:
 git commit -m "chore: bump to v0.2.0"
 # 4. Tag (no -pre/-alpha/-dev suffixes per PROJECT.md constraint):
-git tag -a v0.2.0 -m "TetraTile v0.2.0 — atlas contract redesign"
+git tag -a v0.2.0 -m "PentaTile v0.2.0 — atlas contract redesign"
 git push origin main --tags
 # 5. Create GitHub Release from the tag, attach the ZIP artifact (below).
 ```
@@ -254,34 +254,34 @@ git push origin main --tags
 The ZIP attached to the GitHub Release should look like this so users can extract and merge into their project's `addons/` directly (per Godot's "Installing plugins" docs):
 
 ```
-tetra_tile-v0.2.0.zip
+penta_tile-v0.2.0.zip
 └── addons/
-    └── tetra_tile/
+    └── penta_tile/
         ├── plugin.cfg
-        ├── tetra_tile_map_layer.gd
-        ├── tetra_tile_atlas_contract.gd          # NEW v0.2.0
-        ├── tetra_tile_slot.gd                    # NEW v0.2.0
-        ├── tetra_tile_template.png
+        ├── penta_tile_map_layer.gd
+        ├── penta_tile_atlas_contract.gd          # NEW v0.2.0
+        ├── penta_tile_slot.gd                    # NEW v0.2.0
+        ├── penta_tile_template.png
         └── demo/
             ├── demo_player.gd
-            ├── tetra_tile_demo.tscn
-            ├── tetra_tile_ground.png
-            └── tetra_tile_ground.tres
+            ├── penta_tile_demo.tscn
+            ├── penta_tile_ground.png
+            └── penta_tile_ground.tres
 ```
 
 Two practical notes:
-1. The repo's `addons/tetra_tile/` is already shaped this way — so the release ZIP is just a packaged copy of that folder under an `addons/` parent.
-2. Excluding `demo/` from the ZIP is an option for "library-only" releases. For TetraTile (private audience, demo is the main usage doc), **include** the demo. v0.3+ can revisit if the demo grows large.
+1. The repo's `addons/penta_tile/` is already shaped this way — so the release ZIP is just a packaged copy of that folder under an `addons/` parent.
+2. Excluding `demo/` from the ZIP is an option for "library-only" releases. For PentaTile (private audience, demo is the main usage doc), **include** the demo. v0.3+ can revisit if the demo grows large.
 
 ### Suggested Release Notes Template
 
 ```markdown
-# TetraTile v0.2.0
+# PentaTile v0.2.0
 
 **Requires:** Godot 4.6+
 
 ## What's New
-- Atlas contract redesign — declare-what-you-have model via `TetraTileAtlasContract` resource
+- Atlas contract redesign — declare-what-you-have model via `PentaTileAtlasContract` resource
 - Y-axis variation using Godot's native `TileData.probability`
 - Top-tile support for platformer-style grass caps
 - Non-rotating tileset support (per-direction T/B/L/R authoring)
@@ -290,17 +290,17 @@ Two practical notes:
 - v0.1.0 atlases require migration. See [migration notes](#migration).
 
 ## Install
-1. Download `tetra_tile-v0.2.0.zip` below.
-2. Extract and copy the `addons/tetra_tile/` folder into your Godot 4.6 project.
-3. Project Settings → Plugins → enable TetraTile.
+1. Download `penta_tile-v0.2.0.zip` below.
+2. Extract and copy the `addons/penta_tile/` folder into your Godot 4.6 project.
+3. Project Settings → Plugins → enable PentaTile.
 ```
 
 ## Version Compatibility
 
 | Component | Compatible With | Notes |
 |-----------|-----------------|-------|
-| `TetraTileMapLayer` (v0.2.0) | Godot 4.6.x stable | `_update_cells(coords, forced_cleanup)` signature stable through 4.6. No 4.5→4.6 breaking changes documented for `TileMapLayer` in the upgrade guide. (HIGH on signature; MEDIUM on "no breaking changes" — upgrade guide content was sparse for tile-related sections.) |
-| `TetraTileAtlasContract` Resource | Godot 4.6.x | `Array[Resource]` exports work cleanly in 4.6; this pattern is the official idiom. |
+| `PentaTileMapLayer` (v0.2.0) | Godot 4.6.x stable | `_update_cells(coords, forced_cleanup)` signature stable through 4.6. No 4.5→4.6 breaking changes documented for `TileMapLayer` in the upgrade guide. (HIGH on signature; MEDIUM on "no breaking changes" — upgrade guide content was sparse for tile-related sections.) |
+| `PentaTileAtlasContract` Resource | Godot 4.6.x | `Array[Resource]` exports work cleanly in 4.6; this pattern is the official idiom. |
 | Variation reads from `TileData.probability` | Godot 4.6.x | Field exists since 4.x. The behavior of "probability is editor-scattering-only" is consistent across all 4.x versions per docs. |
 | v0.1.0 atlases | NOT compatible with v0.2.0 | Per `PROJECT.md`, breaking changes accepted pre-1.0. Demo updated alongside. |
 
@@ -330,5 +330,5 @@ Two practical notes:
 - v0.1.0 logic-layer-hidden-via-`self_modulate` claim is documented in our own README and codebase notes, not in upstream Godot docs as an explicit gotcha. Accept as project-internal lore (HIGH within this codebase, untracked upstream).
 
 ---
-*Stack research for: Godot 4.6 dual-grid autotiling addon — atlas contract expansion (TetraTile v0.2.0)*
+*Stack research for: Godot 4.6 dual-grid autotiling addon — atlas contract expansion (PentaTile v0.2.0)*
 *Researched: 2026-04-25*

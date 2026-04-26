@@ -1,6 +1,6 @@
 # Tilesetter & Godot Layout Audit — Slot-by-Slot Truth
 
-**Purpose:** correct the slot-order claims in [COMPARISON.md](COMPARISON.md), [EDITORS.md](EDITORS.md), and [`addons/tetra_tile/templates/README.md`](../../../addons/tetra_tile/templates/README.md). Earlier passes treated Tilesetter's blob output as a uniform 7×8 grid; the user's reference images contradict that, and the live docs don't actually publish slot order. This audit reads the live docs, downloads the actual diagram images, and produces a precise verified-vs-inferred-vs-gap inventory.
+**Purpose:** correct the slot-order claims in [COMPARISON.md](COMPARISON.md), [EDITORS.md](EDITORS.md), and [`addons/penta_tile/templates/README.md`](../../../addons/penta_tile/templates/README.md). Earlier passes treated Tilesetter's blob output as a uniform 7×8 grid; the user's reference images contradict that, and the live docs don't actually publish slot order. This audit reads the live docs, downloads the actual diagram images, and produces a precise verified-vs-inferred-vs-gap inventory.
 
 **Audited:** 2026-04-25
 **Sources read this pass:**
@@ -81,7 +81,7 @@ The page embeds two example images:
 
 These are pedagogical screenshots, not downloadable templates. **Godot ships no canonical 47-blob or 16-Wang reference atlas.** The user is expected to bring their own art and click-author peering bits.
 
-This is the central UX pain TetraTile's value proposition addresses. Verified.
+This is the central UX pain PentaTile's value proposition addresses. Verified.
 
 ### Peering-bit authoring UX — exact step-by-step
 
@@ -112,7 +112,7 @@ Each peering bit slot accepts either a terrain ID (0..N) or `-1` (empty). For Ma
 
 **Click count for a full 47-blob terrain:** 47 × 20 ≈ **940 clicks** to author peering bits. (Earlier research said "376 clicks per blob terrain" — that figure undercounts the dropdown selection steps. The honest number is closer to 1000 clicks.)
 
-This is the manual labor TetraTile eliminates: a layout Resource + a known atlas convention = zero per-tile clicks.
+This is the manual labor PentaTile eliminates: a layout Resource + a known atlas convention = zero per-tile clicks.
 
 ### MATCH_SIDES caveats
 
@@ -130,7 +130,7 @@ There is, however, a separate well-known issue tracked at [godotengine/godot#794
 | Does Godot 4.6 ship reference template atlases for the three modes? | **No.** Two pedagogical screenshots only. |
 | Does the live page describe the three modes' semantics in detail? | **No.** Only that they correspond to the legacy 2×2 / 3×3 / 3×3-minimal bitmasks. |
 | How many clicks per tile to author peering bits in Match Corners and Sides? | **~20 clicks** (Set ID + Terrain ID + 8 peering bits, each with its own dropdown). |
-| Will TetraTile's `TetraTileLayoutGodotXxx` be meaningful? | **No.** Godot doesn't have a "layout" — every tile carries its own metadata. A TetraTile layout Resource for Godot's native terrain would have to *re-implement* the peering-bit lookup at runtime, which defeats v0.1's selling point. The earlier research's call to NOT integrate with Godot terrain stands. |
+| Will PentaTile's `PentaTileLayoutGodotXxx` be meaningful? | **No.** Godot doesn't have a "layout" — every tile carries its own metadata. A PentaTile layout Resource for Godot's native terrain would have to *re-implement* the peering-bit lookup at runtime, which defeats v0.1's selling point. The earlier research's call to NOT integrate with Godot terrain stands. |
 
 ---
 
@@ -155,7 +155,7 @@ The page references one image: `_images/wang-display.png`. After downloading and
 
 ### The actual Wang slot order — UNDOCUMENTED in Tilesetter
 
-There is no published table from Tilesetter mapping the 16 Wang tiles to atlas slot positions. The closest the docs get is the boilerplate "Auto-tile bitmasks are already configured for Blob and Wang sets when exporting from the Set View" (from the [Exporting page](https://www.tilesetter.org/docs/exporting)). Translation: "Tilesetter knows internally what its slot order is, and it bakes that into the engine-specific export formats (Godot 3.x `.tres` autotile bitmasks, GameMaker Studio 2 `.yy`, Unity Rule Tile metadata). The user never has to know the slot order." But that means a *third-party consumer* (TetraTile) **also** has no published reference to lock against.
+There is no published table from Tilesetter mapping the 16 Wang tiles to atlas slot positions. The closest the docs get is the boilerplate "Auto-tile bitmasks are already configured for Blob and Wang sets when exporting from the Set View" (from the [Exporting page](https://www.tilesetter.org/docs/exporting)). Translation: "Tilesetter knows internally what its slot order is, and it bakes that into the engine-specific export formats (Godot 3.x `.tres` autotile bitmasks, GameMaker Studio 2 `.yy`, Unity Rule Tile metadata). The user never has to know the slot order." But that means a *third-party consumer* (PentaTile) **also** has no published reference to lock against.
 
 ### Bit convention — UNDOCUMENTED
 
@@ -199,14 +199,14 @@ The "Generating Tilesets" page documents:
 
 ### Empirical fingerprinting protocol (for v0.2 implementation)
 
-To author `TetraTileLayoutTilesetterWang16` we need the empirical slot order. The protocol:
+To author `PentaTileLayoutTilesetterWang16` we need the empirical slot order. The protocol:
 
 1. Open Tilesetter, create a Wang Set with a known **fingerprint atlas** — make each of the 16 source tiles a unique solid color (e.g., red for slot index 0, orange for slot 1, … gray for slot 15).
 2. Generate the tileset and export as PNG.
 3. Open the PNG in an image viewer; record which color sits at which (col, row).
 4. Construct a known map in Tilesetter's Sandbox View that exercises every edge-mask configuration (mask 0..15).
 5. Observe which colored tile appears for each mask. That gives the (slot index → mask value) pair.
-6. Codify the resulting 16-entry table as `TetraTileLayoutTilesetterWang16.SLOT_TO_MASK`.
+6. Codify the resulting 16-entry table as `PentaTileLayoutTilesetterWang16.SLOT_TO_MASK`.
 
 This is **empirical work, not research**. The research conclusion is: **Tilesetter publishes no Wang slot table; we must fingerprint.**
 
@@ -219,7 +219,7 @@ This is **empirical work, not research**. The research conclusion is: **Tilesett
 | Bit convention published? | **No.** |
 | Configurable slot order? | **No.** |
 | Compatible with GMS2 16-tile template directly? | **No.** External converter needed. |
-| TetraTile path forward | Empirical fingerprinting required. Cannot author `TetraTileLayoutTilesetterWang16` from docs alone. |
+| PentaTile path forward | Empirical fingerprinting required. Cannot author `PentaTileLayoutTilesetterWang16` from docs alone. |
 
 ---
 
@@ -371,7 +371,7 @@ Reading L→R, T→B:
 Row 0:  16   20   28  112   23  124  116   64   ← (8 cols, but it's actually 7×7 — re-verify)
 ```
 
-**HONEST GAP:** my OCR of the atlas image is approximate (the cached image is 240px wide). The labels in the image *are* legible — I read mask values like `0`, `1`, `5`, `7`, `17`, `21`, `23`, `29`, `31`, `85`, `87`, `95`, `119`, `127`, `255` plus their rotational variants — which match the cr31 description of the 47 valid mask values. But producing a verified 49-cell (7×7) lookup table requires either re-fetching the full-resolution OpenGameArt image or someone manually transcribing the labels. **For TetraTile, the right path is empirical fingerprinting against an actual exported atlas, NOT trying to reverse-engineer the OpenGameArt PNG**, because Tilesetter's layout is not OpenGameArt's layout.
+**HONEST GAP:** my OCR of the atlas image is approximate (the cached image is 240px wide). The labels in the image *are* legible — I read mask values like `0`, `1`, `5`, `7`, `17`, `21`, `23`, `29`, `31`, `85`, `87`, `95`, `119`, `127`, `255` plus their rotational variants — which match the cr31 description of the 47 valid mask values. But producing a verified 49-cell (7×7) lookup table requires either re-fetching the full-resolution OpenGameArt image or someone manually transcribing the labels. **For PentaTile, the right path is empirical fingerprinting against an actual exported atlas, NOT trying to reverse-engineer the OpenGameArt PNG**, because Tilesetter's layout is not OpenGameArt's layout.
 
 ### The 47 valid blob mask values (this list IS verified)
 
@@ -402,7 +402,7 @@ This list is **bit-convention-dependent.** In CR31 clockwise convention these ar
 
 Same as Wang: Tilesetter offers Wang vs Blob choice and source-image configuration, but no alternate slot orders or different output shapes. The exported atlas always uses the same proprietary internal layout.
 
-### Empirical fingerprinting protocol for `TetraTileLayoutTilesetterBlob47`
+### Empirical fingerprinting protocol for `PentaTileLayoutTilesetterBlob47`
 
 Same shape as the Wang protocol but with 47 tiles instead of 16:
 
@@ -411,7 +411,7 @@ Same shape as the Wang protocol but with 47 tiles instead of 16:
 3. Record the (col, row) of each colored / labeled tile.
 4. In a Sandbox view, paint maps that exercise each of the 47 valid mask configurations.
 5. Observe which slot lights up for each mask value.
-6. Codify the resulting 47-entry table as `TetraTileLayoutTilesetterBlob47.SLOT_TO_MASK`.
+6. Codify the resulting 47-entry table as `PentaTileLayoutTilesetterBlob47.SLOT_TO_MASK`.
 7. Also record the **bit convention** Tilesetter uses (CR31 / Jaconir / Enichan / other) by checking which of mask 1's 4 rotational positions ends up at which slot.
 
 The same protocol is **canonical for any 47-blob convention** (Tilesetter, GameMaker, jaconir, Enichan). It produces a portable (slot → mask) lookup that the layout Resource encodes.
@@ -427,7 +427,7 @@ The same protocol is **canonical for any 47-blob convention** (Tilesetter, GameM
 | Compatible with cr31 / OpenGameArt 7×7 layout? | **No reason to assume so.** They're different conventions. |
 | Compatible with GMS2 47-tile template directly? | **No.** External converter exists for a reason. |
 | Compatible with Godot 4 terrain peering bits directly? | **No.** Tilesetter exports for Godot 3 only. |
-| TetraTile path forward | Empirical fingerprinting required. Cannot author `TetraTileLayoutTilesetterBlob47` from docs alone. Bit convention also requires empirical determination. |
+| PentaTile path forward | Empirical fingerprinting required. Cannot author `PentaTileLayoutTilesetterBlob47` from docs alone. Bit convention also requires empirical determination. |
 
 ---
 
@@ -447,7 +447,7 @@ The same protocol is **canonical for any 47-blob convention** (Tilesetter, GameM
 
 The visible images on the docs site (`blob-display.png`, `wang-display.png`) are workflow screenshots, not slot-order references.
 
-### Q: Are there documentation gaps that prevent us from authoring `TetraTileLayoutTilesetterBlob47` from research alone?
+### Q: Are there documentation gaps that prevent us from authoring `PentaTileLayoutTilesetterBlob47` from research alone?
 
 **YES — major gaps:**
 
@@ -459,14 +459,14 @@ The visible images on the docs site (`blob-display.png`, `wang-display.png`) are
 
 All five are addressable by empirical fingerprinting against a real Tilesetter installation. **The research cannot replace this fingerprinting step.** This is the honest gap the earlier research correctly flagged but that the rewritten COMPARISON.md / templates README incorrectly papered over with the "7×8 with 9 unused cells in last row" inference.
 
-### Q: Same question for Godot 4 stock terrain — is `TetraTileLayoutGodot*` feasible?
+### Q: Same question for Godot 4 stock terrain — is `PentaTileLayoutGodot*` feasible?
 
-**No, and irrelevant.** Godot 4's terrain system stores peering bits as per-tile metadata. There is no "layout" — the author chooses any atlas arrangement and tags each tile individually. A `TetraTileLayoutGodot*` Resource would either:
+**No, and irrelevant.** Godot 4's terrain system stores peering bits as per-tile metadata. There is no "layout" — the author chooses any atlas arrangement and tags each tile individually. A `PentaTileLayoutGodot*` Resource would either:
 
 - Re-implement Godot's peering-bit logic at runtime (defeats the v0.1 selling point), or
 - Read the user's `.tres` peering-bit data at runtime (functional but adds an XML/binary parser dependency, and the user gains nothing over using Godot's stock terrain system directly).
 
-Neither is a TetraTile value-add. **TetraTile's value proposition is the OPPOSITE of Godot's stock terrain: skip the per-tile metadata authoring, ship a layout Resource that maps slot → mask once, never click peering bits.** This audit confirms the earlier research's recommendation to NOT integrate with Godot's stock terrain.
+Neither is a PentaTile value-add. **PentaTile's value proposition is the OPPOSITE of Godot's stock terrain: skip the per-tile metadata authoring, ship a layout Resource that maps slot → mask once, never click peering bits.** This audit confirms the earlier research's recommendation to NOT integrate with Godot's stock terrain.
 
 ---
 
@@ -493,13 +493,13 @@ This diagram is **wrong**. Replacement text:
 
 > **Tilesetter convention — proprietary, undocumented, requires empirical fingerprinting.**
 >
-> Tilesetter's Set View renders the 47 blob tiles as **discrete sub-blocks separated by gaps**, not as a uniform grid. The Tilesetter docs publish no slot-by-slot mapping, no atlas dimensions, and no bit convention. The "7×8 with 9 unused cells" diagram in earlier drafts was inferred from the cr31 7×7 layout and is incorrect. The actual exported PNG layout will be determined empirically when implementing `TetraTileLayoutTilesetterBlob47`.
+> Tilesetter's Set View renders the 47 blob tiles as **discrete sub-blocks separated by gaps**, not as a uniform grid. The Tilesetter docs publish no slot-by-slot mapping, no atlas dimensions, and no bit convention. The "7×8 with 9 unused cells" diagram in earlier drafts was inferred from the cr31 7×7 layout and is incorrect. The actual exported PNG layout will be determined empirically when implementing `PentaTileLayoutTilesetterBlob47`.
 >
 > See [TILESETTER_AND_GODOT.md](TILESETTER_AND_GODOT.md) for the full audit.
 
 The "Tilesetter vs Godot" comparison table needs the cell "Slot order: 7×8 grid, vendor-defined order" replaced with "Slot order: proprietary, undocumented, empirical fingerprinting required."
 
-The "Recommended v0.2 Layout Library" table can keep its `TetraTileLayoutBlob47Tilesetter` entry, but the "Atlas" cell should say "vendor-fixed (proprietary)" not "7×8 (Tilesetter slot order)."
+The "Recommended v0.2 Layout Library" table can keep its `PentaTileLayoutBlob47Tilesetter` entry, but the "Atlas" cell should say "vendor-fixed (proprietary)" not "7×8 (Tilesetter slot order)."
 
 ### 2. `.planning/research/layouts/EDITORS.md`
 
@@ -513,11 +513,11 @@ The "Tilesetter — Tile order" subsection currently states:
 
 This passage attributes the CR31 convention to Tilesetter without evidence. **Tilesetter does NOT document its bit convention.** Replacement text should read:
 
-> Tilesetter's bit convention is undocumented. The cr31/OpenGameArt convention (clockwise from N: N=1, NE=2, E=4, SE=8, S=16, SW=32, W=64, NW=128) is the most common in the wider community, but Tilesetter could be using a different convention internally. Empirical determination required when implementing `TetraTileLayoutTilesetterBlob47`.
+> Tilesetter's bit convention is undocumented. The cr31/OpenGameArt convention (clockwise from N: N=1, NE=2, E=4, SE=8, S=16, SW=32, W=64, NW=128) is the most common in the wider community, but Tilesetter could be using a different convention internally. Empirical determination required when implementing `PentaTileLayoutTilesetterBlob47`.
 
 The `HONEST GAP` block at the bottom of the Tilesetter section is correct as written ("the Tilesetter docs do not publish the exact slot-by-slot mapping table") and should remain. Add a second gap: "Tilesetter's bit convention is also undocumented; the convention used by community references (cr31, OpenGameArt, Boris-the-Brave) is not necessarily Tilesetter's."
 
-### 3. `addons/tetra_tile/templates/README.md`
+### 3. `addons/penta_tile/templates/README.md`
 
 The `blob_47_tilesetter.png` section currently says:
 
@@ -540,7 +540,7 @@ The `blob_47_excalibur.png` section can keep its 12×4 spec because the [Excalib
 
 ### 4. Layout Resource implementations (v0.2 work)
 
-When the time comes to implement `TetraTileLayoutTilesetterWang16` and `TetraTileLayoutTilesetterBlob47`:
+When the time comes to implement `PentaTileLayoutTilesetterWang16` and `PentaTileLayoutTilesetterBlob47`:
 
 **Step 1 — install Tilesetter, generate fingerprint atlases.** Use solid-color or numerically-labeled fingerprint tiles. Export to PNG.
 
@@ -554,7 +554,7 @@ When the time comes to implement `TetraTileLayoutTilesetterWang16` and `TetraTil
 
 **Step 6 — encode the table** as a `Dictionary[int, Vector2i]` (mask → atlas coords) in the layout Resource's `_init()`.
 
-**Step 7 — sanity-check** by painting a few known patterns and verifying TetraTile renders the same tiles Tilesetter's Sandbox renders.
+**Step 7 — sanity-check** by painting a few known patterns and verifying PentaTile renders the same tiles Tilesetter's Sandbox renders.
 
 This is one afternoon of focused work per layout. Cheaper than another research pass.
 
@@ -569,7 +569,7 @@ This is one afternoon of focused work per layout. Cheaper than another research 
 5. **Tilesetter Wang 16 bit convention** — unpublished.
 6. **Tilesetter Blob 47 bit convention** — unpublished.
 7. **Whether Tilesetter Set View layout matches the exported PNG layout** — strongly implied by the Exporting page but not verbatim confirmed.
-8. **OpenGameArt 7×7 atlas full slot table** — image is legible but I have not transcribed every label. This is a one-off transcription exercise if anyone wants a `TetraTileLayoutCR31Blob47` Resource. Not blocking for v0.2 (the planned built-ins are Tilesetter and Excalibur).
+8. **OpenGameArt 7×7 atlas full slot table** — image is legible but I have not transcribed every label. This is a one-off transcription exercise if anyone wants a `PentaTileLayoutCR31Blob47` Resource. Not blocking for v0.2 (the planned built-ins are Tilesetter and Excalibur).
 9. **Godot's MATCH_SIDES algorithm correctness** — tracked at [godotengine/godot#79411](https://github.com/godotengine/godot/issues/79411), not in scope for this audit.
 10. **Excalibur 12×4 slot order full transcription** — listed as v0.2 layout but the actual slot table needs re-verification against [the live Excalibur blog post](https://excaliburjs.com/blog/Autotiling%20Technique/). Earlier research treated this as known; should be re-confirmed.
 
@@ -598,35 +598,35 @@ This is one afternoon of focused work per layout. Cheaper than another research 
 | **GMS2** | Engine-specific | Engine-specific | [GameMaker manual](https://manual.gamemaker.io/lts/en/The_Asset_Editors/Tile_Set_Editors/Auto_Tiles.htm) |
 | **Tilesetter→GMS2** (via [ts2gms2](https://ts2gms2.nikles.it/)) | Reformatted to GMS2's order | Inherits GMS2 | The converter exists *because the orders differ.* |
 
-### What TetraTile can ship vs defer
+### What PentaTile can ship vs defer
 
 | Layout Resource | Can author from research? | Empirical step needed? |
 |---|---|---|
-| `TetraTileLayoutHorizontal4` (current v0.1) | YES | No |
-| `TetraTileLayoutVertical4` | YES | No |
-| `TetraTileLayoutDualGrid16` | YES (TetraTile defines its own convention) | No |
-| `TetraTileLayoutWang2Edge` | YES (CR31 4×4 NESW order is the canonical community convention) | No |
-| `TetraTileLayoutWang2Corner` | YES (CR31 4×4 NE/SE/SW/NW order) | No |
-| `TetraTileLayoutCR31Blob47_7x7` | YES if someone transcribes the OpenGameArt labeled atlas | Transcription only |
-| `TetraTileLayoutExcaliburBlob47_12x4` | YES if the Excalibur blog post is re-verified | Light verification |
-| `TetraTileLayoutJaconirBlob47` | YES if Jaconir's generator output is observed | Light empirical |
-| `TetraTileLayoutTilesetterWang16` | **NO** | **Full fingerprinting** |
-| `TetraTileLayoutTilesetterBlob47` | **NO** | **Full fingerprinting** |
-| `TetraTileLayoutGMS2Wang16` | NO | Full fingerprinting (or community cheat-sheet adoption) |
-| `TetraTileLayoutGMS2Blob47` | NO | Full fingerprinting |
-| `TetraTileLayoutGodot*` | N/A — Godot has no layout, only per-tile peering metadata | Architecturally rejected |
+| `PentaTileLayoutHorizontal4` (current v0.1) | YES | No |
+| `PentaTileLayoutVertical4` | YES | No |
+| `PentaTileLayoutDualGrid16` | YES (PentaTile defines its own convention) | No |
+| `PentaTileLayoutWang2Edge` | YES (CR31 4×4 NESW order is the canonical community convention) | No |
+| `PentaTileLayoutWang2Corner` | YES (CR31 4×4 NE/SE/SW/NW order) | No |
+| `PentaTileLayoutCR31Blob47_7x7` | YES if someone transcribes the OpenGameArt labeled atlas | Transcription only |
+| `PentaTileLayoutExcaliburBlob47_12x4` | YES if the Excalibur blog post is re-verified | Light verification |
+| `PentaTileLayoutJaconirBlob47` | YES if Jaconir's generator output is observed | Light empirical |
+| `PentaTileLayoutTilesetterWang16` | **NO** | **Full fingerprinting** |
+| `PentaTileLayoutTilesetterBlob47` | **NO** | **Full fingerprinting** |
+| `PentaTileLayoutGMS2Wang16` | NO | Full fingerprinting (or community cheat-sheet adoption) |
+| `PentaTileLayoutGMS2Blob47` | NO | Full fingerprinting |
+| `PentaTileLayoutGodot*` | N/A — Godot has no layout, only per-tile peering metadata | Architecturally rejected |
 
 ### Click-cost comparison (per terrain set, in Godot 4.6)
 
 | Workflow | Per-tile clicks | Total clicks for 47-blob terrain |
 |---|---|---|
 | **Native Godot — author peering bits manually** | ~20 (2 IDs + 8 peering bits, each a dropdown) | **~940** |
-| **Tilesetter → Godot 3 export → use atlas with TetraTile layout Resource** | 0 per tile (Tilesetter exports peering bits) | **0** (after Tilesetter authoring) |
-| **TetraTile + `TetraTileLayoutTilesetterBlob47`** | 0 per tile, layout is fixed | **0** |
-| **TetraTile + custom atlas + `TetraTileLayoutDualGrid16`** | 0 per tile | **0** |
+| **Tilesetter → Godot 3 export → use atlas with PentaTile layout Resource** | 0 per tile (Tilesetter exports peering bits) | **0** (after Tilesetter authoring) |
+| **PentaTile + `PentaTileLayoutTilesetterBlob47`** | 0 per tile, layout is fixed | **0** |
+| **PentaTile + custom atlas + `PentaTileLayoutDualGrid16`** | 0 per tile | **0** |
 
-The TetraTile pitch — "no per-tile metadata authoring" — is verified end-to-end against the live Godot 4.6 docs. The 940-click number is the manual-authoring tax TetraTile eliminates.
+The PentaTile pitch — "no per-tile metadata authoring" — is verified end-to-end against the live Godot 4.6 docs. The 940-click number is the manual-authoring tax PentaTile eliminates.
 
 ---
 
-*Audit recorded 2026-04-25. Supersedes the slot-order claims in COMPARISON.md, EDITORS.md, and `addons/tetra_tile/templates/README.md`. Revisions to those files should follow the corrections in §"Corrections Required Downstream".*
+*Audit recorded 2026-04-25. Supersedes the slot-order claims in COMPARISON.md, EDITORS.md, and `addons/penta_tile/templates/README.md`. Revisions to those files should follow the corrections in §"Corrections Required Downstream".*

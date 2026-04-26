@@ -62,11 +62,11 @@ VERTICAL (1×4): same tiles, stacked instead.
 
 The other 12 mask states (1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 13) are produced by *rotating* these 4 tiles using Godot's `TRANSFORM_FLIP_*` flags. Masks 6 and 9 (the two "disconnected diagonals") use the addon's overlay-layer trick: two outer corners painted on different layers.
 
-**Rotation symmetry is baked in.** This is why tetra can't do top tiles or directional art without breaking the contract.
+**Rotation symmetry is baked in.** This is why penta can't do top tiles or directional art without breaking the contract.
 
 ### Dual-Grid 16
 
-**Mask:** 4-bit corner (same as tetra). **Tile count:** 16 unique. **Atlas:** 4×4 grid OR 16×1 strip.
+**Mask:** 4-bit corner (same as penta). **Tile count:** 16 unique. **Atlas:** 4×4 grid OR 16×1 strip.
 
 ```
 4×4 grid (mask = row*4 + col, reading L→R, T→B):
@@ -85,7 +85,7 @@ The other 12 mask states (1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 13) are produced by *r
 
 WARNING: The exact bit numbering (which corner is bit 0 vs bit 3)
 is NOT standardized. TileMapDual, jess-hammer, Excalibur, and CR31
-all pick different orderings. TetraTile will commit to one and
+all pick different orderings. PentaTile will commit to one and
 document it in the layout Resource.
 ```
 
@@ -97,7 +97,7 @@ document it in the layout Resource.
 
 The ONLY difference between Marching Squares and Dual-Grid 16: Dual-Grid renders the visual layer offset by half a tile so corners meet at logic-cell centers. Marching Squares renders on the same grid as the logic. Same atlas image, different paint position.
 
-For TetraTile this is essentially "Dual-Grid 16 with `visual_layer_offset = (0, 0)`."
+For PentaTile this is essentially "Dual-Grid 16 with `visual_layer_offset = (0, 0)`."
 
 ### Wang 2-Edge (16 tiles)
 
@@ -189,7 +189,7 @@ Excalibur.js / jaconir convention — 12×4 grid (one cell unused):
 └────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┘
 ```
 
-**The 47 tiles are the same set of visual shapes in both conventions.** What differs is *which mask value lives in which atlas slot.* That mapping is what each `TetraTileLayoutBlob47*` Resource will encode.
+**The 47 tiles are the same set of visual shapes in both conventions.** What differs is *which mask value lives in which atlas slot.* That mapping is what each `PentaTileLayoutBlob47*` Resource will encode.
 
 > **Honest gap:** the research did not enumerate the slot-by-slot mapping for either convention. That comes when implementing each layout Resource — paint a known fingerprint atlas in Tilesetter / Excalibur, observe which mask lands in which slot, codify.
 
@@ -259,11 +259,11 @@ This was your other question. Both Tilesetter and Godot's terrain system support
 
 **The headline:** Tilesetter and Godot agree on the *mask system* for Blob 47, but Godot doesn't impose a slot order — every tile has its own peering metadata. Tilesetter's 7×8 slot order IS the atlas order; Godot doesn't care about your atlas order, only your peering bits.
 
-For TetraTile, this means:
-- A `TetraTileLayoutTilesetterBlob47` Resource is feasible: read slot N, look up the corresponding mask, paint it.
-- A `TetraTileLayoutGodotBlob47` Resource is NOT meaningful — Godot's "layout" is whatever the author decides, with bits stored as metadata. You'd need to read the TileSet's peering bits at runtime, which is essentially re-implementing Godot's terrain system. Out of scope per [MASK_UNIFICATION.md](MASK_UNIFICATION.md) (Approach B explicitly rejects this).
+For PentaTile, this means:
+- A `PentaTileLayoutTilesetterBlob47` Resource is feasible: read slot N, look up the corresponding mask, paint it.
+- A `PentaTileLayoutGodotBlob47` Resource is NOT meaningful — Godot's "layout" is whatever the author decides, with bits stored as metadata. You'd need to read the TileSet's peering bits at runtime, which is essentially re-implementing Godot's terrain system. Out of scope per [MASK_UNIFICATION.md](MASK_UNIFICATION.md) (Approach B explicitly rejects this).
 
-**Tilesetter's Godot export pre-configures Godot's peering bits.** So a Tilesetter Blob 47 atlas plugged into Godot's stock terrain system "just works" — but at that point you don't need TetraTile. TetraTile's value is the alternative: skip the peering-bits authoring entirely, attach a layout Resource, done.
+**Tilesetter's Godot export pre-configures Godot's peering bits.** So a Tilesetter Blob 47 atlas plugged into Godot's stock terrain system "just works" — but at that point you don't need PentaTile. PentaTile's value is the alternative: skip the peering-bits authoring entirely, attach a layout Resource, done.
 
 ---
 
@@ -278,9 +278,9 @@ Both editors store autotile rules in their **project file**, not in the atlas im
 - **Mask system:** Edge / Corner / Mixed (configurable per Wang Set in the editor).
 - **Up to 254 colors per set** (= multi-terrain natively).
 
-To support a Tiled atlas drop-in, TetraTile would need a `.tsx` parser that reads `wangid` records and translates them into a TetraTile mask lookup. That's a **rule-importer** feature, not a layout-Resource feature. Out of scope.
+To support a Tiled atlas drop-in, PentaTile would need a `.tsx` parser that reads `wangid` records and translates them into a PentaTile mask lookup. That's a **rule-importer** feature, not a layout-Resource feature. Out of scope.
 
-**Note:** if someone authors their atlas in Tiled but uses a *known fixed convention* (e.g., they happened to lay out tiles in CR31's 4×4 NESW order), that's actually the Wang 2-Edge layout. They'd attach `TetraTileLayoutWang2Edge` and it would work. But that's a coincidence of layout, not Tiled compatibility per se.
+**Note:** if someone authors their atlas in Tiled but uses a *known fixed convention* (e.g., they happened to lay out tiles in CR31's 4×4 NESW order), that's actually the Wang 2-Edge layout. They'd attach `PentaTileLayoutWang2Edge` and it would work. But that's a coincidence of layout, not Tiled compatibility per se.
 
 ### LDtk
 
@@ -288,13 +288,13 @@ To support a Tiled atlas drop-in, TetraTile would need a `.tsx` parser that read
 - **What's in the `.ldtk` JSON:** rule patterns (1×1 / 3×3 / 5×5 / 7×7 grids of "this neighborhood paints this tile") with rich modifiers — modulo gating, perlin gating, break-on-match, etc.
 - **Mask system:** generalized pattern matching. Strictly more expressive than corner/edge masks. Rules can express things bitmasks can't (e.g., "paint X if 5 cells away is a wall").
 
-To support an LDtk atlas drop-in, TetraTile would need a `.ldtk` rule parser AND a runtime that can evaluate LDtk rule patterns. That's a much bigger feature than a layout Resource.
+To support an LDtk atlas drop-in, PentaTile would need a `.ldtk` rule parser AND a runtime that can evaluate LDtk rule patterns. That's a much bigger feature than a layout Resource.
 
-**Note:** LDtk's "Quick Rules" templates (1.2.0+) generate auto-rules from a fixed-shape user-painted layout. If those layouts match Wang or Blob conventions, the user can take the LDtk-painted atlas and attach the matching TetraTile layout Resource. Same coincidence-of-layout argument as Tiled.
+**Note:** LDtk's "Quick Rules" templates (1.2.0+) generate auto-rules from a fixed-shape user-painted layout. If those layouts match Wang or Blob conventions, the user can take the LDtk-painted atlas and attach the matching PentaTile layout Resource. Same coincidence-of-layout argument as Tiled.
 
 ### Verdict
 
-**Tiled and LDtk drop-in support is out of scope.** What IS in scope: documenting that *if* a user authors their atlas in those tools using a layout convention TetraTile supports (Wang 2-Edge, Wang 2-Corner, Blob 47, Dual-Grid 16, Tetra), they can attach the matching Resource and use the atlas image. They lose the editor's rule magic but gain TetraTile's autotiling.
+**Tiled and LDtk drop-in support is out of scope.** What IS in scope: documenting that *if* a user authors their atlas in those tools using a layout convention PentaTile supports (Wang 2-Edge, Wang 2-Corner, Blob 47, Dual-Grid 16, Tetra), they can attach the matching Resource and use the atlas image. They lose the editor's rule magic but gain PentaTile's autotiling.
 
 ---
 
@@ -306,7 +306,7 @@ To support an LDtk atlas drop-in, TetraTile would need a `.ldtk` rule parser AND
 | `MATCH_CORNERS` | 4-bit corner peering | Topologically Wang 2-Corner / Marching Squares |
 | `MATCH_SIDES` | 4-bit edge peering (disputed; see Godot issue [#79411](https://github.com/godotengine/godot/issues/79411)) | Topologically Wang 2-Edge |
 
-Each Godot mode uses **per-tile peering bit metadata** rather than fixed atlas slots. A user who has an atlas with peering bits already authored doesn't need TetraTile — they're using Godot's stock pipeline. TetraTile's value proposition is the OPPOSITE: skip the peering-bits step, ship a layout Resource that maps slot → mask once, and never author per-tile metadata.
+Each Godot mode uses **per-tile peering bit metadata** rather than fixed atlas slots. A user who has an atlas with peering bits already authored doesn't need PentaTile — they're using Godot's stock pipeline. PentaTile's value proposition is the OPPOSITE: skip the peering-bits step, ship a layout Resource that maps slot → mask once, and never author per-tile metadata.
 
 This is why [GODOT_TERRAIN.md](GODOT_TERRAIN.md) recommends *not* integrating with Godot's terrain system. Doing so would defeat the v0.1 selling point of "no manual bitmask authoring."
 
@@ -318,22 +318,22 @@ Based on the research, the recommended built-in library:
 
 | Resource class | Mask | Tile count | Atlas |
 |---|---|---|---|
-| `TetraTileLayoutTetraHorizontal` | corner (rotation reuse) | 4 | 4×1 |
-| `TetraTileLayoutTetraVertical` | corner (rotation reuse) | 4 | 1×4 |
-| `TetraTileLayoutDualGrid16` | corner | 16 | 4×4 |
-| `TetraTileLayoutWang2Edge` | edge | 16 | 4×4 (NESW-bit) |
-| `TetraTileLayoutWang2Corner` | corner | 16 | 4×4 (NE/SE/SW/NW-bit) |
-| `TetraTileLayoutBlob47Tilesetter` | Moore | 47 | 7×8 (Tilesetter slot order) |
-| `TetraTileLayoutBlob47Excalibur` | Moore | 47 | 12×4 (jaconir / Excalibur slot order) |
+| `PentaTileLayoutPentaHorizontal` | corner (rotation reuse) | 4 | 4×1 |
+| `PentaTileLayoutPentaVertical` | corner (rotation reuse) | 4 | 1×4 |
+| `PentaTileLayoutDualGrid16` | corner | 16 | 4×4 |
+| `PentaTileLayoutWang2Edge` | edge | 16 | 4×4 (NESW-bit) |
+| `PentaTileLayoutWang2Corner` | corner | 16 | 4×4 (NE/SE/SW/NW-bit) |
+| `PentaTileLayoutBlob47Tilesetter` | Moore | 47 | 7×8 (Tilesetter slot order) |
+| `PentaTileLayoutBlob47Excalibur` | Moore | 47 | 12×4 (jaconir / Excalibur slot order) |
 
 **Deferred to v0.3+:**
 
 | Resource | Reason |
 |---|---|
-| `TetraTileLayoutSubBlob20` | Quarter-tile composition pipeline not in v0.2 |
-| `TetraTileLayoutMicroBlob13` | Same |
-| `TetraTileLayoutRPGMakerA2` | Subtile compositor not in v0.2 |
-| `TetraTileLayoutRPGMakerA4` | Same |
+| `PentaTileLayoutSubBlob20` | Quarter-tile composition pipeline not in v0.2 |
+| `PentaTileLayoutMicroBlob13` | Same |
+| `PentaTileLayoutRPGMakerA2` | Subtile compositor not in v0.2 |
+| `PentaTileLayoutRPGMakerA4` | Same |
 | Tiled `.tsx` importer | Rule-importer, not layout Resource |
 | LDtk `.ldtk` importer | Rule-importer + rule runtime |
 
@@ -356,7 +356,7 @@ After publishing this file, two follow-up audits ([`TILESETTER_AND_GODOT.md`](TI
 
 ### Tilesetter Wang is 15 tiles, not 16
 
-The "Tilesetter Wang Set = 16 tiles" claim came from secondary sources. TileBitTools' MIT-licensed `tilesetter_wang.tres` (which encodes Tilesetter's actual export) shows **15 tiles in a 5×3 atlas**, with the "stray fill tile" handled separately. The new layout-library naming reflects this: `TetraTileLayoutTilesetterWang15`.
+The "Tilesetter Wang Set = 16 tiles" claim came from secondary sources. TileBitTools' MIT-licensed `tilesetter_wang.tres` (which encodes Tilesetter's actual export) shows **15 tiles in a 5×3 atlas**, with the "stray fill tile" handled separately. The new layout-library naming reflects this: `PentaTileLayoutTilesetterWang15`.
 
 ### Tilesetter Blob is 11×5 with sub-block gaps, not 7×8
 
@@ -364,7 +364,7 @@ The "Tilesetter Blob = 7×8 grid with 9 trailing unused cells" diagram in this f
 
 ### Tilesetter slot tables are no longer "pending empirical fingerprinting"
 
-This file said: *"Slot-to-mask mapping is empirical. The exact mapping for each of the 47 slots requires painting a fingerprint atlas in Tilesetter and observing which mask lands where."* That step is no longer needed — TileBitTools has already decoded both Tilesetter slot tables under the MIT license. TetraTile transcribes them with attribution rather than re-fingerprinting.
+This file said: *"Slot-to-mask mapping is empirical. The exact mapping for each of the 47 slots requires painting a fingerprint atlas in Tilesetter and observing which mask lands where."* That step is no longer needed — TileBitTools has already decoded both Tilesetter slot tables under the MIT license. PentaTile transcribes them with attribution rather than re-fingerprinting.
 
 ### Drop Excalibur/jaconir Blob 47
 
@@ -376,7 +376,7 @@ Lower-traffic conventions with no demonstrated Godot adoption. Removed from the 
 
 ### Locked: Godot Blob 47 = TileBitTools convention
 
-The "Godot community blob template" the user referred to is the TileBitTools convention. Renamed: `TetraTileLayoutBlob47Godot` (was previously `Blob47GodotCommunity`).
+The "Godot community blob template" the user referred to is the TileBitTools convention. Renamed: `PentaTileLayoutBlob47Godot` (was previously `Blob47GodotCommunity`).
 
 ### Match Sides skipped
 
@@ -390,14 +390,14 @@ Subtile composition pipeline doesn't fit the unified `_update_cells` dispatch. A
 
 | Resource | Source | Tile count | Atlas shape |
 |---|---|---|---|
-| `TetraTileLayoutTetraHorizontal` | TetraTile native (v0.1 inheritance) | 4 | 4×1 |
-| `TetraTileLayoutTetraVertical` | TetraTile native | 4 | 1×4 |
-| `TetraTileLayoutDualGrid16` | TetraTile native | 16 | 4×4 |
-| `TetraTileLayoutWang2Edge` | CR31 standard | 16 | 4×4 NESW |
-| `TetraTileLayoutWang2Corner` | CR31 standard | 16 | 4×4 NE/SE/SW/NW |
-| `TetraTileLayoutBlob47Godot` | decoded from TileBitTools (MIT, attributed) | 47 | TBT convention |
-| `TetraTileLayoutTilesetterWang15` | decoded from TileBitTools `tilesetter_wang.tres` | 15 | 5×3 + stray fill |
-| `TetraTileLayoutTilesetterBlob47` | decoded from TileBitTools `tilesetter_blob.tres` | 47 | 11×5 with gaps |
+| `PentaTileLayoutPentaHorizontal` | PentaTile native (v0.1 inheritance) | 4 | 4×1 |
+| `PentaTileLayoutPentaVertical` | PentaTile native | 4 | 1×4 |
+| `PentaTileLayoutDualGrid16` | PentaTile native | 16 | 4×4 |
+| `PentaTileLayoutWang2Edge` | CR31 standard | 16 | 4×4 NESW |
+| `PentaTileLayoutWang2Corner` | CR31 standard | 16 | 4×4 NE/SE/SW/NW |
+| `PentaTileLayoutBlob47Godot` | decoded from TileBitTools (MIT, attributed) | 47 | TBT convention |
+| `PentaTileLayoutTilesetterWang15` | decoded from TileBitTools `tilesetter_wang.tres` | 15 | 5×3 + stray fill |
+| `PentaTileLayoutTilesetterBlob47` | decoded from TileBitTools `tilesetter_blob.tres` | 47 | 11×5 with gaps |
 
 Each Resource also carries a `template_image: Texture2D`, a `fallback_tile_set: TileSet`, and a `description: String` for inspector hinting (per the v0.2 design).
 

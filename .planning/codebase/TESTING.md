@@ -19,12 +19,12 @@ No formal test framework is currently integrated into this project. No test runn
 
 **Recommended Structure** (if testing is added):
 ```
-TetraTile/
+PentaTile/
 ├── addons/
-│   └── tetra_tile/
-│       ├── tetra_tile_map_layer.gd
+│   └── penta_tile/
+│       ├── penta_tile_map_layer.gd
 │       ├── tests/                     # Test directory (new)
-│       │   ├── test_tetra_tile_map_layer.gd
+│       │   ├── test_penta_tile_map_layer.gd
 │       │   └── test_mask_calculations.gd
 │       └── demo/
 ```
@@ -35,17 +35,17 @@ TetraTile/
 
 **Critical untested areas:**
 
-1. **Mask Calculation Logic** (`_mask_at()` in `tetra_tile_map_layer.gd`, lines 155-165)
+1. **Mask Calculation Logic** (`_mask_at()` in `penta_tile_map_layer.gd`, lines 155-165)
    - 4-bit neighbor detection for 16 possible tile states
    - Directional logic: top-left, top-right, bottom-left, bottom-right quadrant checks
    - All 16 mask values (0-15) should be validated
 
-2. **Tile Painting Logic** (`_paint_display_cell()` in `tetra_tile_map_layer.gd`, lines 108-152)
+2. **Tile Painting Logic** (`_paint_display_cell()` in `penta_tile_map_layer.gd`, lines 108-152)
    - 16-case match statement covering all mask scenarios
    - Special handling for diagonal masks (6 and 9) requiring two-layer composition
    - Visual cell correctness with proper rotation transforms
 
-3. **Coordinate Transformation** (`_atlas_coords()` in `tetra_tile_map_layer.gd`, lines 182-185)
+3. **Coordinate Transformation** (`_atlas_coords()` in `penta_tile_map_layer.gd`, lines 182-185)
    - Horizontal vs. vertical atlas layout support
    - Vector2i correctness for both layouts
 
@@ -54,7 +54,7 @@ TetraTile/
    - Layer validity checking after potential scene cleanup
    - Internal layer naming and initialization
 
-5. **Rebuild Workflow** (`rebuild()` in `tetra_tile_map_layer.gd`, lines 86-98)
+5. **Rebuild Workflow** (`rebuild()` in `penta_tile_map_layer.gd`, lines 86-98)
    - Full cell regeneration from logic layer
    - Affected cell tracking
    - Proper cleanup and repainting
@@ -79,7 +79,7 @@ TetraTile/
 
 **Current Validation Method:** Visual testing in Godot editor
 
-**Demo Scene:** `addons/tetra_tile/demo/tetra_tile_demo.tscn`
+**Demo Scene:** `addons/penta_tile/demo/penta_tile_demo.tscn`
 
 **Test Procedure:**
 1. Open demo scene in Godot 4.6
@@ -101,12 +101,12 @@ TetraTile/
 # Pseudocode for mask calculation testing
 func test_mask_at_empty_neighbors():
   # Cell with no neighbors should return 0
-  var mask = tetra_tile._mask_at(Vector2i(0, 0))
+  var mask = penta_tile._mask_at(Vector2i(0, 0))
   assert_equal(mask, 0)
 
 func test_mask_at_all_neighbors():
   # Cell surrounded by neighbors should return 15 (all 4 bits set)
-  var mask = tetra_tile._mask_at(Vector2i(0, 0))
+  var mask = penta_tile._mask_at(Vector2i(0, 0))
   assert_equal(mask, 15)
 
 func test_mask_quadrants():
@@ -118,8 +118,8 @@ func test_mask_quadrants():
 ```gdscript
 # Pseudocode for painting workflow
 func test_set_cell_updates_visuals():
-  var tetra_tile = TetraTileMapLayer.new()
-  tetra_tile.set_cell(Vector2i(0, 0), 0, Vector2i(0, 0))
+  var penta_tile = PentaTileMapLayer.new()
+  penta_tile.set_cell(Vector2i(0, 0), 0, Vector2i(0, 0))
   # Verify _update_cells() was called
   # Verify visual layers contain expected tiles
 ```

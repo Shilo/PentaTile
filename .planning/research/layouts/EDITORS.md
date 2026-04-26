@@ -4,11 +4,11 @@
 
 1. What does the *atlas image itself* look like (tile order, dimensions, count)?
 2. What metadata does the editor attach (corner/edge colors, rules, peering bits, none)?
-3. Is the convention **layout-only** (atlas position uniquely identifies tile semantics → TetraTile can ship a Resource) or **rule-based** (semantic meaning lives in editor metadata, not atlas position → harder to support)?
+3. Is the convention **layout-only** (atlas position uniquely identifies tile semantics → PentaTile can ship a Resource) or **rule-based** (semantic meaning lives in editor metadata, not atlas position → harder to support)?
 4. What mask system is implied (corner / edge / mixed / subtile composition)?
 5. What does the user's authoring workflow look like?
 
-The downstream consumer of this document is the `TetraTileLayoutXxx` Resource library. Layout-only conventions become built-in resources; rule-based conventions get deferred or require companion metadata import.
+The downstream consumer of this document is the `PentaTileLayoutXxx` Resource library. Layout-only conventions become built-in resources; rule-based conventions get deferred or require companion metadata import.
 
 **Methodology note:** All findings below come from the editor's official documentation, GitHub repositories, or community wikis. Training data was deliberately not relied on. Where a source could not be verified, the section is flagged HONEST GAP. Confidence levels are explicit per editor.
 
@@ -16,7 +16,7 @@ The downstream consumer of this document is the `TetraTileLayoutXxx` Resource li
 
 ## Quick-Reference Compatibility Matrix
 
-| Editor / Engine | Mask System | Layout-Only? | Tile Count | Atlas Shape | TetraTile Effort |
+| Editor / Engine | Mask System | Layout-Only? | Tile Count | Atlas Shape | PentaTile Effort |
 |---|---|---|---|---|---|
 | Tiled — Corner Set | Corner (V2) | No (rule-based) | 16 (full) / variable | Author-defined | Hard — needs `.tsx` wangid metadata import |
 | Tiled — Edge Set | Edge (E2) | No (rule-based) | 16 (full) / variable | Author-defined | Hard — needs `.tsx` wangid metadata import |
@@ -38,8 +38,8 @@ The downstream consumer of this document is the `TetraTileLayoutXxx` Resource li
 | Godot 4.6 stock | Peering bits (corners/sides) | No (rule-based) | Arbitrary | Arbitrary | (covered by Researcher 3) |
 
 **Legend:**
-- **Layout-only:** Tile semantics can be inferred from atlas position alone. TetraTile can ship a single Resource describing slot positions.
-- **Rule-based:** Tile semantics live in editor metadata (XML/JSON/ScriptableObject). TetraTile would need a metadata-import feature to consume these atlases.
+- **Layout-only:** Tile semantics can be inferred from atlas position alone. PentaTile can ship a single Resource describing slot positions.
+- **Rule-based:** Tile semantics live in editor metadata (XML/JSON/ScriptableObject). PentaTile would need a metadata-import feature to consume these atlases.
 
 ---
 
@@ -128,10 +128,10 @@ Tiled separates painting into two stages:
 - **Mask system:** Corner / Edge / Mixed (configurable per set).
 - **Authoring step:** Paint atlas + tag every tile with wang colors → save `.tsx`.
 
-### Implications for TetraTile
+### Implications for PentaTile
 
-- A `TetraTileLayoutTiled` Resource that just describes "tile X in atlas slot Y" cannot work in general because Tiled has no canonical layout.
-- However: if a community/vendor **convention** ("Tiled Edge 4×4 standard arrangement") exists, TetraTile could ship a layout for that. There is no such canonical arrangement in Tiled itself — artists draw their atlases in whatever order suits them.
+- A `PentaTileLayoutTiled` Resource that just describes "tile X in atlas slot Y" cannot work in general because Tiled has no canonical layout.
+- However: if a community/vendor **convention** ("Tiled Edge 4×4 standard arrangement") exists, PentaTile could ship a layout for that. There is no such canonical arrangement in Tiled itself — artists draw their atlases in whatever order suits them.
 - True drop-in support would require parsing `.tsx` to extract wangids → outside the deferred "file-format import" scope.
 
 ---
@@ -207,11 +207,11 @@ I could not get the dedicated Quick Rules doc page (404). The 1.2.0 itch devlog 
 - **Mask system:** Generalized pattern matching — far more flexible than corner/edge bitmasks. Rules can express things like "paint tile X if 5 cells away there's a wall" which no bitmask system can.
 - **Authoring step:** Paint atlas in any order; define IntGrid values; build rules (or use Quick Rules to auto-generate them); paint integers, rules render tiles.
 
-### Implications for TetraTile
+### Implications for PentaTile
 
-- LDtk atlases are **not portable** to TetraTile via a layout Resource. The semantics live in the `.ldtk` project file, not the atlas.
+- LDtk atlases are **not portable** to PentaTile via a layout Resource. The semantics live in the `.ldtk` project file, not the atlas.
 - A user wanting "drop-in LDtk compatibility" would actually need a `.ldtk` rule importer, which is out of scope.
-- However, if a user authored their tiles in LDtk *using a known fixed pattern* (e.g., the standard 47-tile blob arrangement) and exports the atlas image, TetraTile could still consume it via the matching `TetraTileLayoutBlob47` resource — but that's true regardless of LDtk; it's about the atlas convention, not LDtk specifically.
+- However, if a user authored their tiles in LDtk *using a known fixed pattern* (e.g., the standard 47-tile blob arrangement) and exports the atlas image, PentaTile could still consume it via the matching `PentaTileLayoutBlob47` resource — but that's true regardless of LDtk; it's about the atlas convention, not LDtk specifically.
 
 ---
 
@@ -267,7 +267,7 @@ The 47 valid base indices (per Boris the Brave's blob reference) are:
 ```
 plus all rotations (multiply by 4 mod 256). The atlas slot for each tile is a fixed mapping (Tilesetter uses a 7-column-wide pack), so consumers can compute the correct slot deterministically from the bitmask.
 
-**HONEST GAP:** The Tilesetter docs do not publish the exact slot-by-slot mapping table. The 7×8 packing and binary indexing are documented in community references; reverse-engineering the precise slot order would be needed for a `TetraTileLayoutTilesetter47` Resource. This is feasible but not done in this research pass.
+**HONEST GAP:** The Tilesetter docs do not publish the exact slot-by-slot mapping table. The 7×8 packing and binary indexing are documented in community references; reverse-engineering the precise slot order would be needed for a `PentaTileLayoutTilesetter47` Resource. This is feasible but not done in this research pass.
 
 ### Export targets
 
@@ -295,9 +295,9 @@ The `Auto-tile bitmasks are already configured for Blob and Wang sets when expor
 - **Layout-only?** **YES** for the output atlas. Once Tilesetter generates the 47-tile blob (7×8) or 16-tile Wang atlas, the slot positions are fixed and deterministic — no per-tile metadata needed for a consumer that knows the convention.
 - **Mask system:** Edge (Wang Set 16-tile) or Mixed (Blob 47-tile).
 - **Authoring step in Tilesetter:** edge-source authoring → Generate Tileset. The user does not paint each composed tile by hand; Tilesetter composes them.
-- **Authoring step in TetraTile to consume:** drop the exported PNG into a Godot project; attach `TetraTileLayoutTilesetterWang16` or `TetraTileLayoutTilesetterBlob47` Resource; done.
+- **Authoring step in PentaTile to consume:** drop the exported PNG into a Godot project; attach `PentaTileLayoutTilesetterWang16` or `PentaTileLayoutTilesetterBlob47` Resource; done.
 
-### Implications for TetraTile
+### Implications for PentaTile
 
 - **Tilesetter is the friendliest external tool to support** — its outputs are deterministic and layout-only.
 - Two layout Resources are sufficient: one for 16-tile Wang, one for 47-tile Blob.
@@ -370,11 +370,11 @@ Rule Tile imposes **no atlas layout requirements**. The user can have a Texture2
 - **Mask system:** Generalized 3×3 pattern matching with rotation/mirror permissions per rule. Roughly equivalent to Boris-classification S-V2E2 with rotation symmetries when transform=Rotated, but rule mode is fully expressive.
 - **Authoring step:** slice atlas → author Rule Tile asset (rules + sprite refs) → paint.
 
-### Implications for TetraTile
+### Implications for PentaTile
 
 - A user moving a Unity-authored atlas to Godot would lose the Rule Tile metadata entirely. A layout Resource cannot recover it.
-- Tilesetter's Unity export sidesteps this by configuring auto-tiling for the user; the underlying atlas is still in Tilesetter's Wang or Blob convention. TetraTile can consume the atlas image directly via the matching `TetraTileLayoutTilesetterXxx` Resource and ignore the Unity-side config.
-- Direct "Unity Rule Tile" support is out of scope — would require parsing Rule Tile `.asset` files and translating rule expressions into TetraTile masks. Not a layout-only path.
+- Tilesetter's Unity export sidesteps this by configuring auto-tiling for the user; the underlying atlas is still in Tilesetter's Wang or Blob convention. PentaTile can consume the atlas image directly via the matching `PentaTileLayoutTilesetterXxx` Resource and ignore the Unity-side config.
+- Direct "Unity Rule Tile" support is out of scope — would require parsing Rule Tile `.asset` files and translating rule expressions into PentaTile masks. Not a layout-only path.
 
 ---
 
@@ -457,17 +457,17 @@ Upper-layer atlases (props, doodads). Plain 16×16 atlases of 256 tiles each. No
 - **Mask system:** **Subtile composition** — categorically different from corner/edge tile selection. Implementing this means writing a quarter-sample compositor, not a tile-selector.
 - **Authoring step:** paint within the fixed quarter regions of the template; no metadata file.
 
-### Implications for TetraTile
+### Implications for PentaTile
 
-This is the **hardest** convention to support and the most different from TetraTile's current architecture.
+This is the **hardest** convention to support and the most different from PentaTile's current architecture.
 
-- A `TetraTileLayoutRPGMakerA2` Resource cannot just describe slot positions — it would also need a **subtile compositor**: at runtime (or at atlas-bake time), pick four quarter-samples from the source block and stitch them into a `(4n)×(4m)` synthesized atlas.
-- TetraTile's current 16-state binary mask is the *output* of this composition (mask → composed tile), but the *source* art is at quarter granularity.
-- One viable architecture: at TileSet load time, run a compositor that produces 47 (or 16) full-size tiles from each A2 kind, then have a normal `TetraTileLayoutBlob47` lookup against the synthesized atlas. This keeps TetraTile's runtime simple at the cost of a baking step.
+- A `PentaTileLayoutRPGMakerA2` Resource cannot just describe slot positions — it would also need a **subtile compositor**: at runtime (or at atlas-bake time), pick four quarter-samples from the source block and stitch them into a `(4n)×(4m)` synthesized atlas.
+- PentaTile's current 16-state binary mask is the *output* of this composition (mask → composed tile), but the *source* art is at quarter granularity.
+- One viable architecture: at TileSet load time, run a compositor that produces 47 (or 16) full-size tiles from each A2 kind, then have a normal `PentaTileLayoutBlob47` lookup against the synthesized atlas. This keeps PentaTile's runtime simple at the cost of a baking step.
 - Alternative: skip A2/A4 quarter-composition entirely and only support A5 (the plain non-autotile atlas). Trivial but defeats most of the value.
 - A1 animated water requires per-frame composition and ties into Godot's TileSet animation feature. Probably out of scope for v0.2.
 
-A1/A2/A3/A4 should be deferred behind a TetraBake-style baking utility. A5 + B/C/D/E (plain atlases) are not autotile concerns at all.
+A1/A2/A3/A4 should be deferred behind a PentaBake-style baking utility. A5 + B/C/D/E (plain atlases) are not autotile concerns at all.
 
 ---
 
@@ -549,10 +549,10 @@ Templates come in resolutions 8×8, 16×16, 32×32, 64×64, 128×128. Internal s
 - **Mask system:** Edge (16-tile) or Mixed (47-tile blob).
 - **Authoring step:** paint atlas in any order → drag tiles into fixed template slots.
 
-### Implications for TetraTile
+### Implications for PentaTile
 
-- A `TetraTileLayoutGMS2_47` Resource is straightforward — codify the slot order.
-- A `TetraTileLayoutGMS2_16` Resource ditto.
+- A `PentaTileLayoutGMS2_47` Resource is straightforward — codify the slot order.
+- A `PentaTileLayoutGMS2_16` Resource ditto.
 - Tilesetter's GMS2 export (`.yy`) produces atlases in this exact convention; the two ecosystems are compatible at the atlas level.
 
 ---
@@ -590,10 +590,10 @@ Aseprite exports tilemaps to JSON/XML/text. Exporting tilesets as plain PNG atla
 - **Mask system:** N/A.
 - **Authoring step:** paint atlas in whatever convention the target engine wants (often blob-47 done by hand, or via a community script).
 
-### Implications for TetraTile
+### Implications for PentaTile
 
-- Aseprite is upstream of TetraTile, not an autotile peer.
-- A user authoring in Aseprite would output a blob-47 or Wang-16 PNG; TetraTile consumes it via the matching `TetraTileLayoutBlob47` or `TetraTileLayoutWang16` Resource.
+- Aseprite is upstream of PentaTile, not an autotile peer.
+- A user authoring in Aseprite would output a blob-47 or Wang-16 PNG; PentaTile consumes it via the matching `PentaTileLayoutBlob47` or `PentaTileLayoutWang16` Resource.
 - No "Aseprite layout" needed.
 
 ---
@@ -616,11 +616,11 @@ There is no other autotile convention support; PyxelEdit doesn't compose tiles o
 
 ### Classification
 
-- **Layout-only?** Indirect — PyxelEdit doesn't define a layout, but is most commonly used to author the **RPG Maker A2 template layout**. So a TetraTile RPGM resource indirectly handles PyxelEdit output.
+- **Layout-only?** Indirect — PyxelEdit doesn't define a layout, but is most commonly used to author the **RPG Maker A2 template layout**. So a PentaTile RPGM resource indirectly handles PyxelEdit output.
 - **Mask system:** None of its own; the user is targeting RPG Maker's subtile composition.
 - **Authoring step:** paint within RPG Maker template structure → export PNG.
 
-### Implications for TetraTile
+### Implications for PentaTile
 
 - Same as RPG Maker: support PyxelEdit by supporting RPG Maker A2 (subtile composition) — both deferred behind a baking utility.
 
@@ -644,7 +644,7 @@ iPad pixel-art tool with grid overlay (toggleable, useful for tile alignment), s
 - **Mask system:** N/A.
 - **Authoring step:** paint atlas manually, no autotile integration.
 
-### Implications for TetraTile
+### Implications for PentaTile
 
 - Like Aseprite, Pixaki is upstream of any autotile system. Output is a plain PNG; consumers attach whatever layout Resource matches the chosen convention.
 - No specific Pixaki support is needed.
@@ -676,7 +676,7 @@ iPad pixel-art tool with grid overlay (toggleable, useful for tile alignment), s
 
 ### Layout-only candidates (low effort to support)
 
-These can become `TetraTileLayoutXxx` Resources with deterministic slot mappings:
+These can become `PentaTileLayoutXxx` Resources with deterministic slot mappings:
 
 1. **Tilesetter Wang 16-tile** — well-defined, common.
 2. **Tilesetter Blob 47-tile** — well-defined, very common, same convention as GameMaker 47.
@@ -697,20 +697,20 @@ The 47-blob convention is *the* de facto standard for layout-only blob atlases. 
 9. **Tiled Wang Sets / Terrain Sets** — needs `.tsx` parser to extract wangids.
 10. **LDtk Auto-Layers** — needs `.ldtk` JSON parser + rule-evaluation runtime.
 11. **Unity Rule Tile** — needs `.asset` ScriptableObject parser + rule translator.
-12. **Godot stock terrain** — already supported by Godot itself; outside TetraTile's value-add.
+12. **Godot stock terrain** — already supported by Godot itself; outside PentaTile's value-add.
 
-### Recommended TetraTile Resource library (v0.2 scope decision)
+### Recommended PentaTile Resource library (v0.2 scope decision)
 
 **Ship in v0.2:**
 
-- `TetraTileLayoutHorizontal4` — current 4×1 contract (already shipped).
-- `TetraTileLayoutVertical4` — current 1×4 contract (already shipped).
-- `TetraTileLayoutBlob47` — the universal 47-blob convention (= Tilesetter Blob = GameMaker 47 = community standard).
-- `TetraTileLayoutWang16` — the universal 16-edge convention (= Tilesetter Wang = GameMaker 16 — needs verification that Tilesetter's slot order matches GameMaker's).
+- `PentaTileLayoutHorizontal4` — current 4×1 contract (already shipped).
+- `PentaTileLayoutVertical4` — current 1×4 contract (already shipped).
+- `PentaTileLayoutBlob47` — the universal 47-blob convention (= Tilesetter Blob = GameMaker 47 = community standard).
+- `PentaTileLayoutWang16` — the universal 16-edge convention (= Tilesetter Wang = GameMaker 16 — needs verification that Tilesetter's slot order matches GameMaker's).
 
 These four cover the majority of the layout-only ecosystem in one design pass.
 
-**Defer to v0.3+ (TetraBake-shaped baking utility):**
+**Defer to v0.3+ (PentaBake-shaped baking utility):**
 
 - RPG Maker A2/A4 (subtile composition baker).
 - A1 animated water (after A2 lands).
@@ -723,7 +723,7 @@ These four cover the majority of the layout-only ecosystem in one design pass.
 
 ### README documentation note
 
-The README will need a "Supported Layouts" section listing each `TetraTileLayoutXxx` Resource with:
+The README will need a "Supported Layouts" section listing each `PentaTileLayoutXxx` Resource with:
 - Tile count
 - Atlas dimensions (e.g., "7×8 with 9 unused slots" for blob-47)
 - Source convention name (Tilesetter / GameMaker / community blob)

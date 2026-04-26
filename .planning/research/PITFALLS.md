@@ -1,6 +1,6 @@
 # Pitfalls Research
 
-**Domain:** Godot 4.6 dual-grid autotiling addon — contract expansion (TetraTile v0.2)
+**Domain:** Godot 4.6 dual-grid autotiling addon — contract expansion (PentaTile v0.2)
 **Researched:** 2026-04-25
 **Confidence:** HIGH (Godot mechanics verified via Context7 + 4.6 docs); MEDIUM (project-specific predictions)
 
@@ -79,7 +79,7 @@ Variation feature phase. Determinism contract should be written down BEFORE the 
 ### Pitfall 3: `alternative_tile` parameter overloaded with transform bits
 
 **What goes wrong:**
-Godot 4.6's `TileMapLayer.set_cell(coords, source_id, atlas_coords, alternative_tile)` takes a single `int` for `alternative_tile` that encodes BOTH the user-defined alternative ID (low bits) AND the transform flags `TRANSFORM_FLIP_H=4096`, `TRANSFORM_FLIP_V=8192`, `TRANSFORM_TRANSPOSE=16384` (high bits, ≥ 4096). Current TetraTile code passes the rotation constants directly as `alternative_tile`:
+Godot 4.6's `TileMapLayer.set_cell(coords, source_id, atlas_coords, alternative_tile)` takes a single `int` for `alternative_tile` that encodes BOTH the user-defined alternative ID (low bits) AND the transform flags `TRANSFORM_FLIP_H=4096`, `TRANSFORM_FLIP_V=8192`, `TRANSFORM_TRANSPOSE=16384` (high bits, ≥ 4096). Current PentaTile code passes the rotation constants directly as `alternative_tile`:
 ```gdscript
 const _ROTATE_90 := TileSetAtlasSource.TRANSFORM_TRANSPOSE | TileSetAtlasSource.TRANSFORM_FLIP_H
 ...
@@ -148,17 +148,17 @@ Non-rotating tileset phase. Generate the table, don't hand-write it.
 ### Pitfall 5: Setter loops in the new Resource-backed contract
 
 **What goes wrong:**
-The "declare what you have" redesign almost certainly introduces a `Resource` subtype like `TetraTileContract` exposed as `@export var contract: TetraTileContract`. Three setter-loop traps appear simultaneously:
+The "declare what you have" redesign almost certainly introduces a `Resource` subtype like `PentaTileContract` exposed as `@export var contract: PentaTileContract`. Three setter-loop traps appear simultaneously:
 
 1. **Setter recursion via name shadowing.** Common bug:
    ```gdscript
-   @export var contract: TetraTileContract:
+   @export var contract: PentaTileContract:
        set(value):
            set_contract(value)  # if set_contract() does `contract = value`, infinite recursion → editor crash
    ```
    Godot 4 has no built-in protection against this and crashes hard.
 2. **`@onready` race.** When the editor opens a scene, `@tool` setters fire BEFORE `_ready()`. If the setter touches `_primary_layer`, it gets `null`. Current code already checks `is_instance_valid()` at the use site, but a new `contract.changed` signal connection in the setter would fire on a half-built node. The existing pattern `_queue_rebuild()` (lines 258–260) guards with `is_inside_tree()` — preserve that pattern.
-3. **Contract-resource `changed` signal storm.** Resources emit `changed` when any sub-property mutates. If TetraTile connects `contract.changed` to `_queue_rebuild`, then every keystroke in the contract sub-inspector triggers a deferred rebuild. With multiple sub-resources (per-tile knobs), that's dozens of rebuilds per inspector edit, freezing the editor.
+3. **Contract-resource `changed` signal storm.** Resources emit `changed` when any sub-property mutates. If PentaTile connects `contract.changed` to `_queue_rebuild`, then every keystroke in the contract sub-inspector triggers a deferred rebuild. With multiple sub-resources (per-tile knobs), that's dozens of rebuilds per inspector edit, freezing the editor.
 
 **Why it happens:**
 GDScript setters look simple but combine with `@tool`, deferred calls, and Resource signals to form sharp edges. The community is full of "external setter call → crash" reports (issue #48437, #52757, #76019).
@@ -183,7 +183,7 @@ GDScript setters look simple but combine with `@tool`, deferred calls, and Resou
 - `_queue_rebuild()` already coalesces via `call_deferred()` (only the last call's effect survives) — preserve that.
 
 **Warning signs:**
-- Editor freezes/crashes on opening scenes containing `TetraTileMapLayer`.
+- Editor freezes/crashes on opening scenes containing `PentaTileMapLayer`.
 - `Stack overflow` errors in the Godot output panel.
 - Inspector lag proportional to contract complexity.
 - "_primary_layer is null" errors during editor scene load.
@@ -261,7 +261,7 @@ Top-tile / non-rotating phase (treated as one R&D track per PROJECT.md).
 ### Pitfall 8: Contract scope creep into TileMapDual territory
 
 **What goes wrong:**
-"Declare what you have" is a small phrase that can swell into a metadata system rivaling Godot's terrain peering. Failure mode: the contract grows from "atlas slot table + 3 enums" into "per-tile peering bits + multi-terrain transitions + connection rules", and TetraTile's "smaller and leaner than TileMapDual" identity (PROJECT.md line 72) evaporates.
+"Declare what you have" is a small phrase that can swell into a metadata system rivaling Godot's terrain peering. Failure mode: the contract grows from "atlas slot table + 3 enums" into "per-tile peering bits + multi-terrain transitions + connection rules", and PentaTile's "smaller and leaner than TileMapDual" identity (PROJECT.md line 72) evaporates.
 
 Specific scope creep vectors observed in similar addons:
 - "While we're declaring what we have, let's also declare neighboring terrain compatibility..."
@@ -277,12 +277,12 @@ Contract design is creative work; ideas accrete. Pre-1.0 freedom removes the "we
 
 **How to avoid:**
 - Re-read the PROJECT.md "Out of Scope" list before merging any contract-shaped commit. Outer transition tiles are explicitly out (line 47). If a PR slips toward terrain transitions, reject.
-- Hard line count budget for v0.2: target stays under 500 LOC in `tetra_tile_map_layer.gd` + new contract Resource files combined. Current is ~261 LOC. If the contract redesign pushes past 500 LOC, that's a signal to defer features.
+- Hard line count budget for v0.2: target stays under 500 LOC in `penta_tile_map_layer.gd` + new contract Resource files combined. Current is ~261 LOC. If the contract redesign pushes past 500 LOC, that's a signal to defer features.
 - Each new export property answers: "does my game need this in the next 6 months?" If no, defer.
 - Maintain ARCHITECTURE.md's "no persistent caches, no signal fanout, no watchers" stance. New caches require an explicit decision entry in PROJECT.md.
 
 **Warning signs:**
-- New file count > 5 in `addons/tetra_tile/`.
+- New file count > 5 in `addons/penta_tile/`.
 - New `@export` properties > 8 across all classes.
 - Documentation requires a "concepts" page to explain.
 - README says "compared to TileMapDual" and the comparison table shrinks.
@@ -317,7 +317,7 @@ Common mistakes when integrating with Godot 4.6 APIs during this milestone.
 | Integration | Common Mistake | Correct Approach |
 |-------------|----------------|------------------|
 | `TileSetAtlasSource.create_alternative_tile()` | Assuming alternative IDs are sequential and stable | IDs may have gaps if the user deletes alternatives. Iterate via `get_alternative_tiles_count` + `get_alternative_tile_id`. |
-| `TileData.probability` | Assuming Godot auto-picks at `set_cell()` time | Godot only honors `probability` in terrain/scattering paths. TetraTile uses direct `set_cell()` and MUST implement weighted selection itself. |
+| `TileData.probability` | Assuming Godot auto-picks at `set_cell()` time | Godot only honors `probability` in terrain/scattering paths. PentaTile uses direct `set_cell()` and MUST implement weighted selection itself. |
 | `set_cell()` `alternative_tile` parameter | Passing alt ID and transform separately, picking last-write-wins | Pack with bitwise OR: `transform_flags \| alt_id`. Alt IDs must be < 4096 (TRANSFORM_FLIP_H bit). |
 | `forced_cleanup=true` from `enabled=false` | Treating cleanup as an error path | It's a routine signal. Current code handles it correctly (line 69); preserve that when adding the contract setter. |
 | `_update_cells()` invoked with empty coords | Treating as "nothing to do" | Godot signals "you don't know what changed, redo everything" — fall through to `rebuild()` (line 75 already does this). |
@@ -400,7 +400,7 @@ How v0.2 phases should address these pitfalls.
 
 ---
 
-## TetraTile-Specific Gotcha Recap
+## PentaTile-Specific Gotcha Recap
 
 Things only relevant because of v0.1's existing architecture:
 
@@ -441,11 +441,11 @@ Things only relevant because of v0.1's existing architecture:
 - [Classification of Tilesets - BorisTheBrave](https://www.boristhebrave.com/2021/11/14/classification-of-tilesets/) — non-rotating vs rotating tradeoff space
 
 ### Project-internal sources (HIGH confidence)
-- `C:/Programming_Files/Shilocity/TetraTile/.planning/PROJECT.md` — scope, constraints, "smaller than TileMapDual" identity
-- `C:/Programming_Files/Shilocity/TetraTile/.planning/codebase/CONCERNS.md` — v0.1 concerns (visibility cleanup, no tests, fixed atlas)
-- `C:/Programming_Files/Shilocity/TetraTile/.planning/codebase/ARCHITECTURE.md` — "no persistent caches, no signal fanout" stance
-- `C:/Programming_Files/Shilocity/TetraTile/addons/tetra_tile/tetra_tile_map_layer.gd` — current 261-LOC implementation
+- `C:/Programming_Files/Shilocity/PentaTile/.planning/PROJECT.md` — scope, constraints, "smaller than TileMapDual" identity
+- `C:/Programming_Files/Shilocity/PentaTile/.planning/codebase/CONCERNS.md` — v0.1 concerns (visibility cleanup, no tests, fixed atlas)
+- `C:/Programming_Files/Shilocity/PentaTile/.planning/codebase/ARCHITECTURE.md` — "no persistent caches, no signal fanout" stance
+- `C:/Programming_Files/Shilocity/PentaTile/addons/penta_tile/penta_tile_map_layer.gd` — current 261-LOC implementation
 
 ---
-*Pitfalls research for: Godot 4.6 dual-grid autotiling addon — TetraTile v0.2 contract expansion*
+*Pitfalls research for: Godot 4.6 dual-grid autotiling addon — PentaTile v0.2 contract expansion*
 *Researched: 2026-04-25*

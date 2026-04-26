@@ -6,7 +6,7 @@
 
 **None currently implemented.**
 
-The TetraTile addon is a self-contained tilemap layer that does not integrate with external APIs, cloud services, or third-party SDKs.
+The PentaTile addon is a self-contained tilemap layer that does not integrate with external APIs, cloud services, or third-party SDKs.
 
 ## Data Storage
 
@@ -15,7 +15,7 @@ The TetraTile addon is a self-contained tilemap layer that does not integrate wi
 
 **File Storage:**
 - Local filesystem only
-- Textures embedded in project: `addons/tetra_tile/demo/tetra_tile_ground.png`, `addons/tetra_tile/tetra_tile_template.png`
+- Textures embedded in project: `addons/penta_tile/demo/penta_tile_ground.png`, `addons/penta_tile/penta_tile_template.png`
 - Scene files stored as `.tscn` (text-based Godot scenes)
 - TileSet definitions stored as `.tres` resource files
 

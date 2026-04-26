@@ -1,12 +1,12 @@
 # Architecture Research
 
-**Domain:** Godot 4.6 dual-grid autotile addon (TetraTile v0.2.0 contract expansion)
+**Domain:** Godot 4.6 dual-grid autotile addon (PentaTile v0.2.0 contract expansion)
 **Researched:** 2026-04-25
 **Confidence:** HIGH (Godot APIs verified via Context7 against godot-docs master + Godot 4.6 stable; design recommendations triangulated against TileMapDual precedent and v0.1 source)
 
 ## Scope of This Document
 
-This research answers: **how should TetraTile evolve to support a "declare what you have" atlas contract, Y-axis variation, top tiles, and non-rotating tilesets — without growing larger than TileMapDual?**
+This research answers: **how should PentaTile evolve to support a "declare what you have" atlas contract, Y-axis variation, top tiles, and non-rotating tilesets — without growing larger than TileMapDual?**
 
 It does **not** re-derive v0.1 architecture (already in `.planning/codebase/ARCHITECTURE.md`). It treats v0.1 as a fixed starting point and proposes additive deltas.
 
@@ -18,14 +18,14 @@ It does **not** re-derive v0.1 architecture (already in `.planning/codebase/ARCH
 ┌──────────────────────────────────────────────────────────────────────┐
 │                          USER-FACING SURFACE                         │
 ├──────────────────────────────────────────────────────────────────────┤
-│  TetraTileMapLayer  (extends TileMapLayer, single public class)      │
-│      ├─ @export atlas_contract: TetraTileAtlasContract  ← NEW        │
+│  PentaTileMapLayer  (extends TileMapLayer, single public class)      │
+│      ├─ @export atlas_contract: PentaTileAtlasContract  ← NEW        │
 │      ├─ @export atlas_source_id, logic_*, generated_collision_*      │
 │      └─ rebuild(), set_cell()/erase_cell() (inherited)               │
 ├──────────────────────────────────────────────────────────────────────┤
 │                          CONTRACT (RESOURCE)                         │
 ├──────────────────────────────────────────────────────────────────────┤
-│  TetraTileAtlasContract  (extends Resource, .tres on disk)           │
+│  PentaTileAtlasContract  (extends Resource, .tres on disk)           │
 │      ├─ @export rotation_mode: RotationMode {SYMMETRIC, NON_ROTATING}│
 │      ├─ @export tile_slots: Dictionary  ← mask → AtlasSlot           │
 │      ├─ @export top_overlay_slot: AtlasSlot (optional)               │
@@ -50,11 +50,11 @@ It does **not** re-derive v0.1 architecture (already in `.planning/codebase/ARCH
 
 | Component | Responsibility | Implementation |
 |-----------|----------------|----------------|
-| `TetraTileMapLayer` | Public node API; owns logic cells, internal visual layers, contract | GDScript class extending `TileMapLayer` |
-| `TetraTileAtlasContract` | Declares what tiles exist for which mask states; per-tile knobs | GDScript `Resource` subclass, `class_name`-registered |
+| `PentaTileMapLayer` | Public node API; owns logic cells, internal visual layers, contract | GDScript class extending `TileMapLayer` |
+| `PentaTileAtlasContract` | Declares what tiles exist for which mask states; per-tile knobs | GDScript `Resource` subclass, `class_name`-registered |
 | `AtlasSlot` (inner class on contract) | Pairs an atlas coord with rotation flags + variation rule | Plain object embedded in `tile_slots`; not a separate Resource |
-| `_resolve_slot(mask)` | Mask → (atlas_coords, transform_flags) lookup, mode-aware | Method on `TetraTileMapLayer` |
-| `_pick_alternative()` | Deterministic seed-based alt-tile picker | Method on `TetraTileMapLayer` |
+| `_resolve_slot(mask)` | Mask → (atlas_coords, transform_flags) lookup, mode-aware | Method on `PentaTileMapLayer` |
+| `_pick_alternative()` | Deterministic seed-based alt-tile picker | Method on `PentaTileMapLayer` |
 | `_primary_layer` | Main visuals (15 of 16 mask states) | Internal `TileMapLayer` (unchanged from v0.1) |
 | `_overlay_layer` | Disconnected diagonal composition for masks 6/9 | Internal `TileMapLayer` (unchanged from v0.1) |
 | `_top_layer` | Optional top-edge overlay (e.g., grass cap on dirt) | Internal `TileMapLayer`, only spawned when contract opts in |
@@ -63,7 +63,7 @@ It does **not** re-derive v0.1 architecture (already in `.planning/codebase/ARCH
 
 - ❌ No persistent coordinate cache (v0.1 stance preserved)
 - ❌ No watcher / signal fanout system
-- ❌ No terrain set / terrain ID metadata (Godot's terrains are out of scope; TetraTile competes with that system, doesn't wrap it)
+- ❌ No terrain set / terrain ID metadata (Godot's terrains are out of scope; PentaTile competes with that system, doesn't wrap it)
 - ❌ No custom RNG: variation rides Godot's existing alternative tile + flip flag plumbing
 - ❌ No multi-terrain transition support (explicitly Out of Scope per `.planning/PROJECT.md`)
 - ❌ No `TileSet` editor plugin / dock UI: users author the contract via Godot's stock Inspector + .tres editing
@@ -71,7 +71,7 @@ It does **not** re-derive v0.1 architecture (already in `.planning/codebase/ARCH
 
 ## Decision: Where the Atlas Contract Lives
 
-**Recommendation: Custom `Resource` subclass (`TetraTileAtlasContract`) attached to `TetraTileMapLayer` via `@export`.**
+**Recommendation: Custom `Resource` subclass (`PentaTileAtlasContract`) attached to `PentaTileMapLayer` via `@export`.**
 
 This is option 1 from the question. Below is the evaluation of all four options, then the rationale.
 
@@ -83,7 +83,7 @@ This is option 1 from the question. Below is the evaluation of all four options,
 | Serialization stability | High — `class_name`-registered Resources are stable across Godot versions | Medium — TileSet's per-tile metadata path notation (`x:y/alt/key`) is fragile to atlas refactors | Low — Dictionary export survives, but key/value renames break silently | Medium — coupling adds breakage surface |
 | Migration ergonomics | High — old contracts can be loaded, new fields default-init from Resource | Low — schema migration requires walking every tile's metadata | Low — no version field, no migration path | Medium — must migrate both sides |
 | Runtime perf cost | Low — Resource fields are typed, accessed once per repaint | Medium — `get_custom_data_by_layer_id()` per tile per repaint = N lookups | Lowest — direct dict access, but irrelevant at this scale | Medium — two reads per tile |
-| Code clarity | High — contract logic lives in one Resource class with typed fields | Low — implementation logic spread between TetraTile and TileSet metadata definitions | Low — godscripted constants are not discoverable | Medium — split brain |
+| Code clarity | High — contract logic lives in one Resource class with typed fields | Low — implementation logic spread between PentaTile and TileSet metadata definitions | Low — godscripted constants are not discoverable | Medium — split brain |
 | "Lean" identity | High — one new file, ~40 LOC | Medium — leans into Godot's data layer system, uses no new files but couples tightly to TileSet | Low — bloats the core class | Low — adds two abstractions instead of one |
 
 ### Why Resource Wins
@@ -92,14 +92,14 @@ This is option 1 from the question. Below is the evaluation of all four options,
 2. **Serialization stability matters more than perf at 100–1k cells.** Custom data layers tie metadata to tile coordinates inside the TileSet — if the user re-arranges the atlas image, their metadata bindings break. A Resource is a separate `.tres` that can be re-targeted at a new atlas without rewriting per-tile data.
 3. **Resource path notation (`x:y/alt/property`) is verbose** — using it from GDScript means string-formatted keys and `Variant` lookups. Resources give typed property access (`contract.outer_corner_slot`).
 4. **Versioning is trivial.** Add a `@export var version: int = 1` field; `_load_contract()` can switch on it for forward-compat.
-5. **Reusability.** A single `.tres` contract can be shared across multiple `TetraTileMapLayer` nodes (e.g., dirt on layer A and layer B with the same atlas).
+5. **Reusability.** A single `.tres` contract can be shared across multiple `PentaTileMapLayer` nodes (e.g., dirt on layer A and layer B with the same atlas).
 
 **Tradeoff acknowledged:** users who only want defaults must either (a) leave the export `null` and let the layer fall back to the v0.1 behavior, or (b) ship a default `.tres` next to the addon. We recommend (a) — preserves zero-config UX.
 
 ### Resource Schema (proposal)
 
 ```gdscript
-class_name TetraTileAtlasContract
+class_name PentaTileAtlasContract
 extends Resource
 
 enum RotationMode {
@@ -150,7 +150,7 @@ The v0.1 mask table has 16 entries but only references 4 base tiles, reusing the
 
 ### Recommendation: Mode Flag on Contract, Not Per-Tile
 
-**`rotation_mode` lives on `TetraTileAtlasContract`, not on individual slots.**
+**`rotation_mode` lives on `PentaTileAtlasContract`, not on individual slots.**
 
 Rationale:
 - Mixing rotated and non-rotated tiles in one atlas is a bizarre authoring story. If even one slot is non-rotating, the whole atlas is effectively non-rotating (rotated neighbors would mismatch).
@@ -181,7 +181,7 @@ In non-rotating mode, masks 6 and 9 still need overlay composition because the g
 func _resolve_slot(mask: int) -> Dictionary:
     if atlas_contract == null:
         return _resolve_slot_legacy(mask)  # v0.1 hardcoded behavior
-    if atlas_contract.rotation_mode == TetraTileAtlasContract.RotationMode.NON_ROTATING:
+    if atlas_contract.rotation_mode == PentaTileAtlasContract.RotationMode.NON_ROTATING:
         var slot: AtlasSlot = atlas_contract.mask_slots[mask]
         return { "primary": slot, "overlay": null }  # or both for masks 6/9
     return _resolve_slot_symmetric(mask)  # the v0.1 table, but reading slots from contract
@@ -235,7 +235,7 @@ For display cell (1,2):
 
 The Godot 4.6 docs (Context7-verified at `tutorials/2d/using_tilemaps.md`, "Painting Randomly Using Scattering") state probability applies "when drawing a pattern of random tiles" — i.e., the editor's Paint/Line/Rectangle/Bucket tools when **multiple tiles are selected** in the TileMap editor. **`set_cell()` called from code does NOT auto-pick alts based on probability** — the caller passes an explicit `alternative_tile` ID.
 
-This means: **TetraTile must do the picking itself.**
+This means: **PentaTile must do the picking itself.**
 
 ### Recommended Approach: Deterministic Per-Coord Hash
 
@@ -258,7 +258,7 @@ The hash is computed **per display cell**, never stored. This means:
 
 ### Combining With Transform Flags
 
-`set_cell()`'s 4th parameter is `alternative_tile`, which is **OR-ed with transform flag bits** (`TRANSFORM_FLIP_H`, `TRANSFORM_FLIP_V`, `TRANSFORM_TRANSPOSE`). The current TetraTile code passes only the rotation flags (alt-ID 0). For variation:
+`set_cell()`'s 4th parameter is `alternative_tile`, which is **OR-ed with transform flag bits** (`TRANSFORM_FLIP_H`, `TRANSFORM_FLIP_V`, `TRANSFORM_TRANSPOSE`). The current PentaTile code passes only the rotation flags (alt-ID 0). For variation:
 
 ```gdscript
 var alt_id: int = _pick_alternative(slot, display_cell)
@@ -270,7 +270,7 @@ This works because alt-IDs occupy the low bits and transform flags occupy specif
 
 ### Probability Tuning Stays In Godot's Inspector
 
-Users author probability per-alt in the **stock TileSet inspector** (per Key Decision in PROJECT.md). TetraTile reads `alternative_count` from the contract and, optionally, weights via `tile_data.get_probability()`:
+Users author probability per-alt in the **stock TileSet inspector** (per Key Decision in PROJECT.md). PentaTile reads `alternative_count` from the contract and, optionally, weights via `tile_data.get_probability()`:
 
 ```gdscript
 # Optional weighted variant of _pick_alternative:
@@ -288,22 +288,22 @@ Phase one can ship uniform picking; weighted picking is a small follow-up.
 ## Recommended File Structure
 
 ```
-addons/tetra_tile/
+addons/penta_tile/
 ├── plugin.cfg                            # unchanged
-├── tetra_tile_map_layer.gd               # extended (~350 LOC est.)
-├── tetra_tile_atlas_contract.gd          # NEW — Resource subclass (~60 LOC)
-├── tetra_tile_atlas_slot.gd              # NEW — Resource subclass (~30 LOC)
-├── tetra_tile_template.png               # unchanged (consider adding non-rotating variant)
+├── penta_tile_map_layer.gd               # extended (~350 LOC est.)
+├── penta_tile_atlas_contract.gd          # NEW — Resource subclass (~60 LOC)
+├── penta_tile_atlas_slot.gd              # NEW — Resource subclass (~30 LOC)
+├── penta_tile_template.png               # unchanged (consider adding non-rotating variant)
 └── demo/
-    ├── tetra_tile_demo.tscn              # extended scene
+    ├── penta_tile_demo.tscn              # extended scene
     ├── demo_player.gd                    # unchanged
     ├── demo_runtime_painter.gd           # unchanged
-    ├── tetra_tile_ground.png/.tres       # v0.1 atlas — kept for migration test
-    ├── tetra_tile_ground_contract.tres   # NEW — minimal v0.2 wrapper for v0.1 atlas
-    ├── tetra_tile_grass_top.png/.tres    # NEW — atlas with top-cap variation
-    ├── tetra_tile_grass_top_contract.tres# NEW — top-overlay contract
-    ├── tetra_tile_directional.png/.tres  # NEW — non-rotating atlas
-    └── tetra_tile_directional_contract.tres  # NEW — non-rotating contract
+    ├── penta_tile_ground.png/.tres       # v0.1 atlas — kept for migration test
+    ├── penta_tile_ground_contract.tres   # NEW — minimal v0.2 wrapper for v0.1 atlas
+    ├── penta_tile_grass_top.png/.tres    # NEW — atlas with top-cap variation
+    ├── penta_tile_grass_top_contract.tres# NEW — top-overlay contract
+    ├── penta_tile_directional.png/.tres  # NEW — non-rotating atlas
+    └── penta_tile_directional_contract.tres  # NEW — non-rotating contract
 ```
 
 ### Structure Rationale
@@ -317,7 +317,7 @@ addons/tetra_tile/
 ### Paint Flow (v0.2.0)
 
 ```
-User: tetra_tile_layer.set_cell(logic_coord, source, atlas_coords)
+User: penta_tile_layer.set_cell(logic_coord, source, atlas_coords)
   ↓
 TileMapLayer.set_cell() (inherited; queues internal update)
   ↓
@@ -345,7 +345,7 @@ Identical to v0.1 — iterate `get_used_cells()`, dispatch each through `_paint_
 ### Contract Loading
 
 ```
-TetraTileMapLayer._ready()
+PentaTileMapLayer._ready()
   ↓
 _ensure_visual_layers()
   ├─ create _primary_layer if missing
@@ -366,11 +366,11 @@ The five capabilities have a partial dependency order. **Land them in this seque
 
 ### Phase 1 — Contract Skeleton (de-risks everything else)
 
-**Goal:** Introduce `TetraTileAtlasContract` and `AtlasSlot` Resources. Wire them into `TetraTileMapLayer` as an `@export`. **Behavior unchanged** — the contract Resource exists but the SYMMETRIC mode reads from the contract instead of hardcoded constants. v0.1 atlas + a default contract `.tres` reproduce v0.1 visuals exactly.
+**Goal:** Introduce `PentaTileAtlasContract` and `AtlasSlot` Resources. Wire them into `PentaTileMapLayer` as an `@export`. **Behavior unchanged** — the contract Resource exists but the SYMMETRIC mode reads from the contract instead of hardcoded constants. v0.1 atlas + a default contract `.tres` reproduce v0.1 visuals exactly.
 
 **Dependencies:** None.
 **Risk if done last:** Every other feature has to retrofit the contract structure, doubling the work.
-**Acceptance:** existing demo runs unchanged with a new `tetra_tile_ground_contract.tres` referenced from the demo scene.
+**Acceptance:** existing demo runs unchanged with a new `penta_tile_ground_contract.tres` referenced from the demo scene.
 
 ### Phase 2 — Y-Axis Variation
 
@@ -402,7 +402,7 @@ The five capabilities have a partial dependency order. **Land them in this seque
 
 **Dependencies:** Phases 1–4.
 **Why last:** Demo content benefits from API stability across all features.
-**Acceptance:** Switching contracts at runtime (or having three side-by-side `TetraTileMapLayer` nodes in the same scene) shows each capability without code changes.
+**Acceptance:** Switching contracts at runtime (or having three side-by-side `PentaTileMapLayer` nodes in the same scene) shows each capability without code changes.
 
 ### Build-Order Rationale Summary
 
@@ -420,12 +420,12 @@ Phase 1 gates everything. Phases 2 and 4 are independent of each other (could pa
 
 **Pre-1.0 allows breaking changes** (per PROJECT.md), so the migration bar is "rebuild from a template, not auto-upgrade."
 
-### Concrete Migration for `tetra_tile_ground.tres`
+### Concrete Migration for `penta_tile_ground.tres`
 
-1. Ship a **default contract `.tres`** in `addons/tetra_tile/` — `tetra_tile_default_contract.tres` — with SYMMETRIC mode and the v0.1 slot assignments (`fill = (0,0)`, `inner = (1,0)`, `border = (2,0)`, `outer = (3,0)` for HORIZONTAL layout).
-2. In the demo scene, set `tetra_tile_layer.atlas_contract = preload("res://addons/tetra_tile/tetra_tile_default_contract.tres")`.
+1. Ship a **default contract `.tres`** in `addons/penta_tile/` — `penta_tile_default_contract.tres` — with SYMMETRIC mode and the v0.1 slot assignments (`fill = (0,0)`, `inner = (1,0)`, `border = (2,0)`, `outer = (3,0)` for HORIZONTAL layout).
+2. In the demo scene, set `penta_tile_layer.atlas_contract = preload("res://addons/penta_tile/penta_tile_default_contract.tres")`.
 3. v0.1 `atlas_layout` enum: **deprecate, then remove**. Phase 1 reads from contract; Phase 5 deletes the legacy enum.
-4. Document in CHANGELOG / release notes: "v0.2 atlases require an `atlas_contract` Resource. Use the bundled `tetra_tile_default_contract.tres` to reproduce v0.1 behavior. The `atlas_layout` property is removed."
+4. Document in CHANGELOG / release notes: "v0.2 atlases require an `atlas_contract` Resource. Use the bundled `penta_tile_default_contract.tres` to reproduce v0.1 behavior. The `atlas_layout` property is removed."
 
 ### Fallback Path for Lazy Migration
 
@@ -490,7 +490,7 @@ If `atlas_contract == null` and `atlas_source_id` is set, fall back to v0.1's ha
 **What people might do:** Use Godot's `TileSet.add_custom_data_layer()` to attach contract metadata per-tile (e.g., "this tile is the outer corner").
 
 **Why it's wrong:**
-- Couples TetraTile's logic to TileSet authoring (any atlas refactor breaks the contract)
+- Couples PentaTile's logic to TileSet authoring (any atlas refactor breaks the contract)
 - Per-tile metadata is hard to inspect holistically — there's no "see the whole contract" view
 - Path notation (`x:y/alt/key`) is verbose and stringly-typed
 - Schema migration would require walking every tile individually
@@ -522,16 +522,16 @@ If `atlas_contract == null` and `atlas_source_id` is set, fall back to v0.1's ha
 
 ### Anti-Pattern 4: Rebuilding On Every Contract Field Change
 
-**What people might do:** Wire every `@export` setter on `TetraTileAtlasContract` to `tetra_tile_layer._queue_rebuild()` via signal.
+**What people might do:** Wire every `@export` setter on `PentaTileAtlasContract` to `penta_tile_layer._queue_rebuild()` via signal.
 
 **Why it's wrong:**
-- Resources don't know which TetraTileMapLayer instances reference them — this requires watcher infrastructure (lean violation)
+- Resources don't know which PentaTileMapLayer instances reference them — this requires watcher infrastructure (lean violation)
 - Editing a contract while running edits user data; full rebuild on every keystroke is wasteful
 
 **Do this instead:** Listen to `Resource.changed` signal on the contract from the layer (Godot built-in, no watcher infra needed). Debounce via existing `_queue_rebuild()`'s `call_deferred`.
 
 ```gdscript
-@export var atlas_contract: TetraTileAtlasContract:
+@export var atlas_contract: PentaTileAtlasContract:
     set(value):
         if atlas_contract != null and atlas_contract.changed.is_connected(_queue_rebuild):
             atlas_contract.changed.disconnect(_queue_rebuild)
@@ -562,14 +562,14 @@ Neither bottleneck applies at PROJECT.md's stated scale.
 
 | Boundary | Communication | Notes |
 |----------|---------------|-------|
-| `TetraTileMapLayer` ↔ `TetraTileAtlasContract` | Direct property access on Resource | Resource emits `changed` for invalidation |
-| `TetraTileMapLayer` ↔ Internal layers | Direct method calls (`set_cell`, `clear`, etc.) | No signals, no fanout |
-| `TetraTileAtlasContract` ↔ `AtlasSlot` | Resource embedding via `@export` | Slots are sub-resources; saved inline in contract `.tres` |
-| `TetraTileMapLayer` ↔ Godot `TileSet` | Read-only access via `tile_set` property | TileSet stays art-only — no contract metadata stored there |
+| `PentaTileMapLayer` ↔ `PentaTileAtlasContract` | Direct property access on Resource | Resource emits `changed` for invalidation |
+| `PentaTileMapLayer` ↔ Internal layers | Direct method calls (`set_cell`, `clear`, etc.) | No signals, no fanout |
+| `PentaTileAtlasContract` ↔ `AtlasSlot` | Resource embedding via `@export` | Slots are sub-resources; saved inline in contract `.tres` |
+| `PentaTileMapLayer` ↔ Godot `TileSet` | Read-only access via `tile_set` property | TileSet stays art-only — no contract metadata stored there |
 
 ### External Services
 
-None — TetraTile has no external dependencies (constraint per PROJECT.md).
+None — PentaTile has no external dependencies (constraint per PROJECT.md).
 
 ## Confidence Notes
 
@@ -588,10 +588,10 @@ None — TetraTile has no external dependencies (constraint per PROJECT.md).
   - `classes/class_tiledata.md` — `probability`, `flip_h`, `flip_v`, `transpose`, custom data accessors
   - `classes/class_tilemaplayer.md` — `_update_cells`, `set_cell`, `changed` signal
   - `classes/class_randomnumbergenerator.md` — `rand_weighted`, deterministic seeding
-- TetraTile codebase (`.planning/codebase/ARCHITECTURE.md`, `tetra_tile_map_layer.gd`)
+- PentaTile codebase (`.planning/codebase/ARCHITECTURE.md`, `penta_tile_map_layer.gd`)
 - TileMapDual precedent: [pablogila/TileMapDual](https://github.com/pablogila/TileMapDual), [jess-hammer/dual-grid-tilemap-system-godot](https://github.com/jess-hammer/dual-grid-tilemap-system-godot)
 - Project constraints: `.planning/PROJECT.md`
 
 ---
-*Architecture research for: TetraTile v0.2.0 contract expansion*
+*Architecture research for: PentaTile v0.2.0 contract expansion*
 *Researched: 2026-04-25*

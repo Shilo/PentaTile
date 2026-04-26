@@ -7,7 +7,7 @@
 **Overall:** Dual-Grid Autotiling with Composition-Based Diagonal Handling
 
 **Key Characteristics:**
-- Single public API class (`TetraTileMapLayer`) that extends Godot's native `TileMapLayer`
+- Single public API class (`PentaTileMapLayer`) that extends Godot's native `TileMapLayer`
 - Dual-grid system: logic layer (user-editable) + primary visual layer + overlay visual layer for diagonals
 - Four-tile source atlas (Fill, Inner Corner, Border, Outer Corner) with transform-based rotations
 - Marching-squares mask-based tile selection (16 possible states)
@@ -16,23 +16,23 @@
 
 ## Layers
 
-**Logic Layer (`TetraTileMapLayer`):**
+**Logic Layer (`PentaTileMapLayer`):**
 - Purpose: User-facing tile map where cells are painted/erased with standard Godot API
-- Location: `addons/tetra_tile/tetra_tile_map_layer.gd` (class definition)
+- Location: `addons/penta_tile/penta_tile_map_layer.gd` (class definition)
 - Contains: Editor paintable cells, collision properties, exported configuration
 - Depends on: Godot's `TileMapLayer` base class, TileSet definitions
 - Used by: Demo painter script, user code via `set_cell()` and `erase_cell()`
 
-**Primary Visual Layer (`_TetraTileVisual`):**
+**Primary Visual Layer (`_PentaTileVisual`):**
 - Purpose: Main rendered layer with generated tiles based on logic cell configuration
-- Location: Internal `TileMapLayer` created at runtime (line 200 in tetra_tile_map_layer.gd)
+- Location: Internal `TileMapLayer` created at runtime (line 200 in penta_tile_map_layer.gd)
 - Contains: Generated visual tiles positioned at offset coordinates (dual-grid corners)
 - Depends on: Logic layer cell state, TileSet with physics polygons
 - Used by: Godot rendering and physics pipeline
 
-**Overlay Visual Layer (`_TetraTileDiagonalOverlay`):**
+**Overlay Visual Layer (`_PentaTileDiagonalOverlay`):**
 - Purpose: Composition layer for disconnected diagonal states (when two diagonally opposite quadrants are filled)
-- Location: Internal `TileMapLayer` created at runtime (line 202 in tetra_tile_map_layer.gd)
+- Location: Internal `TileMapLayer` created at runtime (line 202 in penta_tile_map_layer.gd)
 - Contains: Second outer-corner tile for masks 6 (TR+BL) and 9 (TL+BR)
 - Depends on: Mask calculation, primary layer positioning
 - Used by: Godot rendering pipeline for composite diagonal rendering
@@ -41,7 +41,7 @@
 
 **Paint/Erase Workflow:**
 
-1. User calls `set_cell(logic_coord, source, atlas_coords)` or `erase_cell(logic_coord)` on `TetraTileMapLayer`
+1. User calls `set_cell(logic_coord, source, atlas_coords)` or `erase_cell(logic_coord)` on `PentaTileMapLayer`
 2. Godot's internal `TileMapLayer` queues update
 3. `_update_cells(coords, forced_cleanup)` override is invoked with affected logic coordinates
 4. Four affected display cells are calculated per logic change (logic cell + 3 neighbors form 4 visual cells)
@@ -88,15 +88,15 @@
 
 ## Entry Points
 
-**Main Entry: `tetra_tile_demo.tscn`:**
-- Location: `res://addons/tetra_tile/demo/tetra_tile_demo.tscn`
+**Main Entry: `penta_tile_demo.tscn`:**
+- Location: `res://addons/penta_tile/demo/penta_tile_demo.tscn`
 - Triggers: Godot editor "Run" or command line
 - Responsibilities: Initializes demo scene with tilemap, player, painter, and camera
 
 **Runtime API:**
-- `TetraTileMapLayer.set_cell(coords, source, atlas_coords, transform)` - Place tiles (inherited from TileMapLayer)
-- `TetraTileMapLayer.erase_cell(coords)` - Remove tiles (inherited from TileMapLayer)
-- `TetraTileMapLayer.rebuild()` - Force full rebuild of visual layers (public helper)
+- `PentaTileMapLayer.set_cell(coords, source, atlas_coords, transform)` - Place tiles (inherited from TileMapLayer)
+- `PentaTileMapLayer.erase_cell(coords)` - Remove tiles (inherited from TileMapLayer)
+- `PentaTileMapLayer.rebuild()` - Force full rebuild of visual layers (public helper)
 
 **Internal Hooks:**
 - `_ready()` - Initialize visual layers and apply properties
@@ -121,7 +121,7 @@
 
 **Collision Management:** 
 - Visual layer collision enabled/disabled via `generated_collision_enabled` property
-- Physics shapes inherited from TileSet atlas source definitions (see `tetra_tile_ground.tres`)
+- Physics shapes inherited from TileSet atlas source definitions (see `penta_tile_ground.tres`)
 - Logic layer collision controlled separately via `logic_collision_enabled` (default false, hides full-cell blockers)
 
 **Performance Optimization:**
