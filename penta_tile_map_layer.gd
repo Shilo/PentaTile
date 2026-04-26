@@ -1,17 +1,17 @@
 @tool
 @icon("res://icon.svg")
-class_name TetraTileMapLayer
+class_name PentaTileMapLayer
 extends TileMapLayer
 
-const _PRIMARY_LAYER_NAME := "_TetraTileVisual"
-const _OVERLAY_LAYER_NAME := "_TetraTileDiagonalOverlay"
+const _PRIMARY_LAYER_NAME := "_PentaTileVisual"
+const _OVERLAY_LAYER_NAME := "_PentaTileDiagonalOverlay"
 
 @export var atlas_source_id: int = -1:
 	set(value):
 		atlas_source_id = value
 		_queue_rebuild()
 
-@export var atlas_contract: TetraTileAtlasContract:
+@export var atlas_contract: PentaTileAtlasContract:
 	set(value):
 		if atlas_contract == value:
 			return                                                                  # idempotence guard (D-08, PITFALLS §5)
@@ -53,9 +53,9 @@ var _rebuild_count: int = 0
 
 # Lazy singleton for null-contract fallback (D-07 / CONTRACT-04).
 # Allocated once on first _resolve_layout() call when no contract is assigned.
-# v0.1-style scenes (atlas_contract = null) get TetraTileLayoutTetraHorizontal
+# v0.1-style scenes (atlas_contract = null) get PentaTileLayoutPentaHorizontal
 # behavior — output bit-identical to v0.1's HORIZONTAL atlas_layout.
-static var _DEFAULT_LAYOUT: TetraTileLayout = null
+static var _DEFAULT_LAYOUT: PentaTileLayout = null
 
 
 func _ready() -> void:
@@ -128,7 +128,7 @@ func _mark_affected_display_cells(affected: Dictionary, logic_cell: Vector2i) ->
 
 
 # NEW for D-06: Single-grid pipeline (logic and visual share the same grid).
-# Marks cell + 4 cardinal neighbors. Phase 1 has no consumer (Tetra H/V are dual-grid);
+# Marks cell + 4 cardinal neighbors. Phase 1 has no consumer (Penta H/V are dual-grid);
 # Phase 2's Wang2Corner is the first consumer. Locked planner option (a) — ship the
 # pipeline fully wired so Phase 2 layouts are pure subclass adds.
 func _mark_affected_single_grid_cells(affected: Dictionary, logic_cell: Vector2i) -> void:
@@ -142,8 +142,8 @@ func _mark_affected_single_grid_cells(affected: Dictionary, logic_cell: Vector2i
 # The dispatcher per affected display cell. Computes mask once, short-circuits
 # on 0 (universal cleanup per PITFALLS §4), resolves slot, paints primary +
 # optional overlay. Replaces v0.1's _paint_display_cell (lines 108-152) — the
-# 16-state match relocated into TetraTileLayoutTetraHorizontal.mask_to_atlas.
-func _paint_via_layout(display_cell: Vector2i, layout: TetraTileLayout, source: int, sample_fn: Callable) -> void:
+# 16-state match relocated into PentaTileLayoutPentaHorizontal.mask_to_atlas.
+func _paint_via_layout(display_cell: Vector2i, layout: PentaTileLayout, source: int, sample_fn: Callable) -> void:
 	_primary_layer.erase_cell(display_cell)
 	_overlay_layer.erase_cell(display_cell)
 
@@ -161,20 +161,20 @@ func _paint_via_layout(display_cell: Vector2i, layout: TetraTileLayout, source: 
 # Paints the primary slot. Replaces v0.1's _set_visual_cell (lines 172-179) —
 # the slot now carries atlas_coords directly (no _atlas_coords axis dispatch
 # — D-19 removed that helper; the layout owns the axis via _make_slot).
-func _paint_with_slot(layer: TileMapLayer, slot: TetraTileAtlasSlot, display_cell: Vector2i, source: int) -> void:
+func _paint_with_slot(layer: TileMapLayer, slot: PentaTileAtlasSlot, display_cell: Vector2i, source: int) -> void:
 	if slot == null:
 		layer.erase_cell(display_cell)
 		return
 	# Phase 1 layouts: alternative_tile = 0 in transform_flags only. Plan 03's
-	# TetraTileLayoutTetraHorizontal._make_slot writes pure transform flags here.
+	# PentaTileLayoutPentaHorizontal._make_slot writes pure transform flags here.
 	layer.set_cell(display_cell, source, slot.atlas_coords, slot.transform_flags)
 
 
-# Paints the optional overlay slot for diagonal masks (tetra masks 6 and 9).
+# Paints the optional overlay slot for diagonal masks (penta masks 6 and 9).
 # The complement transform was packed into slot.alternative_tile by the layout's
 # _make_slot via _pack_alternative(0, complement_transform). Phase 1 layouts use
 # alt_id = 0 so alternative_tile == complement_transform.
-func _paint_overlay_for_slot(slot: TetraTileAtlasSlot, display_cell: Vector2i, source: int) -> void:
+func _paint_overlay_for_slot(slot: PentaTileAtlasSlot, display_cell: Vector2i, source: int) -> void:
 	if slot == null or slot.diagonal_complement_atlas_coords == Vector2i(-1, -1):
 		return
 	var complement_transform := slot.alternative_tile
@@ -188,13 +188,13 @@ func _has_logic_cell(logic_cell: Vector2i) -> bool:
 
 
 # Lazy-singleton fallback (D-07, CONTRACT-04). When atlas_contract is null
-# OR atlas_contract.layout is null, return a single shared TetraTileLayoutTetraHorizontal
+# OR atlas_contract.layout is null, return a single shared PentaTileLayoutPentaHorizontal
 # so v0.1-style scenes render bit-identically to v0.1 horizontal mode.
-func _resolve_layout() -> TetraTileLayout:
+func _resolve_layout() -> PentaTileLayout:
 	if atlas_contract != null and atlas_contract.layout != null:
 		return atlas_contract.layout
 	if _DEFAULT_LAYOUT == null:
-		_DEFAULT_LAYOUT = TetraTileLayoutTetraHorizontal.new()
+		_DEFAULT_LAYOUT = PentaTileLayoutPentaHorizontal.new()
 	return _DEFAULT_LAYOUT
 
 

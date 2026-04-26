@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="TetraTileAtlasContract" format=3]
+[gd_resource type="Resource" script_class="PentaTileAtlasContract" format=3]
 
-[ext_resource type="Script" path="res://addons/tetra_tile/tetra_tile_atlas_contract.gd" id="1_script"]
-[ext_resource type="Resource" path="res://addons/tetra_tile/contracts/tetra_horizontal_default.tres" id="2_layout"]
+[ext_resource type="Script" path="res://addons/penta_tile/penta_tile_atlas_contract.gd" id="1_script"]
+[ext_resource type="Resource" path="res://addons/penta_tile/contracts/penta_horizontal_default.tres" id="2_layout"]
 
 [resource]
 script = ExtResource("1_script")

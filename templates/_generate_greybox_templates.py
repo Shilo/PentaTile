@@ -1,6 +1,6 @@
-"""Generate greyboxed silhouette template PNGs for each TetraTile layout.
+"""Generate greyboxed silhouette template PNGs for each PentaTile layout.
 
-Run with: python addons/tetra_tile/templates/_generate_greybox_templates.py
+Run with: python addons/penta_tile/templates/_generate_greybox_templates.py
 
 Produces transparent-background PNGs where each slot is filled with a grey
 silhouette indicating which logic-cell quadrants (corner masks) or edge
@@ -9,7 +9,7 @@ with a 1-px dark grey outline. Artists paint over these silhouettes; the
 shapes are purely a visual hint for "what does this slot need to look like."
 
 Mask conventions LOCKED here (also documented in templates/README.md):
-- Corner masks (Tetra / DualGrid16 / Wang2Corner): TL=1, TR=2, BL=4, BR=8
+- Corner masks (Penta / DualGrid16 / Wang2Corner): TL=1, TR=2, BL=4, BR=8
 - Edge masks (Wang2Edge): N=1, E=2, S=4, W=8 (CR31 standard)
 
 This script is committed alongside the generated PNGs so anyone can
@@ -81,7 +81,7 @@ def draw_edge_mask(draw: ImageDraw.ImageDraw, col: int, row: int, mask: int) -> 
 
 # ---- Layouts -------------------------------------------------------------
 
-def gen_tetra_horizontal() -> Image.Image:
+def gen_penta_horizontal() -> Image.Image:
     """4×1 strip — Fill / Inner Corner / Border / Outer Corner (v0.1 default)."""
     img = new_atlas(4, 1)
     draw = ImageDraw.Draw(img)
@@ -97,7 +97,7 @@ def gen_tetra_horizontal() -> Image.Image:
     return img
 
 
-def gen_tetra_vertical() -> Image.Image:
+def gen_penta_vertical() -> Image.Image:
     """1×4 strip — same archetypes, stacked."""
     img = new_atlas(1, 4)
     draw = ImageDraw.Draw(img)
@@ -149,8 +149,8 @@ def gen_wang_2edge() -> Image.Image:
 
 def main() -> None:
     outputs = {
-        "tetra_horizontal.png": gen_tetra_horizontal(),
-        "tetra_vertical.png": gen_tetra_vertical(),
+        "penta_horizontal.png": gen_penta_horizontal(),
+        "penta_vertical.png": gen_penta_vertical(),
         "dual_grid_16.png": gen_dual_grid_16(),
         "wang_2corner.png": gen_wang_2corner(),
         "wang_2edge.png": gen_wang_2edge(),

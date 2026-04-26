@@ -1,10 +1,10 @@
 extends Node2D
 
-@export var map_path: NodePath = NodePath("TetraTileMapLayer")
+@export var map_path: NodePath = NodePath("PentaTileMapLayer")
 @export var paint_source_id: int = 0
 @export var paint_atlas_coords: Vector2i = Vector2i(0, 0)
 
-@onready var tetra_map: TetraTileMapLayer = get_node(map_path)
+@onready var penta_map: PentaTileMapLayer = get_node(map_path)
 
 var _active_button := MOUSE_BUTTON_NONE
 var _last_cell := Vector2i(1073741823, 1073741823)
@@ -38,7 +38,7 @@ func _handle_mouse_motion(mouse_event: InputEventMouseMotion) -> void:
 
 func _apply_at_event_position(event_position: Vector2, button: MouseButton) -> void:
 	var canvas_position := get_canvas_transform().affine_inverse() * event_position
-	var cell := tetra_map.local_to_map(tetra_map.to_local(canvas_position))
+	var cell := penta_map.local_to_map(penta_map.to_local(canvas_position))
 	if cell == _last_cell:
 		return
 	_last_cell = cell
@@ -49,6 +49,6 @@ func _apply_at_event_position(event_position: Vector2, button: MouseButton) -> v
 func _apply_cell(cell: Vector2i, button: MouseButton) -> void:
 	match button:
 		MOUSE_BUTTON_LEFT:
-			tetra_map.set_cell(cell, paint_source_id, paint_atlas_coords)
+			penta_map.set_cell(cell, paint_source_id, paint_atlas_coords)
 		MOUSE_BUTTON_RIGHT:
-			tetra_map.erase_cell(cell)
+			penta_map.erase_cell(cell)

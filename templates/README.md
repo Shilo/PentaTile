@@ -1,8 +1,8 @@
-# TetraTile Atlas Templates
+# PentaTile Atlas Templates
 
-Greyboxed reference templates for every layout TetraTile supports. Open one in your art tool, paint over the silhouettes, save the result as your tileset image.
+Greyboxed reference templates for every layout PentaTile supports. Open one in your art tool, paint over the silhouettes, save the result as your tileset image.
 
-> Templates land as part of the v0.2.0 milestone. The v0.1.0 reference template at [`addons/tetra_tile/tetra_tile_template.png`](../tetra_tile_template.png) will be deprecated in favor of [`tetra_horizontal.png`](tetra_horizontal.png) here.
+> Templates land as part of the v0.2.0 milestone. The v0.1.0 reference template at [`addons/penta_tile/penta_tile_template.png`](../penta_tile_template.png) will be deprecated in favor of [`penta_horizontal.png`](penta_horizontal.png) here.
 
 For the *why* and *when to pick what*, see [`.planning/research/layouts/COMPARISON.md`](../../../.planning/research/layouts/COMPARISON.md). This file is the artist-facing reference: dimensions, slot grid, what each silhouette represents.
 
@@ -24,11 +24,11 @@ Color palette:
 ## Shipped Templates (v0.2.0)
 
 ```text
-addons/tetra_tile/templates/
+addons/penta_tile/templates/
   README.md                       # this file
   _generate_greybox_templates.py  # Python+PIL script that produces every PNG below
-  tetra_horizontal.png            # 4×1 strip, 64×16 px, 4 archetypes
-  tetra_vertical.png              # 1×4 strip, 16×64 px, 4 archetypes
+  penta_horizontal.png            # 4×1 strip, 64×16 px, 4 archetypes
+  penta_vertical.png              # 1×4 strip, 16×64 px, 4 archetypes
   dual_grid_16.png                # 4×4 grid, 64×64 px, 16 corner-mask silhouettes
   wang_2corner.png                # 4×4 grid, 64×64 px, 16 corner-mask silhouettes (cardinal naming)
   wang_2edge.png                  # 4×4 grid, 64×64 px, 16 edge-mask silhouettes
@@ -36,7 +36,7 @@ addons/tetra_tile/templates/
 
 ## Pending Templates
 
-The Blob 47 family ships when we transcribe TileBitTools' `tilesetter_blob.tres` and the matching Godot template `.tres` files into TetraTile's slot-to-mask lookup tables (TBT is MIT-licensed; we attribute and decode). Until those tables are pinned down, painting over a guessed slot order would produce non-working atlases — so we hold the templates rather than ship misleading placeholders.
+The Blob 47 family ships when we transcribe TileBitTools' `tilesetter_blob.tres` and the matching Godot template `.tres` files into PentaTile's slot-to-mask lookup tables (TBT is MIT-licensed; we attribute and decode). Until those tables are pinned down, painting over a guessed slot order would produce non-working atlases — so we hold the templates rather than ship misleading placeholders.
 
 ```text
   blob_47_godot.png               # ~256-cell template, TBT Godot convention — pending
@@ -57,7 +57,7 @@ Future (deferred to v0.3+):
 
 These bit numberings are locked into the layout Resources and the greybox generator script. Don't change them without bumping the layout version.
 
-**Corner masks** (Tetra / DualGrid16 / Wang2Corner):
+**Corner masks** (Penta / DualGrid16 / Wang2Corner):
 
 ```text
 TL=1   TR=2
@@ -68,7 +68,7 @@ Mask = TL_filled + TR_filled*2 + BL_filled*4 + BR_filled*8
 
 So slot `m=15` (all bits) = solid grey; `m=12` (BL+BR) = bottom half grey; `m=1` (TL only) = top-left quadrant grey.
 
-**Wang 2-Corner names the same bits cardinally** (NE/SE/SW/NW per CR31), but the silhouettes are visually equivalent — TetraTile uses the TL/TR/BL/BR convention internally for the lookup table; the layout Resource translates Wang2Corner's NE/SE/SW/NW labels onto the same bit positions.
+**Wang 2-Corner names the same bits cardinally** (NE/SE/SW/NW per CR31), but the silhouettes are visually equivalent — PentaTile uses the TL/TR/BL/BR convention internally for the lookup table; the layout Resource translates Wang2Corner's NE/SE/SW/NW labels onto the same bit positions.
 
 **Edge masks** (Wang2Edge):
 
@@ -94,7 +94,7 @@ The `_generate_greybox_templates.py` script can be edited to change the `TILE = 
 
 ## Per-Template Specs
 
-### `tetra_horizontal.png` — 4×1 strip
+### `penta_horizontal.png` — 4×1 strip
 
 Dimensions: **64 × 16 px** (4 tiles × 16 px wide). Mask system: 4-bit corner with rotation symmetry. Use case: minimal authoring.
 
@@ -110,7 +110,7 @@ slot 0 (m=15)  slot 1 (m=7)   slot 2 (m=3)   slot 3 (m=1)
 
 The other 12 mask states are produced by Godot's `TRANSFORM_FLIP_*` rotations of these 4 + the addon's overlay-layer trick for masks 6 and 9 (disconnected diagonals).
 
-### `tetra_vertical.png` — 1×4 strip
+### `penta_vertical.png` — 1×4 strip
 
 Dimensions: **16 × 64 px**. Same archetypes as horizontal, stacked top-to-bottom in slot order.
 
@@ -153,10 +153,10 @@ N+S = bar      E+W = bar       all 4 = full plus
 3. **Paint each slot** — replace the grey silhouettes with your art. The silhouette tells you which region of the tile should be the "terrain" terrain.
 4. **Save your image** somewhere in your project (e.g. `addons/my_game/tilesets/grass.png`).
 5. **In Godot**, create a `TileSet` resource with a `TileSetAtlasSource` pointing at your saved image.
-6. **In your scene**, on the `TetraTileMapLayer` node:
+6. **In your scene**, on the `PentaTileMapLayer` node:
    - Set `tile_set` to your TileSet (or leave null to use the layout's bundled fallback for prototyping)
-   - Set `atlas_contract` to a `TetraTileAtlasContract` Resource with `layout` pointing at the matching `TetraTileLayoutXxx`
-7. **Paint** with the standard `set_cell()` API or the editor brush. TetraTile picks the right tile from your atlas based on the layout Resource's slot-to-mask mapping.
+   - Set `atlas_contract` to a `PentaTileAtlasContract` Resource with `layout` pointing at the matching `PentaTileLayoutXxx`
+7. **Paint** with the standard `set_cell()` API or the editor brush. PentaTile picks the right tile from your atlas based on the layout Resource's slot-to-mask mapping.
 
 No bitmask authoring per tile. No peering bits. Drop the atlas in, attach the layout, paint.
 
@@ -165,14 +165,14 @@ No bitmask authoring per tile. No peering bits. Drop the atlas in, attach the la
 The greybox PNGs are produced by [`_generate_greybox_templates.py`](_generate_greybox_templates.py). To regenerate (e.g. after editing the script to change tile size or color palette):
 
 ```bash
-python addons/tetra_tile/templates/_generate_greybox_templates.py
+python addons/penta_tile/templates/_generate_greybox_templates.py
 ```
 
 Requires Pillow (`pip install pillow`). The script is committed alongside the PNGs so anyone can tweak without reverse-engineering pixel data.
 
 ## Custom Layouts
 
-Custom layouts are supported by subclassing `TetraTileLayout` and implementing `compute_mask()` + `mask_to_atlas()`. See [`MASK_UNIFICATION.md`](../../../.planning/research/layouts/MASK_UNIFICATION.md) for the architectural reference.
+Custom layouts are supported by subclassing `PentaTileLayout` and implementing `compute_mask()` + `mask_to_atlas()`. See [`MASK_UNIFICATION.md`](../../../.planning/research/layouts/MASK_UNIFICATION.md) for the architectural reference.
 
 This is an experimental API — the built-in layouts in this folder are the supported surface.
 
