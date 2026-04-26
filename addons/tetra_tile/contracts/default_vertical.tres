@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="TetraTileAtlasContract" format=3]
+
+[ext_resource type="Script" path="res://addons/tetra_tile/tetra_tile_atlas_contract.gd" id="1_script"]
+[ext_resource type="Resource" path="res://addons/tetra_tile/contracts/tetra_vertical_default.tres" id="2_layout"]
+
+[resource]
+script = ExtResource("1_script")
+version = 1
+layout = ExtResource("2_layout")
+variation_seed = 0
