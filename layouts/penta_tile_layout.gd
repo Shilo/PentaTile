@@ -12,17 +12,8 @@
 class_name PentaTileLayout
 extends Resource
 
-@export var template_image: Texture2D                        # PREVIEW-01: stock inspector preview
-@export var fallback_tile_set: TileSet                       # LAYOUT-03: declared, consumed in Phase 4
+@export var bitmask_template: Texture2D                      # PREVIEW-01 / LAYOUT-03: stock inspector preview AND fallback TileSet source pixels (single PNG, both roles)
 @export_multiline var description: String = ""               # D-22: multiline
-@export var decoder_image: Texture2D                         # optional override (consumed Phase 4+)
-
-# Back-reference to the owning AtlasContract.
-# Set by PentaTileAtlasContract.layout setter via _set_contract(self).
-# WeakRef to prevent cycle (AtlasContract owns layout -> layout would otherwise own AtlasContract).
-# Consumed by Phase 3.5 PixelLab variation pick: layout._contract.get_ref().variation_seed.
-# Phase 1 declares but does not exercise.
-var _contract: WeakRef = null
 
 
 func compute_mask(_coord: Vector2i, _sample_fn: Callable) -> int:
@@ -48,10 +39,9 @@ func _pack_alternative(alt_id: int, transform_flags: int) -> int:
 	return alt_id | transform_flags
 
 
-# Called by PentaTileAtlasContract.layout setter to wire the back-reference.
-# Phase 3.5's PixelLab layouts read variation_seed via _contract.get_ref().variation_seed.
-func _set_contract(contract: Resource) -> void:
-	if contract == null:
-		_contract = null
-	else:
-		_contract = weakref(contract)
+# LAYOUT-06: virtual TileSet codegen path. Default returns null in Wave 1;
+# Wave 2 fills the body to construct a TileSet from `bitmask_template`.
+# Subclasses can override for custom logic.
+# Consumer (PentaTileMapLayer) calls this when tile_set == null (PREVIEW-03 wired in Phase 4).
+func get_fallback_tile_set() -> TileSet:
+	return null
