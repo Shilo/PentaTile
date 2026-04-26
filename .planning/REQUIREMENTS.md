@@ -129,46 +129,46 @@ Explicitly excluded for v0.2.0. Documented to prevent scope creep.
 
 ## Traceability
 
-Which phases cover which requirements. Empty initially — populated by `gsd-roadmapper`.
+Which phases cover which requirements. Mapped by `gsd-roadmapper` on 2026-04-25.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CONTRACT-01 | TBD | Pending |
-| CONTRACT-02 | TBD | Pending |
-| CONTRACT-03 | TBD | Pending |
-| CONTRACT-04 | TBD | Pending |
-| CONTRACT-05 | TBD | Pending |
-| CONTRACT-06 | TBD | Pending |
-| VAR-01 | TBD | Pending |
-| VAR-02 | TBD | Pending |
-| VAR-03 | TBD | Pending |
-| VAR-04 | TBD | Pending |
-| VAR-05 | TBD | Pending |
-| NONROT-01 | TBD | Pending |
-| NONROT-02 | TBD | Pending |
-| NONROT-03 | TBD | Pending |
-| NONROT-04 | TBD | Pending |
-| NONROT-05 | TBD | Pending |
-| TOP-01 | TBD | Pending |
-| TOP-02 | TBD | Pending |
-| TOP-03 | TBD | Pending |
-| TOP-04 | TBD | Pending |
-| MIGR-01 | TBD | Pending |
-| MIGR-02 | TBD | Pending |
-| MIGR-03 | TBD | Pending |
-| DEMO-01 | TBD | Pending |
-| DEMO-02 | TBD | Pending |
-| DEMO-03 | TBD | Pending |
-| REL-01 | TBD | Pending |
-| REL-02 | TBD | Pending |
-| REL-03 | TBD | Pending |
-| REL-04 | TBD | Pending |
+| CONTRACT-01 | Phase 1 | Pending |
+| CONTRACT-02 | Phase 1 | Pending |
+| CONTRACT-03 | Phase 1 | Pending |
+| CONTRACT-04 | Phase 1 | Pending |
+| CONTRACT-05 | Phase 1 | Pending |
+| CONTRACT-06 | Phase 1 | Pending |
+| VAR-01 | Phase 2 | Pending |
+| VAR-02 | Phase 2 | Pending |
+| VAR-03 | Phase 2 | Pending |
+| VAR-04 | Phase 2 | Pending |
+| VAR-05 | Phase 2 | Pending |
+| NONROT-01 | Phase 3 | Pending |
+| NONROT-02 | Phase 3 | Pending |
+| NONROT-03 | Phase 3 | Pending |
+| NONROT-04 | Phase 3 | Pending |
+| NONROT-05 | Phase 3 | Pending |
+| TOP-01 | Phase 4 | Pending |
+| TOP-02 | Phase 4 | Pending |
+| TOP-03 | Phase 4 | Pending |
+| TOP-04 | Phase 4 | Pending |
+| MIGR-01 | Phase 5 | Pending |
+| MIGR-02 | Phase 5 | Pending |
+| MIGR-03 | Phase 4 | Pending |
+| DEMO-01 | Phase 5 | Pending |
+| DEMO-02 | Phase 5 | Pending |
+| DEMO-03 | Phase 5 | Pending |
+| REL-01 | Phase 5 | Pending |
+| REL-02 | Phase 5 | Pending |
+| REL-03 | Phase 5 | Pending |
+| REL-04 | Phase 5 | Pending |
 
 **Coverage:**
 - v1 requirements: 30 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 30 ⚠️ — populated by gsd-roadmapper
+- Mapped to phases: 30 (100%)
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-04-25*
-*Last updated: 2026-04-25 after initialization*
+*Last updated: 2026-04-25 after roadmap creation (gsd-roadmapper)*
