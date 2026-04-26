@@ -10,8 +10,8 @@ config_version=5
 
 [application]
 
-config/name="TetraTile"
-run/main_scene="res://addons/tetra_tile/demo/tetra_tile_demo.tscn"
+config/name="PentaTile"
+run/main_scene="res://addons/penta_tile/demo/penta_tile_demo.tscn"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
 
