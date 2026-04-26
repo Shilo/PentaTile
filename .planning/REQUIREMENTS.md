@@ -56,15 +56,19 @@ The Penta layout is the addon's signature 5-archetype convention. Per the Phase 
 
 Layouts PentaTile ships natively because they're popular community conventions and the slot tables can be authored from public references.
 
-- [ ] **NATIVE-01**: `PentaTileLayoutDualGrid16` subclass — 4×4 atlas, 16 unique tiles, 4-bit corner mask (TL=1/TR=2/BL=4/BR=8), no rotation reuse.
-- [ ] **NATIVE-02**: `PentaTileLayoutWang2Edge` subclass — 4×4 atlas, 16 unique tiles, 4-bit edge mask (CR31 N=1/E=2/S=4/W=8).
-- [ ] **NATIVE-03**: `PentaTileLayoutWang2Corner` subclass — 4×4 atlas, 16 unique tiles, 4-bit corner mask in CR31 cardinal naming (NE=1/SE=2/SW=4/NW=8). Visually compatible with DualGrid16 — different bit naming, same silhouettes.
+- [x] **NATIVE-01
+**: `PentaTileLayoutDualGrid16` subclass — 4×4 atlas, 16 unique tiles, 4-bit corner mask (TL=1/TR=2/BL=4/BR=8), no rotation reuse.
+- [x] **NATIVE-02
+**: `PentaTileLayoutWang2Edge` subclass — 4×4 atlas, 16 unique tiles, 4-bit edge mask (CR31 N=1/E=2/S=4/W=8).
+- [x] **NATIVE-03
+**: `PentaTileLayoutWang2Corner` subclass — 4×4 atlas, 16 unique tiles, 4-bit corner mask in CR31 cardinal naming (NE=1/SE=2/SW=4/NW=8). Visually compatible with DualGrid16 — different bit naming, same silhouettes.
 
 ### Minimal 3×3 Layout (MIN3x3)
 
 Per D-24 — added during Phase 1 discuss session. Covers PixelLab Tileset 3×3 export + RPG Maker A2 + legacy Godot 3.x atlases.
 
-- [ ] **MIN3x3-01**: `PentaTileLayoutMinimal3x3` subclass — 3×3 atlas, 9 unique tiles, single-grid, 4-bit edge mask (T=1/E=2/B=4/W=8). Lands in Phase 2 alongside Wang2Edge.
+- [x] **MIN3x3-01
+**: `PentaTileLayoutMinimal3x3` subclass — 3×3 atlas, 9 unique tiles, single-grid, 4-bit edge mask (T=1/E=2/B=4/W=8). Lands in Phase 2 alongside Wang2Edge.
 
 ### Penta Synthesis & Overlay-Layer Removal (PENTA-SYNTH)
 
