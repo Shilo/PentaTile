@@ -1,7 +1,15 @@
 # PixelLab.ai Tile Generation — Format Audit
 
-**Researched:** 2026-04-25 (subagent on https://www.pixellab.ai/docs)
-**Confidence:** HIGH on the three documented export targets; MEDIUM on the per-export pixel-grid conventions (PixelLab docs don't show full atlases for each); LOW on whether a "raw native" format exists prior to export selection (docs imply not, but unstated).
+**Researched:** 2026-04-25 (subagent on docs + brainstorm session with user, who provided multiple native-output examples and confirmed the layout match)
+**Confidence:** HIGH on native format = `template_corners` (user-confirmed); HIGH on the three documented export targets; HIGH on no first-party Godot integration.
+
+---
+
+## Headline finding
+
+**PixelLab native output (top-down AND side-scroller) uses dandeliondino's `template_corners.png` layout** — i.e., the canonical 4×4, 16-tile, **Match Corners** (4-bit corner mask) layout. User confirmed this directly during the brainstorm session by mapping their generation outputs to the dandeliondino reference template.
+
+**Implication:** PixelLab native is fully covered by `TetraTileLayoutDualGrid16` (already planned for v0.2 Phase 2). **No new layout subclass needed.** Spike 002 already validated the decoder against `template_corners.png` at 16/16 slot correctness — the native PixelLab path is pre-validated.
 
 ---
 
@@ -14,21 +22,25 @@ AI tile/tileset/sprite generator. Two relevant tools:
 
 Map-painting tools (`create-map`, `extend-map`, `extend-map-v2`) are orthogonal — those are canvas authoring, not tileset generation.
 
-## Native format — there isn't one
+## Native format
 
-The PixelLab docs don't expose a "raw" native format that's separate from the user-selected export target. The user picks ONE of three export targets at generation/export time; whatever underlying representation PixelLab uses internally isn't visible to consumers.
+PixelLab generates a 4×4, 16-tile atlas matching the **Match Corners** (corner-mask) topology. Both top-down and side-scroller use the same layout — what differs between them is the **art content** (top-down: rotation-symmetric grass; side-scroller: gravity-oriented platform tops/bottoms), NOT the mask topology.
 
-Net effect: **PixelLab's effective "native" format = whatever the user exported.** No new mask topology lurking.
+This is the same layout dandeliondino's `template_corners.png` documents (carried by https://github.com/dandeliondino/godot-4-tileset-terrains-docs/blob/master/templates/png/template_corners.png).
 
-## Three documented export targets
+User-provided examples shown during brainstorm:
+- 4 native PixelLab outputs at varying resolutions (~60–120 px wide), all consistent with the 4×4 / 16-tile Match Corners layout (with the visible variation being art content, not grid structure).
+- User explicit confirmation: "PixelLab 'top down' and 'side scroller' native output image seems to be this layout: [template_corners.png]"
+
+## Three documented export targets (additional formats PixelLab supports)
 
 | Target | Tile count | Grid | Mask topology | TetraTile equivalent |
 |--------|-----------|------|----------------|----------------------|
-| **Wang tileset** (Sprite-Fusion-compatible per PixelLab docs) | 16 | 4×4 | 4-bit corner (dual-grid) | ✓ `TetraTileLayoutDualGrid16` (already planned for Phase 2) |
-| **Dual-grid 15-tileset** | 15 | 5×3 with stray fill | 4-bit corner (Tilesetter convention) | ✓ `TetraTileLayoutTilesetterWang15` (already planned for Phase 3) |
-| **3×3 tileset** | 9 | 3×3 | 4-bit edge / "Match Sides" | ✗ **Not in v0.2 — would need `TetraTileLayoutMinimal3x3`** |
+| **Wang tileset** (Sprite-Fusion-compatible per PixelLab docs) | 16 | 4×4 | 4-bit corner (dual-grid) | ✓ `TetraTileLayoutDualGrid16` (Phase 2) |
+| **Dual-grid 15-tileset** | 15 | 5×3 with stray fill | 4-bit corner (Tilesetter convention) | ✓ `TetraTileLayoutTilesetterWang15` (Phase 3) |
+| **3×3 tileset** | 9 | 3×3 | 4-bit edge / "Match Sides" | ✗ Not in v0.2 — `TetraTileLayoutMinimal3x3` would close this |
 
-The 3×3 export = the classic "3×3 minimal" autotile layout — Godot 3.x called it `3x3 minimal`, Godot 4 calls it `MATCH_SIDES`. Same shape RPG Maker A2 ground tiles use, and what most "tiny terrain set" community art ships as.
+PixelLab's "Wang" export and its native format both produce the same 4×4 corner-mask layout — the export step appears to be a no-op for that target. The dual-grid-15 export reorganizes to Tilesetter's 5×3 convention; the 3×3 export shrinks to the "Match Sides" minimal set.
 
 ## No Godot integration
 
@@ -36,46 +48,32 @@ The 3×3 export = the classic "3×3 minimal" autotile layout — Godot 3.x calle
 - An **MCP server** (`github.com/pixellab-code/pixellab-mcp`) exposes generation to AI agents — produces images, not Godot resources.
 - Engine name-checked in PixelLab docs: **Sprite Fusion only.** Not Godot, Unity, Tiled, or LDtk.
 
-This means TetraTile would BE the Godot integration — there's no first-party tool to compete with or be displaced by.
+TetraTile becomes the Godot integration — there's no first-party tool to compete with or be displaced by.
 
 ## Implications for TetraTile v0.2
 
-### Option A: skip Minimal3x3 — defer to v0.3
+### Native PixelLab — COVERED by existing scope
 
-- Two of three PixelLab exports already covered by planned layouts. Doc the mapping in a "PixelLab interop" README section — "if your PixelLab export is Wang, use `DualGrid16`; if it's dual-grid-15, use `TilesetterWang15`."
-- The 3×3 export is rarer in modern Godot art than blob47/wang16; users can defer until v0.3 if they need it.
-- Net v0.2 scope: unchanged.
+`TetraTileLayoutDualGrid16` (already planned for Phase 2) handles native PixelLab output unchanged. Document the workflow in the layout-library README:
 
-### Option B: add Minimal3x3 — close the loop
+> **PixelLab interop:** PixelLab's native generation produces a 4×4 corner-mask atlas matching the Match Corners convention. Use `TetraTileLayoutDualGrid16` for PixelLab-generated content (both top-down and side-scroller). PixelLab's "Wang" export is the same format; the "Dual-Grid 15" export uses `TetraTileLayoutTilesetterWang15`; the "3×3" export is not yet supported (post-v0.2).
 
-Ship `TetraTileLayoutMinimal3x3` as the 9th layout in v0.2:
+### Open scope decision: ship `TetraTileLayoutMinimal3x3`?
 
-- 9 tiles in a 3×3 atlas (could be authored or auto-decoded from a template)
-- Single-grid edge mask (T/E/B/W bits, just like Wang2Edge)
-- BUT: only 9 of 16 edge-mask states are encoded — the remaining 7 are derived via rotation reuse OR the layout doesn't support those states (depends on the atlas convention)
-- Covers PixelLab's third export AND legacy Godot-3 atlases AND RPG Maker A2-ground (broader payoff than a PixelLab-only subclass)
-- Marginal cost: ~60 LOC for the subclass + 1 template PNG + 1 fallback TileSet. Plus a decoder probe (could be a third spike to verify the 3×3 silhouettes encode unambiguously with the unified 8-anchor sampler).
+The 3×3 export target is the only PixelLab format not covered by v0.2. Adding it would also cover legacy Godot 3.x atlases and RPG Maker A2 ground sets. Cost: ~60 LOC + template PNG + fallback TileSet + maybe a third spike.
 
-### Recommendation
+- **Recommend defer to v0.3** unless the user calls out 3×3 interop as a v0.2 milestone goal.
+- Current v0.2 scope (8 layouts) covers PixelLab native + Wang export + dual-grid-15 export, plus the rest of the autotile zoo.
 
-**Option B if "PixelLab interop" is a v0.2 marketing-line goal.** Otherwise **Option A** — keep v0.2 lean, document the mapping, defer the 9-tile layout to v0.3.
+### Top-down vs side-scroller is NOT a layout distinction
 
-The 3×3 layout is the only piece of v0.2 milestone scope that depends on PixelLab specifically. If the user is fine with "PixelLab Wang and dual-grid-15 work out of the box; 3×3 export coming later," v0.2 doesn't grow.
+A common confusion (the user surfaced this during brainstorm): "side-scroller" and "top-down" tilesets look different and seem to need different addon support. The reality:
 
-## Notes on the example image (user-supplied)
+- The **layout** (mask topology, grid shape, slot count) is identical for both — `DualGrid16` works for either.
+- The **art content** differs: side-scroller tiles have gravity orientation (grass-on-top, rock-on-bottom); top-down tiles are rotation-symmetric.
+- TetraTile renders both equivalently; the art is the user's responsibility.
 
-The user provided one example image showing ~7 irregular-arrangement tiles, dark navy + light grey grid lines, ~120×96 px. The subagent could not match it to any of the three documented PixelLab export grids:
-
-- 4×4 Wang: 16 tiles in a tidy grid, no irregular arrangement
-- 5×3 dual-grid-15: 15 tiles (one stray-fill position), still rectangular
-- 3×3: 9 tiles in a square, no irregularity
-
-Most likely candidates for what the example actually is:
-1. A **WIP / preview screenshot** from PixelLab's authoring UI before the user hits "export" — partial tile generation in progress.
-2. A **subset preview** showing only the variations PixelLab generated, not a complete autotile atlas.
-3. A different tool's output mistakenly labeled "PixelLab."
-
-If the user can confirm the source — or share which of the three export targets generated this — that pins down whether we're missing a fourth format.
+Document this distinction in the README so users don't try to find a "side-scroller layout" that doesn't exist.
 
 ## Sources
 
@@ -85,8 +83,10 @@ If the user can confirm the source — or share which of the three export target
 - https://www.pixellab.ai/docs/guides/map-tiles
 - https://www.pixellab.ai/pixellab-api
 - https://github.com/pixellab-code/pixellab-mcp
-- YouTube tutorials: `q9z2Vhpz-Z8`, `p1l9S3ta_XA` (for visual confirmation of export UI; not yet watched)
+- https://github.com/dandeliondino/godot-4-tileset-terrains-docs/blob/master/templates/png/template_corners.png — the matching reference layout
+- User-provided native generation samples (top-down + side-scroller, multiple resolutions; brainstorm session 2026-04-25)
+- Spike 002 — `template_corners.png` decoded at 16/16 slot correctness with TetraTile's unified 8-anchor sampler
 
 ---
 
-*Audit: PixelLab does not warrant a dedicated TetraTile layout subclass. Add `TetraTileLayoutMinimal3x3` only if its broader value (legacy Godot-3 atlases, RPG Maker A2 interop) justifies the +60 LOC.*
+*Audit conclusion: PixelLab native = `DualGrid16`. Already covered by v0.2 scope. No new layout subclass required for PixelLab support. Optional `TetraTileLayoutMinimal3x3` would close the 3×3 export gap if desired; defer to v0.3 by default.*
