@@ -2,7 +2,7 @@
 phase: 02-native-layouts
 reviewed: 2026-04-26T00:00:00Z
 depth: standard
-files_reviewed: 16
+files_reviewed: 17
 files_reviewed_list:
   - addons/penta_tile/penta_tile_map_layer.gd
   - addons/penta_tile/penta_tile_atlas_slot.gd
@@ -18,271 +18,79 @@ files_reviewed_list:
   - addons/penta_tile/tests/_capture_baseline.gd
   - addons/penta_tile/demo/penta_tile_demo.tscn
   - addons/penta_tile/demo/penta_layout_four_horizontal.tres
+  - addons/penta_tile/demo/penta_layout_four_vertical.tres
   - addons/penta_tile/demo/penta_layout_one_horizontal.tres
   - addons/penta_tile/demo/penta_layout_five_horizontal.tres
   - README.md
 findings:
   critical: 0
-  warning: 6
+  warning: 0
   info: 9
-  total: 15
-status: issues_found
+  total: 9
+status: clean
 ---
 
-# Phase 2: Code Review Report
+# Phase 2: Code Review Report (Re-Review)
 
-**Reviewed:** 2026-04-26
+**Reviewed:** 2026-04-26 (re-review after 7 fix commits + 1 user-authored test commit)
 **Depth:** standard
-**Files Reviewed:** 16 (Phase 2 surface area + carry-over project conventions)
-**Status:** issues_found
+**Files Reviewed:** 17 (Phase 2 surface area + carry-over project conventions; +1 vs prior review for the new VERTICAL `.tres`)
+**Status:** clean (no Critical or Warning findings; 9 Info items unchanged from prior pass and intentionally deferred per their dispositions)
 
 ## Summary
 
-Phase 2 ships the native layout family (Penta with synthesis, DualGrid16, Wang2Edge, Wang2Corner, Minimal3x3), the synthesis machinery, and a determinism test harness. Overall code quality is high and the project conventions documented in `CLAUDE.md` are honored well:
+All 7 prior Critical/Warning findings (WR-01 through WR-07) have been fixed correctly:
 
-- No `randi()` / `randf()` / `randomize()` anywhere in the addon. Determinism tests assert bit-identical re-runs.
-- No version markers, schema-version constants, or compat shims on Resources.
-- "Penta" is correctly reserved for the 5-archetype format throughout.
-- Setter idempotence guards present on the layer's `layout` property and on Penta's `axis` / `tile_count`.
-- Disconnect-before-reconnect on `Resource.changed` is correctly applied to the `layout` setter.
-- `_pack_alternative` helper exists in the base class with the `< 4096` assert (PITFALLS §3 honored at the abstraction level).
+| ID    | Fix Commit | Verified | Notes |
+|-------|-----------|----------|-------|
+| WR-01 | `ae5d787` | YES | Replaced hand-rolled clipper with canonical Sutherland-Hodgman (`_clip_against_edge` + `_intersect_edge` + `_point_inside_edge`). All 4 crossing cases handled per-edge. Inclusive boundary (`>=` / `<=`) naturally resolves IN-02 as a side-effect. |
+| WR-02 | `9ca342e` | YES | `_ensure_synthesized_tile_set` now resolves AUTO/AUTO_STRIP via `resolve_active_mode` BEFORE building the cache signature, and includes the resolved `mode` in `hash([...])`. AUTO drift correctly invalidates. (Tile-pixel-mutation gap acknowledged — see IN-10 below — and intentionally not fixed in this pass.) |
+| WR-03 | `d74df0e` | YES | `synthesize_strip` now accepts an optional `strip_origin: Vector2i = Vector2i(-1, -1)` sentinel. Authored slot coords step off `slot0_coords` along the configured axis. Default sentinel preserves the legacy uniform-stride formula for the existing single-strip caller. |
+| WR-04 | `2ca04e0` | YES | `_bundled_png_path(a: Axis, m: TileCountMode)` typed accessor with `assert(m >= ONE and m <= FIVE)` keys the lookup safely. `get_fallback_tile_set` forces AUTO/AUTO_STRIP → FOUR before the call so the assert never trips on intended use. |
+| WR-05 | `720f017` | YES | `SLOT_INNER_CORNER` synthesis now uses single `Image.fill_rect` for the TR-quadrant blank instead of a 256+ `set_pixel` loop. Equivalent output, far fewer engine crossings. |
+| WR-06 | `79af1e3` | YES | README sections refreshed: Penta-System Template now describes the synthesis pipeline (no overlay layer); Addon Layout file tree includes `layouts/`, `tests/`, `_generate_bitmasks.py`, synthesis + atlas-slot scripts, the per-mode PNG bundle; Current API replaces the deleted `atlas_layout` row with `layout: PentaTileLayout` + Penta-specific `axis` / `tile_count`; Implementation Notes rewrites the diagonal-mask paragraph for OppositeCorners. |
+| WR-07 | `ea0ba23` | YES | `_make_slot` now unconditionally returns `Vector2i(slot_index, 0)` regardless of `axis`. Comment explicitly documents the contract: synthesized atlas is always horizontal; `axis` only governs source READS. The latent VERTICAL-renders-empty BLOCKER is closed. |
 
-Most findings are correctness gaps in the synthesis polygon clipper and latent bugs in code paths that are not exercised by current call sites (multi-strip synthesis, in-place TileSet mutations under AUTO mode). One Warning category covers stale documentation in the README that no longer matches the Phase 2 architecture (overlay layer removed, four-tile minimum is no longer accurate). README staleness is flagged because Wave 5 is explicitly the README pass — these notes give that pass a punch list.
+The user-authored test commit `673ace0` adds:
+- `addons/penta_tile/demo/penta_layout_four_vertical.tres` (NEW) — `axis=1, tile_count=4` mirror of the horizontal demo layout. Used as the WR-07 regression baseline corpus.
+- `tests/_capture_baseline.gd` — `--layout-path=<res_path>` CLI flag for swapping the demo's bound layout before rebuild + explicit `_on_layout_changed()` invocation to invalidate the synthesis cache after the swap. Behavior without the flag is unchanged.
+- `tests/determinism_test.gd` — sub-test (c) "VERTICAL-axis structural coverage": loads VERTICAL FOUR, asserts (1) painted cell count matches `BASELINE_CELLS=46` from HORIZONTAL, (2) every painted cell's atlas coord exists in the synthesized atlas. Catches the WR-07 failure mode without relying on a per-axis pixel-hash baseline (post-WR-07, both axes produce identical `tile_map_data` hashes since the output strip is invariant — so the bare hash cannot distinguish VERTICAL working from VERTICAL broken; the structural check fills that gap).
 
-No security issues are applicable (this is a pure GDScript editor/runtime addon with no I/O outside Godot's load() and no untrusted input). One latent correctness BLOCKER (WR-07, added 2026-04-26 by independent post-implementation audit) — VERTICAL-axis Penta layouts silently render empty under any synthesis mode because the synthesizer always produces a horizontal output strip while `_make_slot` requests vertical-strip coords. The demo only exercises HORIZONTAL, so the FOUR-mode determinism baseline (`BASELINE_HASH=2986698704`) cannot detect this. Must be fixed before approving Phase 2.
+The test additions are clean — no `randi()` / non-deterministic patterns, no `eval`/`exec` constructs, no compat shims, no debug artifacts left in tree. The cache-invalidation comment in both files honestly explains why an explicit `_on_layout_changed()` call is needed after `layout` property assignment (the setter only calls `_queue_rebuild`; the cache nuke lives in the `Resource.changed` handler that fires on internal mutations, not on whole-property reassignment) — this is documented in the test code rather than papered over.
 
-## Warnings
+Project-convention compliance (CLAUDE.md):
+- No `randi()` / `randf()` / `randomize()` anywhere in the addon source or tests (greppable).
+- No `version` markers, schema-version constants, or migration scaffolding added by the fixes (greppable; the only `version=` string is `plugin.cfg`'s addon version, which is legitimate).
+- "Penta" remains reserved for the 5-archetype format throughout — no new "Penta*" coinages outside the canonical class family.
+- `_pack_alternative` helper still present with the `< 4096` assert (unused by Phase 2 layouts which all set `alternative_tile = 0`; reserved for variation-bank work in Phase 3.5).
+- Setter idempotence guards preserved on `layout`, `axis`, `tile_count`.
+- Disconnect-before-reconnect on `Resource.changed` preserved on the `layout` setter.
 
-### WR-01: Polygon clipper drops "outside-to-outside-through-rect" segments
+No Critical or Warning issues introduced by the fixes or by the test additions.
 
-**File:** `addons/penta_tile/penta_tile_synthesis.gd:175-203`
-**Issue:** `clip_polygon_to_subrect` only handles three Sutherland-Hodgman cases per edge: both-in, in-out, out-in. The fourth case — both endpoints outside the sub_rect but the segment passing THROUGH it (entering one side, exiting another) — falls into the `# else: both outside → skip` branch and the two crossing points are lost. For a Penta SLOT_FILL clip (center 50% sub-rect), any source polygon edge that bridges two outside regions while crossing the sub-rect will silently drop its in-rect portion. Convex source polygons (the typical case for collision rectangles) avoid this; concave or large-radius polygons that wrap around the sub-rect are silently mis-clipped. Bug is latent on the demo's 4 simple rectangular polygons — it will surface the moment a user authors a non-convex collision shape.
-**Fix:** Implement the both-outside-but-crossing case using two edge clips:
-```gdscript
-elif not v_i_in and not v_next_in:
-    # Test if the segment crosses the sub_rect at all (Liang-Barsky parametric).
-    var entry_t := -INF
-    var exit_t := INF
-    # ... compute t_in/t_out per axis-aligned slab; if entry_t < exit_t, segment crosses.
-    # Append both crossing points to clipped[].
-```
-Or replace the hand-rolled clipper with the canonical Sutherland-Hodgman algorithm (clip against each of the 4 half-planes in turn). The latter is shorter and handles all four cases naturally.
+The 9 prior Info findings are unchanged. Their dispositions are unchanged from the prior review:
+- IN-01 (`_pack_alternative` not yet called) — Phase 3.5 concern (variation banks).
+- IN-02 (`Rect2.has_point` boundary) — naturally resolved as a side-effect of the WR-01 Sutherland-Hodgman rewrite (the new `_point_inside_edge` uses inclusive `>=` / `<=`); could be downgraded to "resolved" in the next pass.
+- IN-03 (occlusion "discard the rest" comment) — cosmetic, deferred.
+- IN-04 (slot-index const duplication across two files) — promised assert still missing; documentary risk only.
+- IN-05 (substring-matching in `validate_tile_size`) — cosmetic, deferred.
+- IN-06 (`resolve_active_mode` redundant guard branch) — cosmetic, deferred.
+- IN-07 (baseline hash hard-coded as magic constant) — accepted trade-off.
+- IN-08 (`_capture_baseline.gd` "NOT committed" comment stale) — comment is now correctly aligned with reality after the user-authored test commit, since the file is intentionally tracked AND now exposes a CLI for VERTICAL baseline regeneration. Trim to "Baseline capture utility" suggested but not blocking.
+- IN-09 (`alternative_tile` field always 0) — Phase 3.5 concern.
 
-### WR-02: Synthesis cache does not invalidate on in-place TileSet mutations under AUTO mode
-
-**File:** `addons/penta_tile/penta_tile_map_layer.gd:305-342`
-**Issue:** The cache signature includes `tile_set.get_instance_id()` but not any content hash of the TileSet. If a user calls `_ensure_synthesized_tile_set` once with a 4-tile atlas (mode resolves to FOUR via AUTO), then mutates the same TileSet instance to add a 5th tile, the next paint event re-uses the cached FOUR-mode synthesized TileSet because `instance_id`, `axis`, `tile_count`, and `source_id` all unchanged. The synthesized 5th archetype slot stays as the auto-synthesized OppositeCorners, never picking up the newly-authored one. The Wave 6 `resolve_active_mode` reads `get_atlas_grid_size()` fresh on each call but its result is dropped because the OUTER cache hits before that lookup runs.
-**Fix:** Either listen to `tile_set.changed` and invalidate `_synthesis_signature = 0` from the handler, or move the `resolve_active_mode` call ABOVE the cache check and include the resolved mode in the signature:
-```gdscript
-var mode := penta_tile_count
-if penta.has_method("resolve_active_mode"):
-    mode = int(penta.call("resolve_active_mode", tile_set, source_id))
-var sig := hash([
-    penta.get_instance_id(), penta_axis, penta_tile_count,
-    source_tile_set_id, source_id, mode,   # mode in signature catches AUTO drift
-])
-```
-The second fix is cheaper but only catches mode drift, not tile pixel mutations. A `tile_set.changed` listener catches both at the cost of one signal hookup matching the existing `_on_layout_changed` pattern.
-
-### WR-03: `synthesize_strip` source-coords formula assumes spacing of 5 per strip — wrong for AUTO modes other than FIVE
-
-**File:** `addons/penta_tile/penta_tile_synthesis.gd:114-124`
-**Issue:** `src_atlas_coords = Vector2i(strip_index * _STRIP_SLOT_COUNT + out_slot, 0)` — multiplying `strip_index` by `_STRIP_SLOT_COUNT (5)` assumes every source strip is exactly 5 tiles wide regardless of `mode`. In AUTO_STRIP detection, individual strips can be 1..5 tiles wide independently. With this formula, strip 1 in a mixed atlas is read from coord 5 onward — but if strip 0 is 4 tiles wide, strip 1 actually starts at coord 4, not 5. Latent because the only call site (`_ensure_synthesized_tile_set`) hardcodes `strip_index = 0`. Wave 6's `resolve_strip_modes` exists on the layout but is not yet wired to `synthesize_strip`. When AUTO_STRIP per-strip dispatch lands, this formula will produce off-by-one (or off-by-N) reads.
-**Fix:** When AUTO_STRIP per-strip dispatch is implemented, pass an explicit `strip_origin: Vector2i` argument to `synthesize_strip` instead of computing it from `strip_index * _STRIP_SLOT_COUNT`. The caller (which knows the cumulative offset based on prior strips' resolved modes) is the only place that has correct origin information. Update the docstring's `strip_index` parameter to reflect this. For now, add a TODO above line 114 noting the formula is only valid for `strip_index = 0`.
-
-### WR-04: `_BITMASK_TEMPLATE_LOOKUP` enum values clash with axis values
-
-**File:** `addons/penta_tile/layouts/penta_tile_layout_penta.gd:83-95`
-**Issue:** `_BITMASK_TEMPLATE_LOOKUP` keys are `Vector2i(axis, mode)` where `axis ∈ {0, 1}` and `mode ∈ {1..5}`. `TileCountMode.AUTO_STRIP = -1` and `TileCountMode.AUTO = 0`. If a future caller invokes `get_fallback_tile_set()` without first resolving AUTO/AUTO_STRIP and a typo replaces `Vector2i(axis, mode)` with `Vector2i(mode, axis)`, key `Vector2i(0, 0)` (AUTO + HORIZONTAL) collides with itself in a way that's hard to spot. More immediately, the `Axis` enum and `TileCountMode` enum overlap in numeric range (HORIZONTAL=0 == AUTO=0; VERTICAL=1 == ONE=1). The lookup happens to work because the field POSITION in `Vector2i` distinguishes them, but a code reader has no static type signal that the first int is "axis" vs "mode."
-**Fix:** Either:
-1. Use a 2-key tuple-flavored Dictionary literal style `{axis_horizontal_mode_one: "...", ...}` with explicit string-named constants (verbose but typo-resistant), or
-2. Wrap the lookup in a typed accessor: `func _bundled_png_path(a: Axis, m: TileCountMode) -> String:` that asserts `m >= TileCountMode.ONE` before constructing the key. Even just the assertion would catch the AUTO/AUTO_STRIP key-miss class of bug at the point of failure rather than at the empty-string return.
-
-### WR-05: `_synthesize_slot_image` returns the original atlas image's `get_region` result without defensive copy for SLOT_INNER_CORNER
-
-**File:** `addons/penta_tile/penta_tile_synthesis.gd:496-511`
-**Issue:** `var full_img := atlas_image.get_region(full_region)` — `Image.get_region()` returns a NEW image in Godot 4.x (not a view), so the subsequent `set_pixel` calls do not mutate the source atlas. This is correct behavior — but the code reads as if it might be aliasing the source. More importantly, the `set_pixel` loop runs `(half_x * half_y)` calls per synthesis invocation. For a 32×32 tile that's 256 set_pixel calls; for a 64×64 it's 1024. `Image.fill_rect()` with a transparent color over the TR quadrant rectangle would be O(1) call count and clearer intent.
-**Fix:**
-```gdscript
-SLOT_INNER_CORNER:
-    var full_region := Rect2i(slot0_px.x, slot0_px.y, ts.x, ts.y)
-    var full_img := atlas_image.get_region(full_region)
-    full_img.fill_rect(
-        Rect2i(ts.x / 2, 0, ts.x / 2, ts.y / 2),
-        Color(0.0, 0.0, 0.0, 0.0)
-    )
-    return full_img
-```
-Equivalent output, cleaner reading, and avoids a tight `set_pixel` loop in synthesis (which runs every paint under AUTO mode if the cache is invalidated).
-
-### WR-06: README drift — describes Phase 1's overlay layer + four-tile contract that Phase 2 deleted
-
-**File:** `README.md:79, 113-126, 140-156, 173-183`
-**Issue:** Multiple sections describe v0.1 architecture that no longer matches Phase 2:
-- Line 79 ("§ Penta-System Template"): "two transformed outer corners on an internal overlay layer" — Phase 2 Wave 2 deleted the overlay layer entirely (single-layer dispatch in `penta_tile_map_layer.gd:230-251`). Diagonals now resolve to a synthesized OppositeCorners archetype.
-- Lines 113-126 ("§ Addon Layout"): the file tree omits `layouts/`, `tests/`, `_generate_bitmasks.py`, `penta_tile_synthesis.gd`, `penta_tile_atlas_slot.gd`, and the per-Penta-mode PNG bundle. It still mentions the Phase 1 `penta_tile_template.png` as if it were the only template.
-- Lines 140-156 ("§ Current API"): lists `atlas_layout` as an exported property, but Phase 2 removed it entirely. The actual property is `layout: PentaTileLayout`. Misses `axis`, `tile_count` (Penta-side props that are user-facing through the inspector), and the new `bitmask_template` (auto-hidden on Penta). Also lists `atlas_source_id` purpose but not the new layout-driven dispatch.
-- Lines 173-183 ("§ Implementation Notes"): mentions "drawn by placing one outer corner on the primary visual layer and the other on the internal overlay layer" — same overlay-layer staleness as line 79.
-
-This is a documentation issue, not a code defect, and Wave 5 (the README+CHANGELOG+release pass per `ROADMAP.md`) is explicitly scoped to fix it. Flagging here so Wave 5 has an explicit punch list and so reviewers don't read the README as architectural truth in the meantime.
-**Fix:** Wave 5 README pass should:
-1. Replace overlay-layer prose with the synthesis pipeline (slot 0 → IsolatedCell + 4 synthesized archetypes via `PentaTileSynthesis`).
-2. Refresh the file-tree to include `layouts/`, `tests/`, `_generate_bitmasks.py`, `penta_tile_synthesis.gd`, `penta_tile_atlas_slot.gd`, the `layouts/penta_tile_layout_penta/` PNG bundle, and the four flat-sibling layout PNGs.
-3. Replace the `atlas_layout` row in the API table with `layout: PentaTileLayout`. Document `axis` and `tile_count` (Penta-specific) either inline or via a dedicated Penta layout subsection.
-4. Reword the "diagonal masks 6 and 9" paragraph to describe the OppositeCorners archetype (synthesized in modes ONE..FOUR; authored in mode FIVE) rather than the deleted overlay-layer composition.
-
-### WR-07: Synthesized atlas axis mismatch — VERTICAL renders empty under any synthesis mode
-
-**Severity:** HIGH (BLOCKER for VERTICAL-axis Penta layouts; latent because demo + determinism baseline are HORIZONTAL-only)
-**Files:** `addons/penta_tile/penta_tile_synthesis.gd:139,250,268,294` + `addons/penta_tile/layouts/penta_tile_layout_penta.gd:198-206`
-**Discovered:** 2026-04-26 by independent post-implementation audit (subagent cross-checked `_make_slot` axis output against synthesizer atlas-output coords — the prior WR-01..WR-06 review traced source-side axis math but never traced output-side coords).
-
-**Issue:** The synthesizer always commits output as a horizontal strip regardless of `axis`:
-- `penta_tile_synthesis.gd:250` — `strip_width = tile_size.x * slots.size()` (always X-axis)
-- `penta_tile_synthesis.gd:268` — `Vector2i(i * tile_size.x, 0)` (always row 0)
-- `penta_tile_synthesis.gd:139,294` — `Vector2i(i, 0)` for all atlas-coord registrations
-
-But `PentaTileLayoutPenta._make_slot` for `Axis.VERTICAL` returns `Vector2i(0, slot_index)` (lines 198-206). For example, mask 3 (TL+TR → Border facing top) routes through `_make_slot(_SLOT_BORDER, _ROTATE_180)` with slot_index=2 → coord `(0, 2)`. The synthesized atlas only has tiles at `(0,0)..(4,0)` → the lookup hits an unregistered atlas coord → `set_cell` paints nothing → all renders return empty.
-
-The `axis` parameter only correctly governs SOURCE READS in the synthesizer (which axis to walk in the source TileSet). The OUTPUT is always laid out as a horizontal strip regardless. This is consistent and intentional on the synthesizer side — the bug is that `_make_slot` doesn't know this contract.
-
-**Why missed by determinism baseline:** `BASELINE_HASH=2986698704` was captured under HORIZONTAL-axis `PentaTileLayoutPenta(axis=HORIZONTAL, tile_count=FOUR)`. There is no equivalent VERTICAL baseline. The bug is dormant against the test corpus but surfaces immediately on any user binding a vertical Penta atlas.
-
-**Fix:** Make `_make_slot` always return `Vector2i(slot_index, 0)` since the synthesized atlas is always horizontal. The user-facing `axis` enum then governs only source READS (already correctly handled by the synthesizer's source-side axis math). ~5 LOC change in `penta_tile_layout_penta.gd:198-206` plus a comment clarifying the contract:
-
-```gdscript
-# The synthesized atlas is ALWAYS a horizontal strip regardless of `axis`.
-# `axis` only governs which axis the synthesizer walks when READING the source.
-# Therefore `_make_slot` always returns horizontal-strip coords.
-func _make_slot(slot_index: int, transform_flags: int) -> PentaTileAtlasSlot:
-	var slot := PentaTileAtlasSlot.new()
-	slot.atlas_coords = Vector2i(slot_index, 0)
-	slot.transform_flags = transform_flags
-	slot.alternative_tile = 0
-	return slot
-```
-
-**Verification:** Add a VERTICAL-axis pixel-hash baseline to `_capture_baseline.gd` companion to the existing HORIZONTAL baseline. The new test asserts `PentaTileLayoutPenta(axis=VERTICAL, tile_count=FOUR)` produces non-empty output for a known set of mask states. Both baselines must pass before approval.
-
-**Cross-cutting:** WR-03 (hardcoded 5-stride in `synthesize_strip`) is independent of this fix — both bugs need to be addressed but they don't conflict.
+One new Info item below (IN-10) carries the residual gap from the WR-02 fix: the cache invalidation now catches AUTO mode drift but not in-place tile pixel mutations under explicit modes. The original WR-02 finding flagged this as a trade-off; the chosen fix (option 2) is the cheaper of the two suggested approaches. Worth recording as Info so a future reviewer doesn't assume both halves were addressed.
 
 ## Info
 
-### IN-01: `_pack_alternative` helper exists but no subclass uses it
+### IN-10: WR-02 fix catches AUTO mode drift but NOT in-place tile pixel mutations
 
-**File:** `addons/penta_tile/layouts/penta_tile_layout.gd:44-46`
-**Issue:** Base class defines `_pack_alternative(alt_id, transform_flags)` with the `< 4096` assert per PITFALLS §3, but every subclass `_make_slot` (Penta, DualGrid16, Wang2Edge, Wang2Corner, Min3x3) sets `slot.transform_flags` and `slot.alternative_tile = 0` directly without OR-ing them via the helper. Today this is safe because all `alternative_tile` values are literally `0` — the OR is a no-op. The helper exists as a "safe-by-default" facility for the upcoming variation-bank work (Phase 3.5 PixelLab layouts), but in the meantime its only caller is itself.
-**Fix:** Either (a) leave as-is and call `_pack_alternative` from variation-bank layouts when they ship, or (b) refactor `PentaTileAtlasSlot` to take `(atlas_coords, alt_id, transform_flags)` in a single setter that internally calls `_pack_alternative`, making the contract structurally enforce the rule rather than relying on each subclass to remember. (b) is the better long-term shape but a Phase 3 concern, not a Phase 2 blocker.
-
-### IN-02: `Rect2.has_point` boundary semantics in `clip_polygon_to_subrect`
-
-**File:** `addons/penta_tile/penta_tile_synthesis.gd:188-189`
-**Issue:** `Rect2.has_point(p)` is inclusive on the rect's `position` (top-left) and exclusive on `end` (bottom-right). For a polygon vertex that lies EXACTLY on the right or bottom edge of `sub_rect`, `has_point` returns false, so the algorithm treats it as outside and computes a crossing point even though it's on the boundary. Result: a redundant duplicate vertex in the clipped polygon at that boundary point. Determinism is preserved (same inputs → same output), but the clipped polygon is sub-optimal.
-**Fix:** Either accept the duplicate (it's harmless for collision/occlusion polygon rendering) or use a strict-inclusive boundary test:
-```gdscript
-func _point_in_or_on_rect(p: Vector2, r: Rect2) -> bool:
-    return p.x >= r.position.x and p.x <= r.end.x \
-        and p.y >= r.position.y and p.y <= r.end.y
-```
-Low-priority polish.
-
-### IN-03: Occlusion polygon "discard the rest" comment is misleading
-
-**File:** `addons/penta_tile/penta_tile_synthesis.gd:331-345`
-**Issue:** Comment block says "no multi-polygon-per-layer API exists. We take the first polygon in the polys array (if any) and discard the rest." But `_extract_tile_polygons` only ever puts ONE polygon in the per-layer array (line 429: `occlusion_dict[layer_idx] = [occ.polygon]`), so there is never any "rest" to discard. The discard wording suggests there might be data loss; in practice there isn't.
-**Fix:** Trim the comment to: "Godot 4.6 TileData supports one OccluderPolygon2D per layer. Build the new occluder from the single source polygon."
-
-### IN-04: Magic number `_STRIP_SLOT_COUNT = 5` shared with implicit slot ordering
-
-**File:** `addons/penta_tile/penta_tile_synthesis.gd:37, 102-106` and `addons/penta_tile/layouts/penta_tile_layout_penta.gd:102-106`
-**Issue:** Two source files independently declare slot index constants (`SLOT_ISOLATED_CELL = 0` etc. in synthesis; `_SLOT_ISOLATED_CELL = 0` etc. in penta layout) with comments noting the constants must stay in sync manually. The penta layout file's comment promises "an assert in PentaTileSynthesis guards divergence" — but no such assert exists in `penta_tile_synthesis.gd` (greppable: no `assert(... == _SLOT_*)` runtime check). The two files are in sync today by inspection but nothing PREVENTS divergence.
-**Fix:** Either (a) add the promised assert in `_PentaTileSynthesis` static init or `synthesize_strip` entry: `assert(SLOT_ISOLATED_CELL == 0 and SLOT_FILL == 1 ...)` is redundant on its own — what's needed is the cross-class match. The cleanest GDScript-2 option is to delete the duplicates from `penta_tile_layout_penta.gd` and reference `_PentaTileSynthesis.SLOT_*` via the same `preload()` pattern the layer uses (line 12 of `penta_tile_map_layer.gd`). Or (b) downgrade the comment to match reality: "values must stay in sync manually; no runtime guard."
-
-### IN-05: `validate_tile_size` warning string-substring matching for hard-vs-soft errors
-
-**File:** `addons/penta_tile/penta_tile_synthesis.gd:88-90, 220-228`
-**Issue:** `synthesize_strip` distinguishes hard-stop warnings ("square tiles", "must be even") from soft warnings ("below 4 px") by substring search on the warning text:
-```gdscript
-for w: String in warnings:
-    if "square tiles" in w or "must be even" in w:
-        return {"slots": [], "tile_size": tile_size, "warnings": warnings}
-```
-Edit the warning text in `validate_tile_size` and the synthesis hard-stop logic silently breaks. This is a fragile coupling between human-readable strings and control flow.
-**Fix:** Return structured warnings with a severity tag:
-```gdscript
-static func validate_tile_size(tile_size: Vector2i) -> Array:
-    var warnings: Array = []
-    if tile_size.x != tile_size.y:
-        warnings.append({"severity": "error", "message": "...", "code": "non_square"})
-    if tile_size.x % 2 != 0:
-        warnings.append({"severity": "error", "message": "...", "code": "odd"})
-    if tile_size.x < 4:
-        warnings.append({"severity": "warning", "message": "...", "code": "small"})
-    return warnings
-```
-Then `synthesize_strip` checks `w.severity == "error"`. Or simpler: add a separate `is_tile_size_blocking(tile_size: Vector2i) -> bool` that returns the boolean directly without round-tripping through human-readable text.
-
-### IN-06: `resolve_active_mode` has a redundant guard branch
-
-**File:** `addons/penta_tile/layouts/penta_tile_layout_penta.gd:219-228`
-**Issue:**
-```gdscript
-if tile_count != TileCountMode.AUTO and tile_count != TileCountMode.AUTO_STRIP:
-    return tile_count
-if tile_count == TileCountMode.AUTO_STRIP:
-    return TileCountMode.AUTO_STRIP
-```
-Reaching the second `if` requires the first `if` to have been false — which means `tile_count` IS AUTO or AUTO_STRIP. The second `if` returns AUTO_STRIP unchanged in the AUTO_STRIP case; the AUTO case falls through to the dimension-detection block. This is correct but the redundant explicit AUTO_STRIP early-return obscures that AUTO_STRIP is intentionally unresolved at this stage.
-**Fix:** Either inline the AUTO_STRIP intent into the dimension branch with a comment:
-```gdscript
-if tile_count != TileCountMode.AUTO and tile_count != TileCountMode.AUTO_STRIP:
-    return tile_count   # explicit ONE..FIVE pass through unchanged
-# AUTO_STRIP intentionally unresolved here (per-strip detection lives in resolve_strip_modes).
-if tile_count == TileCountMode.AUTO_STRIP:
-    return TileCountMode.AUTO_STRIP
-```
-Or restructure:
-```gdscript
-match tile_count:
-    TileCountMode.AUTO_STRIP:
-        return TileCountMode.AUTO_STRIP
-    TileCountMode.AUTO:
-        # fall through to dimension detection below
-        pass
-    _:
-        return tile_count
-# dimension detection ...
-```
-
-### IN-07: Test harness baseline hash hard-coded as a magic constant
-
-**File:** `addons/penta_tile/tests/determinism_test.gd:21`
-**Issue:** `const BASELINE_HASH := 2986698704` — a hard-coded integer with no machine-readable provenance other than a comment pointing to `four_mode_5x5.txt`. If the baseline ever needs to be regenerated (e.g., synthesis algorithm legitimately changes), the developer has to manually copy the new hash from the capture script's stdout into this file. Manual coupling risks stale baselines.
-**Fix:** Read the baseline from the same `four_mode_5x5.txt` artifact at test-init time:
-```gdscript
-var f := FileAccess.open("res://addons/penta_tile/tests/baselines/four_mode_5x5.txt", FileAccess.READ)
-# Parse the first int matching /BASELINE_HASH=(\d+)/ from the file body.
-```
-Accepts the trade-off: test now depends on the baseline file existing and parseable, but a stale-baseline scenario surfaces as "baseline file missing" rather than "hash mismatch debugging."
-
-### IN-08: `_capture_baseline.gd` claims "NOT committed to git" but IS tracked
-
-**File:** `addons/penta_tile/tests/_capture_baseline.gd:1`
-**Issue:** Top-of-file comment says "Temporary baseline capture script — NOT committed to git." `git ls-files` confirms it IS tracked (`addons/penta_tile/tests/_capture_baseline.gd` shows as a tracked path). Either the comment is stale or the file was committed by mistake. Underscore prefix + "Temporary" wording suggests intent to keep it untracked; the actual repo state contradicts that intent.
-**Fix:** Pick one of:
-1. Update the comment to match reality: "Baseline capture utility — committed for reproducibility. Run when the synthesis algorithm changes to regenerate `tests/baselines/four_mode_5x5.txt` + `BASELINE_HASH` in `determinism_test.gd`."
-2. Add `addons/penta_tile/tests/_capture_baseline.gd` to `.gitignore` and `git rm --cached` it (only if intent really is local-only).
-
-Option 1 matches the surrounding test infrastructure (which IS committed) and is the more defensible state.
-
-### IN-09: `penta_tile_atlas_slot.gd` exports `alternative_tile` as a separate field but it's always 0 today
-
-**File:** `addons/penta_tile/penta_tile_atlas_slot.gd:14`
-**Issue:** `@export var alternative_tile: int = 0` is exposed as a slot-level field, but every layout sets it to 0 and the layer's `_paint_with_slot` does NOT consume it (line 177 in `penta_tile_map_layer.gd`: `layer.set_cell(display_cell, source, slot.atlas_coords, slot.transform_flags)` — alternative_tile is dropped). The field is dead weight in Phase 2. Either it's reserved for variation banks (Phase 3.5) and should be commented as such, or it should be deleted until variation lands.
-**Fix:** Add a one-line comment above the export: `# Reserved for variation-bank wiring in Phase 3.5; ignored by the layer in Phase 2.` Alternatively, delete the field entirely until Phase 3.5 needs it (per CLAUDE.md "no forward-compat speculation" — though `PentaTileAtlasSlot` is the natural home for the field when it does land, so leaving it with a clear "reserved" note is defensible). A passing comment is the lowest-cost fix.
+**File:** `addons/penta_tile/penta_tile_map_layer.gd:305-346`
+**Issue:** The WR-02 fix (commit `9ca342e`) reorders mode resolution to land BEFORE the cache signature so AUTO/AUTO_STRIP mode drift correctly invalidates. The original WR-02 finding noted two possible fixes: (a) listen to `tile_set.changed` and invalidate from the handler — catches both mode drift AND tile pixel mutations, or (b) move `resolve_active_mode` above the cache check and include resolved mode in the signature — catches mode drift only. The implementation chose (b). A user who explicitly sets `tile_count = ONE..FIVE` (skipping AUTO) and then mutates the bound `TileSet`'s tile pixels in-place will still see stale synthesis output because the signature inputs (`instance_id`, `axis`, `tile_count`, `source_id`, resolved `mode`) all stay constant across the mutation.
+**Fix:** Phase 2 demo + tests do not exercise this case (the demo never mutates the source TileSet at runtime), so this is a known latent gap rather than a present bug. Phase 3.5 (variation banks) is the natural place to revisit synthesis cache invalidation since variation banks introduce per-cell randomness that may want a finer-grained signature anyway. Until then, document the limitation in the layer's class doc-comment so a user who hits it knows to call `_on_layout_changed()` manually after a TileSet mutation. Or, if cheap enough, add a `tile_set.changed` listener using the same disconnect-before-reconnect pattern that already exists for `layout.changed`.
 
 ---
 
-_Reviewed: 2026-04-26_
+_Reviewed: 2026-04-26 (re-review)_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
