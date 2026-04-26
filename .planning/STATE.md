@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-05-PLAN.md (Wave 5 bitmask PNG migration + README retarget)
-last_updated: "2026-04-26T20:11:53.580Z"
+stopped_at: Completed 02-06-PLAN.md (Wave 6 AUTO/AUTO_STRIP detection + warnings + baseline + demo refresh)
+last_updated: "2026-04-26T20:28:07.652Z"
 last_activity: 2026-04-26
 progress:
   total_phases: 7
   completed_phases: 2
   total_plans: 15
-  completed_plans: 13
-  percent: 87
+  completed_plans: 14
+  percent: 93
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-04-25 after v0.2 pivot to layout library
 ## Current Position
 
 Phase: 02 (native-layouts) — EXECUTING
-Plan: 6 of 7
+Plan: 7 of 7
 Status: Ready to execute
 Last activity: 2026-04-26
 
-Progress: [█████████░] 87%
+Progress: [█████████░] 93%
 
 > Out-of-band progress: 5 of 8 greyboxed template PNGs + the generator script shipped in commit e86036f as part of the discovery pass. Counted as TEMPLATE-01 + TEMPLATE-03 covered. The remaining 3 templates (Blob47Godot, TilesetterWang15, TilesetterBlob47) ship in Phase 3 once their slot tables are transcribed from TileBitTools.
 
@@ -59,6 +59,7 @@ Progress: [█████████░] 87%
 | Phase 02 P03 | 331 | 2 tasks | 5 files |
 | Phase 02-native-layouts P4 | 91 | 4 tasks | 4 files |
 | Phase 02 P05 | 209 | 2 tasks | 16 files |
+| Phase 02 P06 | 850 | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -108,6 +109,9 @@ Recent decisions affecting current work:
 - line-70 README retarget -> four_horizontal.png (4-tile-template feel of v0.1); lines 5 and 30 -> five_horizontal.png (matches all-5-archetypes alt-text)
 - TILE=32px for Phase 2 generator (doubles Phase 1 TILE=16); draw_edge_mask center hint rescaled proportionally
 - Task 5.3 human-verify checkpoint auto-approved; IsolatedCell slot 0 geometry verified programmatically (TEMPLATE-04 pass)
+- resolve_active_mode returns AUTO_STRIP unchanged — per-strip dispatch deferred to Phase 5
+- BASELINE_HASH=2986698704 captured via headless Godot 4.6 for FOUR-mode determinism test (PENTA-SYNTH-12 / PENTA-03)
+- preload() const _PentaTileSynthesis added to map layer — fixes class_name symbol failure in headless/--script mode
 
 ### Pending Todos
 
@@ -140,8 +144,8 @@ Items acknowledged and carried forward as v2 requirements (see REQUIREMENTS.md v
 
 ## Session Continuity
 
-Last session: 2026-04-26T20:11:53.575Z
-Stopped at: Completed 02-05-PLAN.md (Wave 5 bitmask PNG migration + README retarget)
+Last session: 2026-04-26T20:28:07.646Z
+Stopped at: Completed 02-06-PLAN.md (Wave 6 AUTO/AUTO_STRIP detection + warnings + baseline + demo refresh)
 Resume file: None
 
 **Completed Phase:** 01 (Contract Skeleton + Penta Layouts) — 5/5 plans, 14/14 requirements, 26/26 automated tests PASS — 2026-04-26

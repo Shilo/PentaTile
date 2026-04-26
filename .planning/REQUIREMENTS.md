@@ -51,7 +51,8 @@ The Penta layout is the addon's signature 5-archetype convention. Per the Phase 
 **: Single `PentaTileLayoutPenta` subclass with `axis: Axis = HORIZONTAL` enum (members: `HORIZONTAL`, `VERTICAL`). Slot 0 is always `IsolatedCell`; subsequent slots (1-4) progressively add `Fill`, `Border`, `InnerCorner`, `OppositeCorners` based on `tile_count` mode. **OuterCorner is implicit** — synthesized from slot 0's corners across all modes; never has its own slot. Strip axis is X for HORIZONTAL, Y for VERTICAL.
 - [x] **PENTA-02
 **: `tile_count: TileCountMode` enum (members: `AUTO = 0`, `AUTO_STRIP`, `ONE = 1`, `TWO = 2`, `THREE = 3`, `FOUR = 4`, `FIVE = 5`) on the same class. `AUTO` does dimension-only detection (cheapest, all strips share mode). `AUTO_STRIP` does per-strip detection (each strip independently 1-5). Explicit numeric values skip detection.
-- [ ] **PENTA-03**: When the demo scene uses the default Penta layout (axis=HORIZONTAL, tile_count=AUTO) on a Penta-mode atlas, rendered output is visually regression-tested against a captured baseline (synthesis output is the authoritative reference; the slot ordering changed from v0.1 so v0.1 atlases are NOT bit-compat).
+- [x] **PENTA-03
+**: When the demo scene uses the default Penta layout (axis=HORIZONTAL, tile_count=AUTO) on a Penta-mode atlas, rendered output is visually regression-tested against a captured baseline (synthesis output is the authoritative reference; the slot ordering changed from v0.1 so v0.1 atlases are NOT bit-compat).
 
 ### Native Layouts (NATIVE)
 
@@ -89,20 +90,23 @@ Auto-detection reads `TileSetAtlasSource.get_atlas_grid_size()` along the strip 
 
 - [x] **PENTA-SYNTH-01
 **: `PentaTileLayoutPenta` exposes `tile_count: TileCountMode` enum with values `AUTO = 0`, `AUTO_STRIP`, `ONE = 1`, `TWO = 2`, `THREE = 3`, `FOUR = 4`, `FIVE = 5`. Explicit numeric values match the actual tile count per strip (so `int(mode)` returns the count for ONE/TWO/THREE/FOUR/FIVE). AUTO and AUTO_STRIP trigger detection; explicit values skip detection and validate atlas content (warn on mismatch via `update_configuration_warnings()`).
-- [ ] **PENTA-SYNTH-02**: AUTO-mode detection (uniform across all strips):
+- [x] **PENTA-SYNTH-02
+**: AUTO-mode detection (uniform across all strips):
   1. Read atlas axis size: `get_atlas_grid_size().x` (HORIZONTAL) or `.y` (VERTICAL)
   2. Map axis size → mode: `1 → ONE`, `2 → TWO`, `3 → THREE`, `4 → FOUR`, `5 → FIVE`
   3. All strips in the atlas use the same mode (no per-strip refinement)
   4. **Gappy-strip behavior in AUTO mode**: a strip with cells missing in the populated range (e.g., axis size 5 + slot 0/1/2/4 populated, slot 3 empty) is treated as MALFORMED for that strip. Synthesis falls back to slot 0 for the missing archetype, and `update_configuration_warnings()` fires per PENTA-SYNTH-08. Painting still proceeds (graceful degradation); the warning surfaces the issue to the artist.
   5. Other axis sizes (0, 6+) → render disabled + warning
   6. O(1) cost — single integer compare
-- [ ] **PENTA-SYNTH-03**: AUTO_STRIP-mode detection (per-strip):
+- [x] **PENTA-SYNTH-03
+**: AUTO_STRIP-mode detection (per-strip):
   1. Read atlas axis size as in AUTO
   2. For each strip, count populated cells via `has_tile()` at each axis position 0..N-1
   3. Each strip's mode = its populated count (1/2/3/4/5); strips can differ within a single atlas
   4. Strips with anomalous counts (gaps, 0, 6+) → render that strip empty + warning
   5. O(strips × max_axis) cost — bounded, microseconds for typical atlas sizes
-- [ ] **PENTA-SYNTH-04**: Detection is **dimension-based only** — no pixel-content inspection. Atlas axis size and `has_tile()` are the only inputs. No false-positive risk; reproducible across runs.
+- [x] **PENTA-SYNTH-04
+**: Detection is **dimension-based only** — no pixel-content inspection. Atlas axis size and `has_tile()` are the only inputs. No false-positive risk; reproducible across runs.
 - [x] **PENTA-SYNTH-05
 **: Synthesis machinery shared across all modes (single `_synthesize_strip(strip_index, mode)` helper). Per-strip outputs:
   - ONE: synthesize Fill + Border + InnerCorner + OuterCorner + OppositeCorners from sub-regions of slot 0
@@ -115,7 +119,8 @@ Auto-detection reads `TileSetAtlasSource.get_atlas_grid_size()` along the strip 
 **: Synthesized atlas lives in an internal `TileSet` owned by `PentaTileMapLayer._primary_layer`; user's source `tile_set` is never mutated. Synthesis re-runs only when `layout`, `axis`, `tile_count`, or the source `tile_set` changes (deterministic). Source tile collision/occlusion/navigation polygons are copied to synthesized tiles with appropriate transforms — **plan-phase must spec the polygon-transform math** (each polygon is a `Vector2[]`; rotations and flips applied via `Transform2D` or per-vertex math; sub-region clipping for ONE/TWO/THREE modes where the synthesized tile uses only part of slot 0's polygon area). Worth a sketch before the executor hits it. Animation frames, custom data layers, probability weights, and Y-sort origin on synthesized tiles are explicitly NOT supported in v0.2 (use a non-Penta layout if needed).
 - [x] **PENTA-SYNTH-07
 **: `PentaTileMapLayer` removes `_overlay_layer`, `_OVERLAY_LAYER_NAME`, `_paint_overlay_for_slot()`, and `AtlasSlot.diagonal_complement_atlas_coords` field. After Phase 2, `PentaTileMapLayer` has exactly ONE child visual layer (`_primary_layer`).
-- [ ] **PENTA-SYNTH-08**: `update_configuration_warnings()` warns on (per Phase 1 D-15 pattern):
+- [x] **PENTA-SYNTH-08
+**: `update_configuration_warnings()` warns on (per Phase 1 D-15 pattern):
   - Atlas axis is 0 or 6+ in AUTO/AUTO_STRIP mode
   - `tile_count` is an explicit value (ONE..FIVE) and the atlas axis size disagrees
   - Strip has gaps in AUTO_STRIP mode (e.g., slot 1 populated but slot 0 empty)
@@ -126,9 +131,12 @@ Auto-detection reads `TileSetAtlasSource.get_atlas_grid_size()` along the strip 
   - `three_horizontal.png`, `three_vertical.png`
   - `four_horizontal.png`, `four_vertical.png`
   - `five_horizontal.png`, `five_vertical.png`
-- [ ] **PENTA-SYNTH-10**: Single PNG per layout serves as BOTH the bitmask reference (visible in inspector) AND the prototyping fallback art. No separate `atlas.png` / `bitmask.png` split. The `get_fallback_tile_set()` method builds a runtime TileSet directly from this single PNG with axis-grid configuration matching the mode.
-- [ ] **PENTA-SYNTH-11**: Demo scene (or sub-scenes) demonstrates ONE/FOUR/FIVE modes at minimum (TWO/THREE optional in demo). Runtime drag-paint (`demo_runtime_painter.gd`) works across all modes without script changes.
-- [ ] **PENTA-SYNTH-12**: FOUR mode visual regression. Captured baseline (NOT v0.1 bit-identity since slot ordering changed — slot 3 is now InnerCorner, was OuterCorner in v0.1). Baseline-capture protocol:
+- [x] **PENTA-SYNTH-10
+**: Single PNG per layout serves as BOTH the bitmask reference (visible in inspector) AND the prototyping fallback art. No separate `atlas.png` / `bitmask.png` split. The `get_fallback_tile_set()` method builds a runtime TileSet directly from this single PNG with axis-grid configuration matching the mode.
+- [x] **PENTA-SYNTH-11
+**: Demo scene (or sub-scenes) demonstrates ONE/FOUR/FIVE modes at minimum (TWO/THREE optional in demo). Runtime drag-paint (`demo_runtime_painter.gd`) works across all modes without script changes.
+- [x] **PENTA-SYNTH-12
+**: FOUR mode visual regression. Captured baseline (NOT v0.1 bit-identity since slot ordering changed — slot 3 is now InnerCorner, was OuterCorner in v0.1). Baseline-capture protocol:
   1. **What's captured**: render output of a fixed test scene (a 5×5 painted region with each mask state 0..15 represented at known coords) using a checked-in `PentaTileLayoutPenta(axis=HORIZONTAL, tile_count=FOUR)` Resource pointing at a fixed test atlas.
   2. **How it's captured**: `Viewport.get_texture().get_image().get_data().hash()` (single int per render) OR `Image.save_png()` to a baseline file (visual eyeball + structural diff). Planner picks one — int hash is cheaper and stricter.
   3. **Where the baseline lives**: `addons/penta_tile/tests/baselines/four_mode_5x5.<hash|png>` (path TBD by planner).
