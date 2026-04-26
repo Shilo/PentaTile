@@ -30,10 +30,10 @@ TRANSPARENT = (0, 0, 0, 0)
 OUT_LAYOUTS = Path(__file__).parent / "layouts"
 OUT_PENTA = OUT_LAYOUTS / "penta_tile_layout_penta"
 
-# ---- Helpers (PORT FORWARD UNCHANGED from _generate_greybox_templates.py) ----
+# ---- Helpers ----
 # These produce 32-px tiles with `draw_slot_outline` outlining each slot in dark grey.
-# `draw_corner_mask(col, row, mask)` and `draw_edge_mask(col, row, mask)` work as in
-# Phase 1 and cover DualGrid16 / Wang2Corner (corner) + Wang2Edge / Min3x3 (edge).
+# `draw_corner_mask(col, row, mask)` and `draw_edge_mask(col, row, mask)` cover
+# DualGrid16 / Wang2Corner (corner) + Wang2Edge / Min3x3 (edge).
 
 
 def new_atlas(cols: int, rows: int) -> Image.Image:
