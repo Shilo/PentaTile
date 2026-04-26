@@ -1,0 +1,25 @@
+# Phase 1 LOC checkpoint — End of Phase 1
+
+## addon-proper .gd files (excluding demo/)
+
+   40 addons/tetra_tile/tetra_tile_atlas_contract.gd
+   17 addons/tetra_tile/tetra_tile_atlas_slot.gd
+  298 addons/tetra_tile/tetra_tile_map_layer.gd
+   57 addons/tetra_tile/layouts/tetra_tile_layout.gd
+  118 addons/tetra_tile/layouts/tetra_tile_layout_tetra_horizontal.gd
+   29 addons/tetra_tile/layouts/tetra_tile_layout_tetra_vertical.gd
+  559 total
+
+## Pre-Phase-1 baseline (from loc-baseline.txt):
+
+260 addons/tetra_tile/tetra_tile_map_layer.gd
+
+Captured: 2026-04-26T07:01:04Z
+Pre-Phase-1 baseline. End-of-Phase-1 (Plan 05) compares against this.
+Demo scripts (demo/*.gd) are NOT counted — they are not part of the addon's surface area.
+
+## Captured: 2026-04-26T07:30:54Z
+
+Per CONTEXT.md <code_context> budget: ~530 LOC across 6 files.
+Per ROADMAP.md Identity Guardrails: TetraTile must remain visibly smaller and simpler than TileMapDual.
+Per RESEARCH.md MASK_UNIFICATION.md §6.3: Phase 1 budget ~530 LOC; TileMapDual is ~700-900 LOC.
