@@ -13,29 +13,29 @@ Requirements for v0.2.0. Each maps to roadmap phases via the Traceability sectio
 
 The runtime contract that the new layout system plugs into.
 
-- [ ] **CONTRACT-01**: `TetraTileMapLayer` exposes `@export var atlas_contract: TetraTileAtlasContract` accepting a typed `Resource` subclass.
-- [ ] **CONTRACT-02**: `TetraTileAtlasContract` Resource declares: `version: int = 1`, `layout: TetraTileLayout`, `variation_seed: int = 0` (reserved for future variation milestone; placeholder).
-- [ ] **CONTRACT-03**: `_resolve_slot(mask)` reads from `contract.layout` via `layout.compute_mask` and `layout.mask_to_atlas`. The 16-state hardcoded `match` from v0.1 relocates into `TetraTileLayoutTetraHorizontal.mask_to_atlas`.
-- [ ] **CONTRACT-04**: When `atlas_contract == null`, `_resolve_slot()` falls back to v0.1 hardcoded behavior so existing scenes that haven't migrated continue to render unchanged.
-- [ ] **CONTRACT-05**: The `atlas_contract` setter uses an idempotence guard (`if value == _atlas_contract: return`) and disconnects-before-reconnects on `Resource.changed` to prevent signal storms.
+- [x] **CONTRACT-01**: `TetraTileMapLayer` exposes `@export var atlas_contract: TetraTileAtlasContract` accepting a typed `Resource` subclass.
+- [x] **CONTRACT-02**: `TetraTileAtlasContract` Resource declares: `version: int = 1`, `layout: TetraTileLayout`, `variation_seed: int = 0` (reserved for future variation milestone; placeholder).
+- [x] **CONTRACT-03**: `_resolve_slot(mask)` reads from `contract.layout` via `layout.compute_mask` and `layout.mask_to_atlas`. The 16-state hardcoded `match` from v0.1 relocates into `TetraTileLayoutTetraHorizontal.mask_to_atlas`.
+- [x] **CONTRACT-04**: When `atlas_contract == null`, `_resolve_slot()` falls back to v0.1 hardcoded behavior so existing scenes that haven't migrated continue to render unchanged.
+- [x] **CONTRACT-05**: The `atlas_contract` setter uses an idempotence guard (`if value == _atlas_contract: return`) and disconnects-before-reconnects on `Resource.changed` to prevent signal storms.
 
 ### TetraTileLayout Base Class (LAYOUT)
 
 The Resource hierarchy that lets every supported atlas convention plug into the same `_update_cells()` pipeline.
 
-- [ ] **LAYOUT-01**: `TetraTileLayout` base Resource defines virtual `compute_mask(coord: Vector2i, sample_fn: Callable) -> int` returning the layout's mask integer for a logic coord.
-- [ ] **LAYOUT-02**: `TetraTileLayout` base Resource defines virtual `mask_to_atlas(mask: int) -> AtlasSlot` returning the slot to paint at that mask.
-- [ ] **LAYOUT-03**: `TetraTileLayout` declares `template_image: Texture2D`, `fallback_tile_set: TileSet`, `description: String` (multiline), and a class-level `##` doc-comment for inspector hinting.
-- [ ] **LAYOUT-04**: `AtlasSlot` Resource declares `atlas_coords: Vector2i`, `transform_flags: int = 0`, `alternative_tile: int = 0`, optional `diagonal_complement_atlas_coords: Vector2i` for tetra's overlay-layer composition.
-- [ ] **LAYOUT-05**: `_pack_alternative(alt_id: int, transform_flags: int) -> int` helper combines alt-ID and `TRANSFORM_FLIP_*` flags via bitwise OR with `assert(alt_id < 4096)` to guard the bit-collision pitfall.
+- [x] **LAYOUT-01**: `TetraTileLayout` base Resource defines virtual `compute_mask(coord: Vector2i, sample_fn: Callable) -> int` returning the layout's mask integer for a logic coord.
+- [x] **LAYOUT-02**: `TetraTileLayout` base Resource defines virtual `mask_to_atlas(mask: int) -> AtlasSlot` returning the slot to paint at that mask.
+- [x] **LAYOUT-03**: `TetraTileLayout` declares `template_image: Texture2D`, `fallback_tile_set: TileSet`, `description: String` (multiline), and a class-level `##` doc-comment for inspector hinting.
+- [x] **LAYOUT-04**: `AtlasSlot` Resource declares `atlas_coords: Vector2i`, `transform_flags: int = 0`, `alternative_tile: int = 0`, optional `diagonal_complement_atlas_coords: Vector2i` for tetra's overlay-layer composition.
+- [x] **LAYOUT-05**: `_pack_alternative(alt_id: int, transform_flags: int) -> int` helper combines alt-ID and `TRANSFORM_FLIP_*` flags via bitwise OR with `assert(alt_id < 4096)` to guard the bit-collision pitfall.
 
 ### Tetra Layouts (TETRA)
 
 The v0.1 inheritance — ship as the addon's two defaults so existing users see no behavior change.
 
-- [ ] **TETRA-01**: `TetraTileLayoutTetraHorizontal` subclass — 4 archetypes (Fill/Inner Corner/Border/Outer Corner) with rotation reuse, 4×1 atlas. Output bit-identical to v0.1 horizontal mode.
-- [ ] **TETRA-02**: `TetraTileLayoutTetraVertical` subclass — same archetypes, 1×4 atlas. Output bit-identical to v0.1 vertical mode.
-- [ ] **TETRA-03**: When the demo scene uses the bundled default `TetraTileAtlasContract` (Tetra Horizontal layout), the rendered output is bit-identical to v0.1 (visual regression).
+- [x] **TETRA-01**: `TetraTileLayoutTetraHorizontal` subclass — 4 archetypes (Fill/Inner Corner/Border/Outer Corner) with rotation reuse, 4×1 atlas. Output bit-identical to v0.1 horizontal mode.
+- [x] **TETRA-02**: `TetraTileLayoutTetraVertical` subclass — same archetypes, 1×4 atlas. Output bit-identical to v0.1 vertical mode.
+- [x] **TETRA-03**: When the demo scene uses the bundled default `TetraTileAtlasContract` (Tetra Horizontal layout), the rendered output is bit-identical to v0.1 (visual regression).
 
 ### Native Layouts (NATIVE)
 
@@ -79,7 +79,7 @@ Per D-26 — added during Phase 1 discuss session. Phase 3.5 prerequisite; Phase
 
 The drop-in prototyping UX. Each layout has an inspector-visible thumbnail and a fallback TileSet so a `TetraTileMapLayer` paints out of the box.
 
-- [ ] **PREVIEW-01**: `template_image: Texture2D` on each layout Resource renders inline in the Godot inspector (free via Godot's stock `Texture2D` preview).
+- [x] **PREVIEW-01**: `template_image: Texture2D` on each layout Resource renders inline in the Godot inspector (free via Godot's stock `Texture2D` preview).
 - [ ] **PREVIEW-02**: Each shipped layout has a bundled `fallback_tile_set: TileSet` `.tres` pointing at the layout's template image with slot positions configured.
 - [ ] **PREVIEW-03**: When `TetraTileMapLayer.tile_set == null` AND `atlas_contract.layout != null`, the layer routes rendering through `layout.fallback_tile_set` for prototyping.
 - [ ] **PREVIEW-04**: When the user assigns `tile_set` directly, it overrides the fallback (no warnings, no errors — uses what the user provided).
@@ -189,19 +189,19 @@ Which phases cover which requirements. Empty initially — populated by `gsd-roa
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CONTRACT-01 | 1 | Pending |
-| CONTRACT-02 | 1 | Pending |
-| CONTRACT-03 | 1 | Pending |
-| CONTRACT-04 | 1 | Pending |
-| CONTRACT-05 | 1 | Pending |
-| LAYOUT-01 | 1 | Pending |
-| LAYOUT-02 | 1 | Pending |
-| LAYOUT-03 | 1 | Pending |
-| LAYOUT-04 | 1 | Pending |
-| LAYOUT-05 | 1 | Pending |
-| TETRA-01 | 1 | Pending |
-| TETRA-02 | 1 | Pending |
-| TETRA-03 | 1 | Pending |
+| CONTRACT-01 | 1 | Complete |
+| CONTRACT-02 | 1 | Complete |
+| CONTRACT-03 | 1 | Complete |
+| CONTRACT-04 | 1 | Complete |
+| CONTRACT-05 | 1 | Complete |
+| LAYOUT-01 | 1 | Complete |
+| LAYOUT-02 | 1 | Complete |
+| LAYOUT-03 | 1 | Complete |
+| LAYOUT-04 | 1 | Complete |
+| LAYOUT-05 | 1 | Complete |
+| TETRA-01 | 1 | Complete |
+| TETRA-02 | 1 | Complete |
+| TETRA-03 | 1 | Complete |
 | NATIVE-01 | 2 | Pending |
 | NATIVE-02 | 2 | Pending |
 | NATIVE-03 | 2 | Pending |
@@ -215,7 +215,7 @@ Which phases cover which requirements. Empty initially — populated by `gsd-roa
 | PIXLAB-03 | 3.5 | Pending |
 | PIXLAB-04 | 3.5 | Pending |
 | VAR-PIXEL-01 | 3.5 | Pending |
-| PREVIEW-01 | 1 | Pending |
+| PREVIEW-01 | 1 | Complete |
 | PREVIEW-02 | 2 | Pending |
 | PREVIEW-03 | 4 | Pending |
 | PREVIEW-04 | 4 | Pending |
