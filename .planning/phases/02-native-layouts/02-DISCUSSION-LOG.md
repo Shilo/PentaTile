@@ -362,15 +362,48 @@ User pushed deeper on the slot ordering and synthesis quality questions, leading
 - D-57 (Tetra Horizontal/Vertical merged into TetraTileLayoutTetra)
 - D-59 (single user-facing image — `bitmask_template`; `decoder_image` deleted; `fallback_tile_set` hidden)
 
-### Wave breakdown (fourth revision — supersedes all prior)
+### Wave breakdown (fifth revision — addresses audit findings 2026-04-26)
 
-- Wave 1: synthesis machinery — `_synthesize_strip(strip_index, mode)` helper covering all 5 modes (ONE/TWO/THREE/FOUR/FIVE) + runtime TileSet construction via `get_fallback_tile_set()` + collision/occlusion/navigation polygon copy. Delete `_overlay_layer` from `TetraTileMapLayer` + `diagonal_complement_atlas_coords` from `AtlasSlot`.
-- Wave 2: delete `TetraTileAtlasContract` + `addons/tetra_tile/contracts/` folder + `addons/tetra_tile/tetra_tile_template.png`. Replace `atlas_contract` with `layout: TetraTileLayout` on `TetraTileMapLayer`. Update setter for direct `layout.changed` connection.
-- Wave 3: merge `TetraTileLayoutTetraHorizontal` + `Vertical` into `TetraTileLayoutTetra` with `axis: Axis` + `tile_count: TileCountMode { AUTO, AUTO_STRIP, ONE, TWO, THREE, FOUR, FIVE }`. Hide `bitmask_template` via `_validate_property`. Class-level constant lookup table for axis × mode → bundled PNG path.
-- Wave 4: `TetraTileLayout` base — rename `template_image` → `bitmask_template`. Remove `fallback_tile_set` @export. Add `get_fallback_tile_set()` virtual (codegens TileSet from `bitmask_template`). Delete `decoder_image`.
-- Wave 5: 4 native layouts in parallel (DualGrid16, Wang2Edge, Wang2Corner, Min3x3) using the new conventions + flat-sibling PNG bundles.
-- Wave 6: relocate templates — delete `addons/tetra_tile/templates/` folder; create per-layout PNGs at new co-located paths (10 in `tetra_tile_layout_tetra/` subfolder + 4 flat siblings). Update bitmask generator script.
-- Wave 7: AUTO_STRIP detection, configuration_warnings, FOUR-mode regression baseline capture, demo refresh across modes, LOC checkpoint, CHANGELOG entries.
+**Dependency note**: waves are NOT strictly sequential as numbered. Wave 1 (synthesis machinery) calls `get_fallback_tile_set()` which Wave 4 adds; Wave 3 (merge Tetra classes) references the renamed `bitmask_template` property which Wave 4 also adds. Reordered below so each wave's dependencies are satisfied by the time it runs:
+
+- **Wave 1: Pre-work — Phase 1 verification migration + base-class renames.**
+  - Migrate `.planning/phases/01-contract-skeleton-tetra-layouts/01-VERIFICATION.md` 26 tests to the new API surface (LAYER-05). Tests written against the deleted `atlas_contract` + `TetraTileLayoutTetraHorizontal`/`Vertical` need rewrites against `layout: TetraTileLayout` + `TetraTileLayoutTetra(axis=...)`. New tests added for TWO/THREE/FIVE modes + AUTO_STRIP. Phase 1's `01-VERIFICATION.md` is marked as historical; new tests live alongside Phase 2 verification.
+  - Rename `template_image` → `bitmask_template` on `TetraTileLayout` base. Remove `fallback_tile_set` @export. Add `get_fallback_tile_set()` virtual stub (returns null until Wave 2 fills it). Delete `decoder_image`. (Was Wave 4 in fourth revision; promoted to Wave 1 because Waves 2-3 depend on the rename.)
+
+- **Wave 2: Synthesis machinery + overlay deletion + contract deletion + demo rebind.**
+  - Build `_synthesize_strip(strip_index, mode)` helper covering all 5 modes (ONE/TWO/THREE/FOUR/FIVE). Includes runtime TileSet construction (fills in the `get_fallback_tile_set()` stub from Wave 1) + collision/occlusion/navigation polygon copy.
+  - Delete `_overlay_layer` from `TetraTileMapLayer` + `_OVERLAY_LAYER_NAME` constant + `_paint_overlay_for_slot()` + `diagonal_complement_atlas_coords` field on `AtlasSlot`.
+  - Delete `TetraTileAtlasContract` class + `addons/tetra_tile/contracts/` folder + the `tetra_tile_atlas_contract.gd` file + the `addons/tetra_tile/tetra_tile_template.png` original v0.1 reference. Replace `atlas_contract` property with `layout: TetraTileLayout` on `TetraTileMapLayer`. Update setter for direct `layout.changed` connection. **Delete the static `_DEFAULT_LAYOUT` singleton in `tetra_tile_map_layer.gd:193-198`** (it allocated `TetraTileLayoutTetraHorizontal.new()` — class doesn't exist after Wave 3).
+  - **Atomically rebind `addons/tetra_tile/demo/tetra_tile_demo.tscn`** — remove the `[ext_resource ... contracts/default_horizontal.tres]` reference and replace `atlas_contract = ExtResource(...)` with `layout = ExtResource(...)` pointing at a Tetra layout instance (LAYER-04). Demo MUST load cleanly in the Godot editor at the end of Wave 2 — this is a non-skippable acceptance criterion.
+
+- **Wave 3: Tetra layout merge.**
+  - Merge `TetraTileLayoutTetraHorizontal` + `Vertical` into `TetraTileLayoutTetra` with `axis: Axis = HORIZONTAL` enum + `tile_count: TileCountMode { AUTO, AUTO_STRIP, ONE = 1, TWO = 2, THREE = 3, FOUR = 4, FIVE = 5 }`. Hide `bitmask_template` via `_validate_property`. Class-level constant lookup table maps `(axis, mode)` → bundled PNG path.
+  - Wire `TetraTileLayoutTetra` to call `_synthesize_strip()` from Wave 2 for the relevant mode.
+
+- **Wave 4: 4 native layouts in parallel.**
+  - DualGrid16, Wang2Edge, Wang2Corner, Min3x3 ship using the new conventions + flat-sibling PNG bundles.
+
+- **Wave 5: Asset relocation.**
+  - Delete `addons/tetra_tile/templates/` folder.
+  - Create per-layout PNGs at new co-located paths: 10 in `addons/tetra_tile/layouts/tetra_tile_layout_tetra/` subfolder (`{one,two,three,four,five}_{horizontal,vertical}.png`) + 4 flat siblings (`tetra_tile_layout_dual_grid_16.png`, etc.).
+  - Update bitmask generator script (renamed from `_generate_greybox_templates.py`) to produce the new structure.
+
+- **Wave 6: AUTO/AUTO_STRIP detection + warnings + baseline capture + demo refresh.**
+  - Implement AUTO and AUTO_STRIP detection algorithms (TETRA-SYNTH-02/03). Wire `update_configuration_warnings()` per TETRA-SYNTH-08.
+  - Capture FOUR-mode regression baseline per TETRA-SYNTH-12 spec (test scene, hash, baseline file location).
+  - Demo refresh — exercise ONE/FOUR/FIVE modes (TWO/THREE optional in demo).
+
+- **Wave 7: Closeout.**
+  - LOC checkpoint (estimated +1300-1500 LOC vs. ~911 prior) — flag identity guardrail if exceeded materially.
+  - CHANGELOG entries per DOC-04.
+
+### Pre-plan-phase recommendations (audit-sourced)
+
+1. **Spike 004 — ONE-mode sub-region anchoring** (recommended before plan execution). Spikes 001-003 covered decoder feasibility, NOT synthesis-from-a-single-source-tile. Open question: "where in slot 0 do the corners / edges / fill live, and how are sub-rects extracted?" Either run a spike to lock the math or have plan-phase pin it down with explicit justification.
+
+2. **Collision-polygon transform spec** — the polygon-copy step in TETRA-SYNTH-06 needs a sketch in the plan: each polygon is a `Vector2[]`; rotations and flips applied via `Transform2D` or per-vertex math; sub-region clipping for ONE/TWO/THREE modes where the synthesized tile uses only part of slot 0's polygon area. Don't let the executor discover this mid-implementation.
+
+3. **Phase 2 sub-wave structure or 2.0/2.5 split** — Phase 2 is now ~2× original scope (33 of 58 reqs, 17 success criteria, 7 waves). Plan-phase should decide upfront whether the wave breakdown above is sufficient or whether further splitting is warranted (e.g., a Phase 2.0 "architectural simplification" + Phase 2.5 "4 native layouts + asset relocation" split).
 
 ### What this means for the Phase 2 planner
 

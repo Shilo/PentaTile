@@ -35,15 +35,15 @@ The original v0.2 feature pillars (Y-axis variation, top tiles, non-rotating til
 
 **Depends on**: Nothing (first phase).
 
-**Requirements**: CONTRACT-01, CONTRACT-02, CONTRACT-03, CONTRACT-04, CONTRACT-05, LAYOUT-01, LAYOUT-02, LAYOUT-03, LAYOUT-04, LAYOUT-05, TETRA-01, TETRA-02, TETRA-03, PREVIEW-01 (the `template_image` Texture2D field renders inline; the consumer-side fallback routing lands in Phase 4)
+**Requirements (residual, after Phase 2 supersession)**: LAYOUT-01, LAYOUT-02, LAYOUT-05 — the 3 base-layout virtuals + `_pack_alternative()` helper that Phase 2 inherits unchanged. *Originally also covered: CONTRACT-01..05 (now deleted in Phase 2 LAYER-01..03), TETRA-01..03 (now reworked in Phase 2 with merged `TetraTileLayoutTetra` + new slot ordering), LAYOUT-03/04 (now revised in Phase 2 — bitmask_template rename, AtlasSlot field deletion), PREVIEW-01 (now revised in Phase 2 — bitmask_template rename). See traceability table for current status of these IDs.*
 
-**Success Criteria** (what must be TRUE):
-1. Setting `atlas_contract` to the bundled default (Tetra Horizontal layout) on the demo scene produces visuals bit-identical to v0.1 (visual regression: side-by-side screenshot of the same painted layout matches pixel-for-pixel for all 16 mask states).
-2. Leaving `atlas_contract = null` on a v0.1-style scene produces visuals bit-identical to v0.1 (the hardcoded fallback path renders the canonical 4-tile atlas correctly).
-3. Reassigning `atlas_contract` to the same Resource value triggers zero rebuilds (idempotence guard verified by counting `_queue_rebuild` calls in a debug build).
-4. Editing a property on a connected `TetraTileAtlasContract` triggers exactly one rebuild per edit (no signal storm — `Resource.changed` is connected once, disconnected before reassignment).
-5. The TetraTileLayout base class can be subclassed; instances of `TetraTileLayoutTetraHorizontal` / `Vertical` appear correctly in the inspector picker for the contract's `layout` slot.
-6. End-of-Phase-1 LOC checkpoint: `addons/tetra_tile/` total stays well under TileMapDual's surface area; logged in the phase summary.
+**Success Criteria (Phase 1, as-shipped)**:
+1. ✓ The TetraTileLayout base class can be subclassed; instances of `TetraTileLayoutTetraHorizontal` / `Vertical` appear correctly in the inspector picker for the contract's `layout` slot.
+2. ✓ Setting `atlas_contract` to the bundled default produces visuals bit-identical to v0.1 (verified at Phase 1 close, 26/26 tests passing).
+3. ✓ Idempotence guard + signal-storm protection on the contract setter (verified at Phase 1 close).
+4. ✓ End-of-Phase-1 LOC checkpoint: logged in the phase summary; no LOC explosion.
+
+> Phase 1 is shipped but **partially superseded by Phase 2** (8 of its 14 reqs are reopened). The successes above remain factual records of what Phase 1 delivered; the reopened reqs (CONTRACT-*, TETRA-01..03, LAYOUT-03/04, PREVIEW-01) are tracked in Phase 2's scope.
 
 **Plans**: 5 plans
 Plans:
@@ -70,7 +70,7 @@ This phase supersedes Phase 1's CONTRACT-* (deleted), separate Tetra* classes (m
 
 **Depends on**: Phase 1 (layout dispatch foundation; Phase 2 modifies but doesn't replace it).
 
-**Requirements**: NATIVE-01..03, MIN3x3-01, LAYER-01..03, LAYOUT-03/04/06/07, TETRA-01..03, TETRA-SYNTH-01..12, PREVIEW-01..02, TEMPLATE-01/03/04.
+**Requirements**: NATIVE-01..03, MIN3x3-01, LAYER-01..05, LAYOUT-03/04/06/07, TETRA-01..03, TETRA-SYNTH-01..12, PREVIEW-01..02, TEMPLATE-01/03/04.
 
 **Success Criteria** (what must be TRUE):
 1. DualGrid16 layout, with a 16-tile authored atlas, paints all 16 mask states correctly (corner-mask TL=1/TR=2/BL=4/BR=8).
@@ -88,6 +88,8 @@ This phase supersedes Phase 1's CONTRACT-* (deleted), separate Tetra* classes (m
 13. **Synthesis collision support**: source tile collision/occlusion/navigation polygons copied to synthesized tiles with appropriate transforms. Animation/custom-data/probability/y-sort NOT copied (documented as a layout-choice tradeoff).
 14. **Bundled PNGs co-located**: `addons/tetra_tile/layouts/tetra_tile_layout_tetra/{one,two,three,four,five}_{horizontal,vertical}.png` (10 PNGs) + `addons/tetra_tile/layouts/tetra_tile_layout_<slug>.png` (4 single-variant PNGs for DualGrid16, Wang2Edge, Wang2Corner, Min3x3). Existing `templates/` folder deleted. Bitmask generator script updated to produce new structure.
 15. **`get_fallback_tile_set()` virtual** on `TetraTileLayout` base class returns a runtime-generated TileSet from the layout's `bitmask_template` (the SAME image that's the inspector preview — single image, both roles). No `.tres` fallback files needed.
+16. **Demo scene loads cleanly after Wave 2** (LAYER-04). `addons/tetra_tile/demo/tetra_tile_demo.tscn` is rebound from `atlas_contract = ExtResource(default_horizontal.tres)` to the new `layout: TetraTileLayout` API atomically with the contract deletion. Wave 2 acceptance criterion — non-skippable.
+17. **Phase 1 verification suite migrated** (LAYER-05). The 26/26 tests at `.planning/phases/01-contract-skeleton-tetra-layouts/01-VERIFICATION.md` reference `atlas_contract` and the deleted `TetraTileLayoutTetraHorizontal` / `Vertical` class names. Phase 2 Wave 1 migrates them to the new API; new tests added for TWO/THREE/FIVE modes + AUTO_STRIP. Don't let the planner assume Phase 1 tests just keep passing.
 
 **Plans**: TBD
 
@@ -175,18 +177,18 @@ Phases execute in numeric order: 1 → 2 → 3 → 3.5 → 4 → 5
 
 ## Coverage
 
-All 56 v1 requirements mapped to exactly one phase. No orphans, no duplicates.
+All 58 v1 requirements mapped to exactly one phase. No orphans, no duplicates.
 
 | Phase | Requirements (count) |
 |-------|----------------------|
 | 1. Contract Skeleton + Tetra Layouts (residual) | LAYOUT-01, LAYOUT-02, LAYOUT-05 (3) |
-| 2. Native Layouts + Architectural Simplification | NATIVE-01..03, MIN3x3-01, LAYER-01..03, LAYOUT-03/04/06/07, TETRA-01..03, TETRA-SYNTH-01..12, PREVIEW-01..02, TEMPLATE-01/03/04 (30) |
+| 2. Native Layouts + Architectural Simplification | NATIVE-01..03, MIN3x3-01, LAYER-01..05, LAYOUT-03/04/06/07, TETRA-01..03, TETRA-SYNTH-01..12, PREVIEW-01..02, TEMPLATE-01/03/04 (33) |
 | 3. TileBitTools-Decoded Layouts | TBT-01..04, TEMPLATE-02, DOC-05 (6) |
 | 3.5. PixelLab Layouts | PIXLAB-01..04 (4) |
 | 4. Fallback Routing | PREVIEW-03, PREVIEW-04 (2) |
 | 5. Demo Refresh + Documentation + Release | DEMO-01..03, DOC-01..04, REL-01..03 (10) |
-| **(Pre-shipped flat templates) → restructured in Phase 2** | (existing PNGs migrated to co-located bundles next to layout `.gd` files) |
-| **Total** | **56 / 56** |
+| **(Pre-shipped flat templates) → restructured in Phase 2 (TEMPLATE-01)** | (existing PNGs migrated to co-located bundles next to layout `.gd` files) |
+| **Total** | **58 / 58** |
 
 > **2026-04-26 architectural pivots** (locked after fourth iteration of design refinement):
 > - `TetraTileAtlasContract` deleted (CONTRACT-01..05 retired); `layout: TetraTileLayout` directly on `TetraTileMapLayer` (LAYER-01..03)

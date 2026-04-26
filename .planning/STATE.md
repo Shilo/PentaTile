@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
 status: planning
-stopped_at: Phase 2 context gathered (Tetra5 append + overlay-skip refactor)
+stopped_at: Phase 2 design locked (5-mode progressive Tetra + overlay deletion + contract deletion + asset co-location; ready for /gsd-plan-phase 2)
 last_updated: "2026-04-26T08:19:53.959Z"
 last_activity: 2026-04-26
 progress:
@@ -11,7 +11,7 @@ progress:
   completed_phases: 1
   total_plans: 5
   completed_plans: 5
-  percent: 100
+  percent: 17
 ---
 
 # Project State
@@ -94,8 +94,13 @@ None yet.
 
 ### Blockers/Concerns
 
-- **Phase 3 TBT slot-table transcription:** the load-bearing data work for Phase 3. Each `.tres` from TBT needs to be read and translated into a TetraTile mask-to-slot table; mistakes here corrupt rendering for that layout. Mitigated by visual regression on the demo for each shipped layout.
-- **`atlas_layout` enum deprecation:** v0.1's `atlas_layout: AtlasLayout` enum (`HORIZONTAL` / `VERTICAL`) is replaced by the explicit `TetraTileLayoutTetraHorizontal` / `Vertical` Resources. Existing scenes using the enum need migration; flagged for CHANGELOG.
+- **Phase 3 TBT slot-table transcription:** the load-bearing data work for Phase 3. Each `.tres` from TBT needs to be read and translated into a mask-to-slot table; mistakes here corrupt rendering for that layout. Mitigated by visual regression on the demo for each shipped layout.
+- **Demo scene rebinding in Wave 2:** `addons/tetra_tile/demo/tetra_tile_demo.tscn` references `contracts/default_horizontal.tres` and sets `atlas_contract = ExtResource(...)`. Both get deleted in Phase 2 Wave 2. The demo will fail to load between waves unless updated atomically with the contract deletion. Wave 2 acceptance criterion: "demo loads cleanly after contract deletion."
+- **Phase 1 verification suite (`01-VERIFICATION.md` 26/26 tests) references `atlas_contract` and the old class names** (`TetraTileLayoutTetraHorizontal` / `Vertical`). Phase 2 Wave 1 must migrate these tests to the new `layout: TetraTileLayout` + `TetraTileLayoutTetra(axis=...)` API. Don't let the planner assume Phase 1 tests just keep passing.
+- **ONE-mode sub-region anchoring (TETRA-SYNTH-05) is the riskiest synthesis path.** Spikes 001-003 covered decoder feasibility, NOT synthesis-from-a-single-source-tile. The geometric spec — "where in slot 0 do the corners / edges / fill live, and how are sub-rects extracted?" — is not yet answered. Recommend inserting a Spike 004 before plan execution OR pinning down the anchoring math during plan-phase.
+- **Collision-polygon transform math (TETRA-SYNTH-06)** for synthesis is non-trivial: copying a source-tile collision polygon to a synthesized OppositeCorners tile requires applying a rotation/flip transform to a `Vector2[]` of polygon vertices. Worth a sketch in the plan before executor hits it.
+- **`_DEFAULT_LAYOUT` static singleton** in `tetra_tile_map_layer.gd:193-198` allocates `TetraTileLayoutTetraHorizontal.new()` — a class being deleted in Wave 3. LAYER-02 implies the default-layout path goes away, but no wave explicitly handles it. Wave 2 should call out the cleanup as a non-skippable task.
+- **Phase 2 scope is now ~2× original Phase 2** (31 of 56 reqs, 15 success criteria, ~7 waves). Worth deciding upfront in plan-phase whether Phase 2 needs a sub-wave structure or a Phase 2.0/2.5 split. Estimated LOC will significantly exceed the prior ~911 figure (more like 1300-1500). Identity guardrail audit recommended at end of Phase 2.
 
 ## Deferred Items
 

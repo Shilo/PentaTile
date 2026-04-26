@@ -30,16 +30,16 @@ Painting tiles with the native `TileMapLayer` API produces correct dual-grid aut
 
 <!-- This milestone: layout library — every popular autotiling atlas convention is a pluggable Resource. -->
 
-- [ ] Atlas contract Resource (`TetraTileAtlasContract`) hosting a typed `layout: TetraTileLayout` reference
-- [ ] `TetraTileLayout` base class with virtual `compute_mask` + `mask_to_atlas` dispatch
-- [ ] Tetra Horizontal + Tetra Vertical layouts (v0.1 inheritance, ship as the addon's two defaults)
-- [ ] DualGrid16 + Wang2Edge + Wang2Corner layouts (TetraTile-native conventions)
+- [ ] `TetraTileMapLayer.layout: TetraTileLayout` exported directly (no contract wrapper — the original `TetraTileAtlasContract` plan was overengineered and is deleted in Phase 2)
+- [ ] `TetraTileLayout` base class with virtual `compute_mask`, `mask_to_atlas`, `get_fallback_tile_set` dispatch
+- [ ] Single merged `TetraTileLayoutTetra` class with `axis: Axis` and `tile_count: TileCountMode` enums (auto-detect of 1/2/3/4/5 source tiles per strip; ONE through FIVE progressive synthesis modes)
+- [ ] DualGrid16 + Wang2Edge + Wang2Corner + Min3x3 layouts (TetraTile-native conventions)
 - [ ] Blob47Godot + TilesetterWang15 + TilesetterBlob47 layouts (slot tables transcribed from TileBitTools, MIT, attributed)
-- [ ] Per-layout `template_image: Texture2D` rendered as inline inspector preview
-- [ ] Per-layout `fallback_tile_set: TileSet` used when `TetraTileMapLayer.tile_set` is null (instant prototyping)
+- [ ] PixelLab Top-down + Side-scroller layouts
+- [ ] Per-layout `bitmask_template: Texture2D` rendered inline as inspector preview AND used as the prototyping fallback (single image per layout, both roles)
 - [ ] Per-layout `description: String` (multiline, inspector-editable) plus class-level `##` doc-comment
-- [ ] Greyboxed template PNGs for every shipped layout (5 already shipped; 3 pending TBT slot-table transcription)
-- [ ] Updated demo scene showcasing all 8 layouts (runtime switching or side-by-side)
+- [ ] Bundled bitmask PNGs co-located next to layout `.gd` files (`addons/tetra_tile/layouts/tetra_tile_layout_tetra/{one,two,three,four,five}_{horizontal,vertical}.png` + flat siblings for single-variant layouts)
+- [ ] Updated demo scene showcasing layout switching across the library
 - [ ] README "Layouts" section + "Upgrading from 0.1.x" + "Authoring a Custom Layout"
 - [ ] `addons/tetra_tile/ATTRIBUTION.md` crediting TileBitTools (MIT)
 - [ ] GitHub release tagged `v0.2.0`

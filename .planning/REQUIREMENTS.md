@@ -14,8 +14,10 @@ Requirements for v0.2.0. Each maps to roadmap phases via the Traceability sectio
 Phase 2 architectural simplification (2026-04-26): the `TetraTileAtlasContract` wrapper class is removed entirely; `TetraTileMapLayer` exposes `layout: TetraTileLayout` directly. The contract was overengineered for the actual scope (its `version: int` field had no consumer, and `variation_seed` is now in v2 backlog with the rest of variation work). Per the no-forward-compat policy in [CLAUDE.md](../../CLAUDE.md), speculative versioning machinery is deleted rather than carried forward.
 
 - [ ] **LAYER-01**: `TetraTileMapLayer` exposes `@export var layout: TetraTileLayout` directly (no contract wrapper). Replaces the deleted `atlas_contract: TetraTileAtlasContract` property. Setter has idempotence guard + disconnect-before-reconnect on `layout.changed` per PITFALLS.md §5.
-- [ ] **LAYER-02**: `_resolve_slot(mask)` reads `self.layout` directly (one fewer hop than the prior contract chain). When `layout == null`, the layer renders nothing (no v0.1 hardcoded fallback — Phase 1's complete refactor + breaking-changes policy means there's no v0.1 path to preserve).
-- [ ] **LAYER-03**: `TetraTileAtlasContract` class file (`addons/tetra_tile/tetra_tile_atlas_contract.gd`) deleted. Bundled `.tres` files in `addons/tetra_tile/contracts/` (`default_horizontal.tres`, `default_vertical.tres`, `tetra_horizontal_default.tres`, `tetra_vertical_default.tres`) deleted with the folder. The original v0.1 reference `addons/tetra_tile/tetra_tile_template.png` deleted (replaced by per-layout templates under `addons/tetra_tile/templates/[layout_name]/`).
+- [ ] **LAYER-02**: `_resolve_slot(mask)` reads `self.layout` directly (one fewer hop than the prior contract chain). When `layout == null`, the layer renders nothing (no v0.1 hardcoded fallback — Phase 1's complete refactor + breaking-changes policy means there's no v0.1 path to preserve). The static `_DEFAULT_LAYOUT` singleton at `tetra_tile_map_layer.gd:193-198` is also deleted as part of this requirement (it allocated a class that no longer exists).
+- [ ] **LAYER-03**: `TetraTileAtlasContract` class file (`addons/tetra_tile/tetra_tile_atlas_contract.gd`) deleted. Bundled `.tres` files in `addons/tetra_tile/contracts/` (`default_horizontal.tres`, `default_vertical.tres`, plus any `tetra_*_default.tres` files present) deleted with the folder. The original v0.1 reference `addons/tetra_tile/tetra_tile_template.png` deleted. The `addons/tetra_tile/templates/` folder is also deleted entirely (per LAYOUT-07: bundled bitmask PNGs co-locate next to layout `.gd` files under `addons/tetra_tile/layouts/`).
+- [ ] **LAYER-04**: Demo scene `addons/tetra_tile/demo/tetra_tile_demo.tscn` updated atomically with the contract deletion: remove the `[ext_resource ... contracts/default_horizontal.tres]` reference and replace `atlas_contract = ExtResource(...)` with `layout = ExtResource(...)` pointing at a bundled `TetraTileLayoutTetra` `.tres` (or `null` if no fallback `.tres` ships). Demo must load cleanly in the Godot editor after Wave 2 lands; this is a non-skippable Wave 2 acceptance criterion.
+- [ ] **LAYER-05**: Phase 1's verification suite (`.planning/phases/01-contract-skeleton-tetra-layouts/01-VERIFICATION.md`, 26/26 tests passing as of Phase 1 close) references `atlas_contract`, `TetraTileLayoutTetraHorizontal`, `TetraTileLayoutTetraVertical`, and the old property names. Phase 2 Wave 1 migrates these tests to the new API (`layout: TetraTileLayout`, `TetraTileLayoutTetra(axis=…)`, `bitmask_template`, etc.). Test count may grow as new modes (TWO/THREE) gain coverage. Migrated tests live alongside Phase 2's new tests; Phase 1's 01-VERIFICATION.md is marked as historical record.
 
 ### TetraTileLayout Base Class (LAYOUT)
 
@@ -75,8 +77,9 @@ Auto-detection reads `TileSetAtlasSource.get_atlas_grid_size()` along the strip 
   1. Read atlas axis size: `get_atlas_grid_size().x` (HORIZONTAL) or `.y` (VERTICAL)
   2. Map axis size → mode: `1 → ONE`, `2 → TWO`, `3 → THREE`, `4 → FOUR`, `5 → FIVE`
   3. All strips in the atlas use the same mode (no per-strip refinement)
-  4. Other axis sizes (0, 6+) → render disabled + warning
-  5. O(1) cost — single integer compare
+  4. **Gappy-strip behavior in AUTO mode**: a strip with cells missing in the populated range (e.g., axis size 5 + slot 0/1/2/4 populated, slot 3 empty) is treated as MALFORMED for that strip. Synthesis falls back to slot 0 for the missing archetype, and `update_configuration_warnings()` fires per TETRA-SYNTH-08. Painting still proceeds (graceful degradation); the warning surfaces the issue to the artist.
+  5. Other axis sizes (0, 6+) → render disabled + warning
+  6. O(1) cost — single integer compare
 - [ ] **TETRA-SYNTH-03**: AUTO_STRIP-mode detection (per-strip):
   1. Read atlas axis size as in AUTO
   2. For each strip, count populated cells via `has_tile()` at each axis position 0..N-1
@@ -90,7 +93,8 @@ Auto-detection reads `TileSetAtlasSource.get_atlas_grid_size()` along the strip 
   - THREE: use slot 1 (Fill) + slot 2 (Border) as authored; synthesize InnerCorner + OuterCorner + OppositeCorners from slot 0
   - FOUR: use slots 1-3 as authored; synthesize OuterCorner + OppositeCorners from slot 0
   - FIVE: use slots 1-4 as authored; synthesize OuterCorner from slot 0 (the only synthesis)
-- [ ] **TETRA-SYNTH-06**: Synthesized atlas lives in an internal `TileSet` owned by `TetraTileMapLayer._primary_layer`; user's source `tile_set` is never mutated. Synthesis re-runs only when `layout`, `axis`, `tile_count`, or the source `tile_set` changes (deterministic). Source tile collision/occlusion/navigation polygons are copied to synthesized tiles with appropriate transforms. Animation frames, custom data layers, probability weights, and Y-sort origin on synthesized tiles are explicitly NOT supported in v0.2 (use a non-Tetra layout if needed).
+  - **Sub-region anchoring spec is a known unknown** — the geometric question "where in slot 0 do the corners / edges / fill live, and how are sub-rects extracted?" is NOT yet answered. Spikes 001-003 covered decoder feasibility, NOT synthesis-from-a-single-source-tile. **Recommend Spike 004** before plan execution to lock the anchoring math; alternatively, the planner pins this down during plan-phase as a load-bearing decision (with justification for the chosen anchoring convention).
+- [ ] **TETRA-SYNTH-06**: Synthesized atlas lives in an internal `TileSet` owned by `TetraTileMapLayer._primary_layer`; user's source `tile_set` is never mutated. Synthesis re-runs only when `layout`, `axis`, `tile_count`, or the source `tile_set` changes (deterministic). Source tile collision/occlusion/navigation polygons are copied to synthesized tiles with appropriate transforms — **plan-phase must spec the polygon-transform math** (each polygon is a `Vector2[]`; rotations and flips applied via `Transform2D` or per-vertex math; sub-region clipping for ONE/TWO/THREE modes where the synthesized tile uses only part of slot 0's polygon area). Worth a sketch before the executor hits it. Animation frames, custom data layers, probability weights, and Y-sort origin on synthesized tiles are explicitly NOT supported in v0.2 (use a non-Tetra layout if needed).
 - [ ] **TETRA-SYNTH-07**: `TetraTileMapLayer` removes `_overlay_layer`, `_OVERLAY_LAYER_NAME`, `_paint_overlay_for_slot()`, and `AtlasSlot.diagonal_complement_atlas_coords` field. After Phase 2, `TetraTileMapLayer` has exactly ONE child visual layer (`_primary_layer`).
 - [ ] **TETRA-SYNTH-08**: `update_configuration_warnings()` warns on (per Phase 1 D-15 pattern):
   - Atlas axis is 0 or 6+ in AUTO/AUTO_STRIP mode
@@ -104,7 +108,13 @@ Auto-detection reads `TileSetAtlasSource.get_atlas_grid_size()` along the strip 
   - `five_horizontal.png`, `five_vertical.png`
 - [ ] **TETRA-SYNTH-10**: Single PNG per layout serves as BOTH the bitmask reference (visible in inspector) AND the prototyping fallback art. No separate `atlas.png` / `bitmask.png` split. The `get_fallback_tile_set()` method builds a runtime TileSet directly from this single PNG with axis-grid configuration matching the mode.
 - [ ] **TETRA-SYNTH-11**: Demo scene (or sub-scenes) demonstrates ONE/FOUR/FIVE modes at minimum (TWO/THREE optional in demo). Runtime drag-paint (`demo_runtime_painter.gd`) works across all modes without script changes.
-- [ ] **TETRA-SYNTH-12**: FOUR mode visual regression — paint a v0.1-style scene under FOUR mode, hash-compare rendered output against a checked-in baseline. Used to detect synthesis regressions across future refactors. (Note: NOT bit-identical to literal v0.1 overlay rendering since the slot ordering differs — slot 3 is now InnerCorner, not OuterCorner. The baseline is a fresh capture under the new convention.)
+- [ ] **TETRA-SYNTH-12**: FOUR mode visual regression. Captured baseline (NOT v0.1 bit-identity since slot ordering changed — slot 3 is now InnerCorner, was OuterCorner in v0.1). Baseline-capture protocol:
+  1. **What's captured**: render output of a fixed test scene (a 5×5 painted region with each mask state 0..15 represented at known coords) using a checked-in `TetraTileLayoutTetra(axis=HORIZONTAL, tile_count=FOUR)` Resource pointing at a fixed test atlas.
+  2. **How it's captured**: `Viewport.get_texture().get_image().get_data().hash()` (single int per render) OR `Image.save_png()` to a baseline file (visual eyeball + structural diff). Planner picks one — int hash is cheaper and stricter.
+  3. **Where the baseline lives**: `addons/tetra_tile/tests/baselines/four_mode_5x5.<hash|png>` (path TBD by planner).
+  4. **When it's captured**: once, at the end of Phase 2 Wave 7, after synthesis is verified visually correct. Subsequent runs assert hash-equality against this baseline.
+  5. **What "regression blocks merge" means**: if a future commit changes the hash, the test fails and CI (or manual check) blocks the merge until either (a) the regression is fixed, or (b) the baseline is intentionally updated with a justification commit.
+  6. Planner is free to refine the protocol but must answer all 5 points before implementation.
 
 ### TileBitTools-Decoded Layouts (TBT)
 
@@ -156,7 +166,7 @@ Greyboxed silhouette PNGs the artist paints over.
 - [ ] **DOC-01**: README has a "Layouts" section listing all 8 built-in layouts with names, descriptions, atlas grids, and tile counts.
 - [ ] **DOC-02**: README has an "Upgrading from 0.1.x" section documenting the bundled-default contract as the primary migration path.
 - [ ] **DOC-03**: README has an "Authoring a Custom Layout" section showing how to subclass `TetraTileLayout` (marked experimental).
-- [ ] **DOC-04**: `CHANGELOG.md` entry documents all breaking changes for v0.2.0 — `TetraTileAtlasContract` deletion (replaced by direct `layout: TetraTileLayout` on the layer), deprecated `atlas_layout` enum, `template_image` → `bitmask_template` rename, `fallback_tile_set` no longer @export'd, `decoder_image` deletion, `TetraTileLayoutTetraHorizontal`/`Vertical` merged into `TetraTileLayoutTetra`, overlay layer removal, all template PNG path changes.
+- [ ] **DOC-04**: `CHANGELOG.md` entry documents all breaking changes for v0.2.0 — `TetraTileAtlasContract` deletion (replaced by direct `layout: TetraTileLayout` on the layer), `template_image` → `bitmask_template` rename, `fallback_tile_set` no longer @export'd, `decoder_image` deletion, `TetraTileLayoutTetraHorizontal`/`Vertical` merged into `TetraTileLayoutTetra`, new slot ordering (`0=IsolatedCell, 1=Fill, 2=Border, 3=InnerCorner, 4=OppositeCorners`; OuterCorner now implicit), 5-mode `tile_count` enum (ONE/TWO/THREE/FOUR/FIVE), AUTO_STRIP detection, overlay layer removal, all template PNG path changes (templates folder deleted; PNGs co-located in `layouts/`).
 - [ ] **DOC-05**: `addons/tetra_tile/ATTRIBUTION.md` exists and credits TileBitTools (covered by TBT-04 but called out here as a doc deliverable).
 
 ### Release (REL)
@@ -254,8 +264,10 @@ Which phases cover which requirements. Empty initially — populated by `gsd-roa
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | LAYER-01 | 2 | Pending (replaces deleted CONTRACT-01) |
-| LAYER-02 | 2 | Pending (replaces deleted CONTRACT-03/04) |
+| LAYER-02 | 2 | Pending (replaces deleted CONTRACT-03/04 + `_DEFAULT_LAYOUT` cleanup) |
 | LAYER-03 | 2 | Pending (file/folder deletions) |
+| LAYER-04 | 2 | Pending (demo scene rebind — Wave 2 acceptance criterion) |
+| LAYER-05 | 2 | Pending (Phase 1 verification suite migration — Wave 1) |
 | LAYOUT-01 | 1 | Complete |
 | LAYOUT-02 | 1 | Complete |
 | LAYOUT-03 | 2 | Pending (rename + cleanup; was Phase 1 Complete, now revised in Phase 2) |
@@ -294,7 +306,7 @@ Which phases cover which requirements. Empty initially — populated by `gsd-roa
 | PREVIEW-02 | 2 | Pending (now `get_fallback_tile_set()` codegen, no bundled .tres) |
 | PREVIEW-03 | 4 | Pending |
 | PREVIEW-04 | 4 | Pending |
-| TEMPLATE-01 | Pre-shipped | Pending (already shipped: 5/8 PNGs in commit e86036f) |
+| TEMPLATE-01 | 2 | Pending (5 source PNGs shipped flat in commit e86036f need migration to new co-located scheme; new TWO/THREE/FIVE Tetra PNGs added; total 14 bundled PNGs at end of Phase 2) |
 | TEMPLATE-02 | 3 | Pending |
 | TEMPLATE-03 | Pre-shipped | Pending |
 | TEMPLATE-04 | 2 | Pending |
@@ -311,8 +323,8 @@ Which phases cover which requirements. Empty initially — populated by `gsd-roa
 | REL-03 | 5 | Pending |
 
 **Coverage:**
-- v1 requirements: 56 total (39 original − 5 CONTRACT (deleted) + 6 added Phase 1 discuss + 12 TETRA-SYNTH-* (5 progressive modes ONE→FIVE + AUTO/AUTO_STRIP detection + per-layout PNG conventions) + 3 LAYER-* (replace contract) + 2 LAYOUT-06/07 (`get_fallback_tile_set()` virtual + co-located bundled PNGs) − 1 VAR-PIXEL-01 (moved to v2 backlog with VAR-01))
-- Mapped to phases: 56 (after this update)
+- v1 requirements: 58 total (39 original − 5 CONTRACT (deleted) + 6 added Phase 1 discuss + 12 TETRA-SYNTH-* (5 progressive modes ONE→FIVE + AUTO/AUTO_STRIP detection + per-layout PNG conventions) + 5 LAYER-* (replace contract; LAYER-04 demo rebind, LAYER-05 Phase 1 test migration added during cleanup audit 2026-04-26) + 2 LAYOUT-06/07 (`get_fallback_tile_set()` virtual + co-located bundled PNGs) − 1 VAR-PIXEL-01 (moved to v2 backlog with VAR-01))
+- Mapped to phases: 58 (after this update)
 - Unmapped: 0
 - 2026-04-26 architectural pivots (locked after fourth iteration):
   - **Slot ordering**: `0=IsolatedCell, 1=Fill, 2=Border, 3=InnerCorner, 4=OppositeCorners`. OuterCorner is implicit (synthesized from slot 0's corners across all modes).
