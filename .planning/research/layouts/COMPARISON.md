@@ -347,3 +347,60 @@ Based on the research, the recommended built-in library:
 ---
 
 *Reference compiled: 2026-04-25 from TAXONOMY.md, EDITORS.md, GODOT_TERRAIN.md, MASK_UNIFICATION.md.*
+
+---
+
+## Corrections Log (2026-04-25)
+
+After publishing this file, two follow-up audits ([`TILESETTER_AND_GODOT.md`](TILESETTER_AND_GODOT.md) and [`TILEBITTOOLS.md`](TILEBITTOOLS.md)) corrected several claims in the sections above. The corrections are recorded here rather than rewritten inline so the original reasoning trail is preserved.
+
+### Tilesetter Wang is 15 tiles, not 16
+
+The "Tilesetter Wang Set = 16 tiles" claim came from secondary sources. TileBitTools' MIT-licensed `tilesetter_wang.tres` (which encodes Tilesetter's actual export) shows **15 tiles in a 5×3 atlas**, with the "stray fill tile" handled separately. The new layout-library naming reflects this: `TetraTileLayoutTilesetterWang15`.
+
+### Tilesetter Blob is 11×5 with sub-block gaps, not 7×8
+
+The "Tilesetter Blob = 7×8 grid with 9 trailing unused cells" diagram in this file was wrong — it was inferred from CR31's reference, not from Tilesetter's actual output. TBT's `tilesetter_blob.tres` confirms an **11-column × 5-row layout with discrete sub-block gaps** (matching the user's reference images). The exact slot diagram is in [`TILEBITTOOLS.md`](TILEBITTOOLS.md).
+
+### Tilesetter slot tables are no longer "pending empirical fingerprinting"
+
+This file said: *"Slot-to-mask mapping is empirical. The exact mapping for each of the 47 slots requires painting a fingerprint atlas in Tilesetter and observing which mask lands where."* That step is no longer needed — TileBitTools has already decoded both Tilesetter slot tables under the MIT license. TetraTile transcribes them with attribution rather than re-fingerprinting.
+
+### Drop Excalibur/jaconir Blob 47
+
+The user's pivot is "support what people actually use in Godot." Excalibur is a JavaScript engine; the jaconir convention is web-game indie. Neither has meaningful Godot adoption. **Excalibur/jaconir is removed from the layout library.**
+
+### Drop Stormcloak / OpenGameArt CR31 community Blob variants
+
+Lower-traffic conventions with no demonstrated Godot adoption. Removed from the library.
+
+### Locked: Godot Blob 47 = TileBitTools convention
+
+The "Godot community blob template" the user referred to is the TileBitTools convention. Renamed: `TetraTileLayoutBlob47Godot` (was previously `Blob47GodotCommunity`).
+
+### Match Sides skipped
+
+Godot's `MATCH_SIDES` mask semantics are disputed in the engine ([issue #79411](https://github.com/godotengine/godot/issues/79411)). Skipped for v0.2; documented as such.
+
+### RPG Maker A1/A2/A3/A4 deferred
+
+Subtile composition pipeline doesn't fit the unified `_update_cells` dispatch. Architecturally reserved for v0.3+ per [`MASK_UNIFICATION.md`](MASK_UNIFICATION.md). No change from earlier — included here for completeness.
+
+### Final v0.2 layout-library lineup (after corrections)
+
+| Resource | Source | Tile count | Atlas shape |
+|---|---|---|---|
+| `TetraTileLayoutTetraHorizontal` | TetraTile native (v0.1 inheritance) | 4 | 4×1 |
+| `TetraTileLayoutTetraVertical` | TetraTile native | 4 | 1×4 |
+| `TetraTileLayoutDualGrid16` | TetraTile native | 16 | 4×4 |
+| `TetraTileLayoutWang2Edge` | CR31 standard | 16 | 4×4 NESW |
+| `TetraTileLayoutWang2Corner` | CR31 standard | 16 | 4×4 NE/SE/SW/NW |
+| `TetraTileLayoutBlob47Godot` | decoded from TileBitTools (MIT, attributed) | 47 | TBT convention |
+| `TetraTileLayoutTilesetterWang15` | decoded from TileBitTools `tilesetter_wang.tres` | 15 | 5×3 + stray fill |
+| `TetraTileLayoutTilesetterBlob47` | decoded from TileBitTools `tilesetter_blob.tres` | 47 | 11×5 with gaps |
+
+Each Resource also carries a `template_image: Texture2D`, a `fallback_tile_set: TileSet`, and a `description: String` for inspector hinting (per the v0.2 design).
+
+---
+
+*Corrections appended: 2026-04-25 after TILESETTER_AND_GODOT.md and TILEBITTOOLS.md audits.*
