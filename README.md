@@ -1,10 +1,10 @@
-# TetraTile ✨
+# 🍀 TetraTile
 
-## ✨ A Minimalist 4-Tile Autotiling Solution
+Lightweight **autotiling addon** for Godot designed to simplify tileset creation by using a 4-tile template instead of the traditional 47-tile blob set. It uses a **Dual-Grid logic engine** to generate complex tiling visuals from a minimal set of source assets.
 
-**TetraTile** is a lightweight **autotiling addon** for Godot 4.6 designed to simplify tileset creation by using a 4-tile template instead of the traditional 47-tile blob set. It uses a **Dual-Grid logic engine** to generate complex tiling visuals from a minimal set of source assets.
+By utilizing the Dual Grid concept, TetraTile takes four base tiles, **Fill, Inner Corner, Border, and Outer Corner**, and expands them into a complete tileset with the same visual coverage as a traditional 47-tile set, but with significantly reduced asset requirements.
 
-By utilizing the Dual Grid concept, TetraTile takes four base tiles—**Fill, Inner Corner, Border, and Outer Corner**—and expands them into a complete tileset with the same visual coverage as a traditional 47-tile set, but with significantly reduced asset requirements.
+![Tetra Horizontal Tileset Template](addons\tetra_tile\templates\tetra_horizontal.png)
 
 ---
 
@@ -48,17 +48,17 @@ The two disconnected diagonal states are handled by composing two transformed ou
 
 While [TileMapDual](https://github.com/pablogila/TileMapDual) is a established solution for Dual Grid systems in Godot, **TetraTile** focuses on minimizing the technical overhead and asset requirements for standard orthogonal grids.
 
-| Area | TetraTile | TileMapDual |
-| --- | --- | --- |
-| Public node | `TetraTileMapLayer` | `TileMapDual` plus supporting addon classes |
-| Drawing API | Native `TileMapLayer.set_cell()` / editor painting | Native painting plus custom helpers such as `draw_cell(cell, terrain)` |
-| Update hook | `_update_cells(coords, forced_cleanup)` directly recomputes affected masks | `_update_cells()` forwards into display/cache/watcher systems |
-| Terrain model | Binary occupied/empty terrain for V1 | Terrain peering bits and terrain rules |
-| Tile requirement | Four source tiles, with two-layer composition for diagonals | 15-16 tile dual-grid/Wang-style sets |
-| Internal state | No persistent coordinate cache; direct 4-bit sampling | Tile caches, terrain rule tries, watchers, signals |
-| TileSet setup | Strict atlas order, no terrain metadata required | Terrain metadata and optional editor autotile setup |
-| Grid scope | Square orthogonal V1 | Broader grid-shape handling |
-| Collisions | Generated visual layers can use TileSet physics polygons | Display layers copy collision-related properties from the parent |
+| Area             | TetraTile                                                                  | TileMapDual                                                            |
+| ---------------- | -------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Public node      | `TetraTileMapLayer`                                                        | `TileMapDual` plus supporting addon classes                            |
+| Drawing API      | Native `TileMapLayer.set_cell()` / editor painting                         | Native painting plus custom helpers such as `draw_cell(cell, terrain)` |
+| Update hook      | `_update_cells(coords, forced_cleanup)` directly recomputes affected masks | `_update_cells()` forwards into display/cache/watcher systems          |
+| Terrain model    | Binary occupied/empty terrain for V1                                       | Terrain peering bits and terrain rules                                 |
+| Tile requirement | Four source tiles, with two-layer composition for diagonals                | 15-16 tile dual-grid/Wang-style sets                                   |
+| Internal state   | No persistent coordinate cache; direct 4-bit sampling                      | Tile caches, terrain rule tries, watchers, signals                     |
+| TileSet setup    | Strict atlas order, no terrain metadata required                           | Terrain metadata and optional editor autotile setup                    |
+| Grid scope       | Square orthogonal V1                                                       | Broader grid-shape handling                                            |
+| Collisions       | Generated visual layers can use TileSet physics polygons                   | Display layers copy collision-related properties from the parent       |
 
 TetraTile is smaller because it focuses on a specific subset of the multi-terrain/general-grid flexibility offered by TileMapDual.
 
@@ -111,19 +111,19 @@ Use the native TileMapLayer API:
 
 Additional exported properties:
 
-| Property | Purpose |
-| --- | --- |
-| `atlas_source_id` | Atlas source to read from. `-1` uses the first source in the TileSet. |
-| `atlas_layout` | Supports horizontal 4x1 or vertical 1x4 atlas layouts. |
-| `logic_layer_opacity` | Opacity for the hidden/editable logic layer. Defaults to `0.0`. |
-| `visual_z_index_offset` | Z index applied to generated internal visual layers. |
-| `generated_collision_enabled` | Enables collisions on generated visual layers when the TileSet tiles have physics polygons. |
-| `logic_collision_enabled` | Enables collisions on the source logic layer. Defaults to `false` to avoid hidden full-cell colliders. |
+| Property                      | Purpose                                                                                                |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `atlas_source_id`             | Atlas source to read from. `-1` uses the first source in the TileSet.                                  |
+| `atlas_layout`                | Supports horizontal 4x1 or vertical 1x4 atlas layouts.                                                 |
+| `logic_layer_opacity`         | Opacity for the hidden/editable logic layer. Defaults to `0.0`.                                        |
+| `visual_z_index_offset`       | Z index applied to generated internal visual layers.                                                   |
+| `generated_collision_enabled` | Enables collisions on generated visual layers when the TileSet tiles have physics polygons.            |
+| `logic_collision_enabled`     | Enables collisions on the source logic layer. Defaults to `false` to avoid hidden full-cell colliders. |
 
 Public helper:
 
-| Method | Purpose |
-| --- | --- |
+| Method      | Purpose                                                               |
+| ----------- | --------------------------------------------------------------------- |
 | `rebuild()` | Clears and regenerates all visual cells from the current logic cells. |
 
 ---
@@ -147,11 +147,11 @@ The demo includes:
 
 Mask bits use:
 
-| Bit | Quadrant |
-| --- | --- |
-| `1` | Top-left |
-| `2` | Top-right |
-| `4` | Bottom-left |
+| Bit | Quadrant     |
+| --- | ------------ |
+| `1` | Top-left     |
+| `2` | Top-right    |
+| `4` | Bottom-left  |
 | `8` | Bottom-right |
 
 The diagonal masks are `6` and `9`. They are drawn by placing one outer corner on the primary visual layer and the other on the internal overlay layer.
