@@ -1,6 +1,6 @@
 # 🍀 TetraTile
 
-**Just paint your tiles.** A friendly autotiling addon for Godot that takes the pain out of building tilesets: paint with Godot's normal tile tools and TetraTile fills in the corners, edges, and transitions automatically. Works with whatever atlas convention your art was made for, from the signature [**Tetra** 4-tile template](#-the-tetra-system-template) up through every [popular layout](#-supported-layouts).
+**Just paint your tiles.** Intuitive Godot autotiling addon that takes the pain out of tilesets, with no manual terrain setup needed. Supports [4-tile **Tetra** sets](#-the-tetra-system-template) and [popular layouts](#-supported-layouts). Paint with Godot's normal tools and TetraTile fills in the corners, edges, and transitions for you.
 
 <img src="addons/tetra_tile/templates/tetra_horizontal.png" width="256" alt="Tetra Horizontal Tileset Template">
 
