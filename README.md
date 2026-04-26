@@ -1,6 +1,6 @@
 # 🍀 TetraTile
 
-**Just paint your tiles.** A friendly autotiling addon for Godot that takes the pain out of building tilesets: paint with Godot's normal tile tools and TetraTile fills in the corners, edges, and transitions automatically. Works with whatever atlas convention your art was made for, from a [4-tile minimum](#-the-tetra-system-template) up through every [popular layout](#-supported-layouts).
+**Just paint your tiles.** A friendly autotiling addon for Godot that takes the pain out of building tilesets: paint with Godot's normal tile tools and TetraTile fills in the corners, edges, and transitions automatically. Works with whatever atlas convention your art was made for, from the signature [**Tetra** 4-tile template](#-the-tetra-system-template) up through every [popular layout](#-supported-layouts).
 
 <img src="addons/tetra_tile/templates/tetra_horizontal.png" width="256" alt="Tetra Horizontal Tileset Template">
 
@@ -20,7 +20,7 @@
 
 ## 🚀 Why TetraTile?
 
-- **Reduced Tile Requirements:** Creating 47 tiles for a single terrain type is a time-consuming task. TetraTile reduces this requirement to just four tiles, lowering the barrier for creating custom game art while maintaining professional results.
+- **Reduced Tile Requirements:** Creating 47 tiles for a single terrain type is a time-consuming task. TetraTile's signature **Tetra** layout reduces this requirement to just four tiles, lowering the barrier for creating custom game art while maintaining professional results.
 - **Efficient Visual Variation:** Managing only **four base tiles** allows for easier creation of **multiple variations**. Instead of redrawing dozens of tiles for a single alternative set, you can quickly iterate on the core four tiles to add organic variety and reduce repetitive patterns.
 - **Native Integration:** Built as a single-class subclass of `TileMapLayer`, TetraTile hooks directly into Godot's native API. It listens to standard drawing commands and updates the visual layers in real-time without requiring a custom drawing interface.
 
@@ -33,12 +33,14 @@ Already have tiles in a different format? No problem. TetraTile ships with a lib
 - **[Wang](https://www.boristhebrave.com/permanent/24/06/cr31/stagecast/wang/intro.html)** (2-edge & 2-corner): the classic edge/corner-color system
 - **[47-tile Blob](https://www.boristhebrave.com/2021/11/14/classification-of-tilesets/)**: the full Godot/Wang blob set
 - **[Tilesetter](https://www.tilesetter.org/docs/generating_tilesets)** (Wang 15 & Blob 47): atlases as exported by Tilesetter
-- **[PixelLab](https://www.pixellab.ai/docs/tools/create-tileset)** (top-down & side-scroller): including the AI-generated variation tiles PixelLab's own exporter throws away
+- **[PixelLab](https://www.pixellab.ai/docs/tools/create-tileset)** (top-down & side-scroller): native image outputs from the PixelLab Aseprite extension
 - **Minimal 3x3**: the 9-tile match-sides format used by RPG Maker A2 and legacy Godot 3.x
 
 Whatever convention your art was drawn for, TetraTile can paint with it. And if your favorite isn't built in, you can plug in a custom layout of your own.
 
 ## 🎨 The Tetra-System Template
+
+<img src="addons/tetra_tile/templates/tetra_horizontal.png" width="256" alt="Tetra Horizontal Tileset Template">
 
 To use the system, your atlas needs these four essential components arranged horizontally or vertically:
 
@@ -51,7 +53,7 @@ The two disconnected diagonal states are handled by composing two transformed ou
 
 ## ⚔️ TetraTile vs. TileMapDual API
 
-While [TileMapDual](https://github.com/pablogila/TileMapDual) is a established solution for Dual Grid systems in Godot, **TetraTile** focuses on minimizing the technical overhead and asset requirements for standard orthogonal grids.
+[TileMapDual](https://github.com/pablogila/TileMapDual) is an established solution for Dual Grid systems in Godot. **TetraTile** takes a narrower scope, focusing on standard orthogonal grids with a minimal authoring surface.
 
 | Area             | TetraTile                                                                  | TileMapDual                                                            |
 | ---------------- | -------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
@@ -71,9 +73,9 @@ TetraTile is smaller because it focuses on a specific subset of the multi-terrai
 
 ### Why choose TetraTile?
 
-- **Scalability of Variations:** Because the requirement is only 4 tiles, creating multiple visual variations is significantly faster and more manageable.
+- **Scalability of Variations:** Because the **Tetra** layout requires only 4 tiles, creating multiple visual variations is significantly faster and more manageable.
 - **Engine Purity:** TetraTile acts as a lightweight extension of the native `TileMapLayer`. It allows you to use Godot's native painting tools as intended, with the system handling the transformation logic automatically.
-- **Direct Logic:** It uses direct bitwise math to determine rotations and flips, avoiding complex dictionary lookups or signal-heavy architectures.
+- **Direct Logic:** It uses direct bitwise math to determine rotations and flips, keeping the runtime path short and easy to reason about.
 
 ### Why choose [TileMapDual](https://github.com/pablogila/TileMapDual)?
 
@@ -94,7 +96,7 @@ addons/tetra_tile/
     tetra_tile_ground.tres
 ```
 
-`tetra_tile_template.png` is the blank 4-tile template. `demo/tetra_tile_ground.png` and `demo/tetra_tile_ground.tres` are the demo atlas/TileSet.
+`tetra_tile_template.png` is the blank 4-tile **Tetra** template. `demo/tetra_tile_ground.png` and `demo/tetra_tile_ground.tres` are the demo atlas/TileSet.
 
 ## 🔌 Current API
 
