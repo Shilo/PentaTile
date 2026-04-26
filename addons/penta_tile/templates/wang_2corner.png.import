@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://tpgld3c2w87a"
-path="res://.godot/imported/wang_2corner.png-e6d8c79f6724185183f4e8acad8650fb.ctex"
+path="res://.godot/imported/wang_2corner.png-c27d33718b8a7d9052ddb6ff01aa39f1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/tetra_tile/templates/wang_2corner.png"
-dest_files=["res://.godot/imported/wang_2corner.png-e6d8c79f6724185183f4e8acad8650fb.ctex"]
+source_file="res://addons/penta_tile/templates/wang_2corner.png"
+dest_files=["res://.godot/imported/wang_2corner.png-c27d33718b8a7d9052ddb6ff01aa39f1.ctex"]
 
 [params]
 

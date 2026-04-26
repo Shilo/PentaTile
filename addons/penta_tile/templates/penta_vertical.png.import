@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dqm0wtrvreo5i"
-path="res://.godot/imported/tetra_vertical.png-1ace27c3b25bfebad2ca1bee64656ee5.ctex"
+path="res://.godot/imported/penta_vertical.png-bc642ed5acf8f693621612a48f9bae4d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/tetra_tile/templates/tetra_vertical.png"
-dest_files=["res://.godot/imported/tetra_vertical.png-1ace27c3b25bfebad2ca1bee64656ee5.ctex"]
+source_file="res://addons/penta_tile/templates/penta_vertical.png"
+dest_files=["res://.godot/imported/penta_vertical.png-bc642ed5acf8f693621612a48f9bae4d.ctex"]
 
 [params]
 

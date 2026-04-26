@@ -1,15 +1,15 @@
 @tool
-## TetraTile horizontal layout — 4 archetypes (Fill / Inner Corner / Border / Outer Corner)
+## PentaTile horizontal layout — 4 archetypes (Fill / Inner Corner / Border / Outer Corner)
 ## arranged in a 4×1 atlas with rotation reuse.
 ##
 ## Output is bit-identical to v0.1's `atlas_layout = AtlasLayout.HORIZONTAL` mode.
 ## The 16-state match block was relocated VERBATIM from
-## addons/tetra_tile/tetra_tile_map_layer.gd:116-152 (v0.1 source).
+## addons/penta_tile/penta_tile_map_layer.gd:116-152 (v0.1 source).
 ##
 ## Mask convention: TL=1, TR=2, BL=4, BR=8 (corner mask).
 ## Dual-grid: yes — paints at the half-tile-offset display cell.
-class_name TetraTileLayoutTetraHorizontal
-extends TetraTileLayout
+class_name PentaTileLayoutPentaHorizontal
+extends PentaTileLayout
 
 # Tile indices in the 4×1 atlas (relocated from v0.1 layer lines 11-14).
 const _FILL := 0
@@ -47,7 +47,7 @@ func compute_mask(coord: Vector2i, sample_fn: Callable) -> int:
 	return mask
 
 
-func mask_to_atlas(mask: int) -> TetraTileAtlasSlot:
+func mask_to_atlas(mask: int) -> PentaTileAtlasSlot:
 	# The 16-state table — v0.1 layer lines 116-152 relocated.
 	# Mask 0 returns null (dispatcher short-circuits to erase).
 	# Masks 6 and 9 use diagonal_complement_atlas_coords for the overlay layer.
@@ -90,12 +90,12 @@ func mask_to_atlas(mask: int) -> TetraTileAtlasSlot:
 		15:
 			return _make_slot(_FILL, _ROTATE_0)
 	# Unreachable mask (>15 — corner mask is 4 bits).
-	push_error("TetraTileLayoutTetraHorizontal.mask_to_atlas got out-of-range mask %d" % mask)
+	push_error("PentaTileLayoutPentaHorizontal.mask_to_atlas got out-of-range mask %d" % mask)
 	return null
 
 
 # Build an AtlasSlot for the horizontal axis (4×1 atlas: x = tile_index, y = 0).
-# Subclasses (e.g. TetraTileLayoutTetraVertical) override _make_slot to swap axes.
+# Subclasses (e.g. PentaTileLayoutPentaVertical) override _make_slot to swap axes.
 # Per CONTEXT.md D-04: the alt-tile slot of `transform_flags` is reserved for transform
 # flags only in Phase 1; Phase 3.5 PixelLab variation work uses _pack_alternative
 # to put both alt-id and flags in there. Phase 1 layouts pass alt_id = 0 (no variation).
@@ -103,8 +103,8 @@ func _make_slot(
 		tile_index: int,
 		transform_flags: int,
 		complement_tile_index: int = -1,
-		complement_transform: int = 0) -> TetraTileAtlasSlot:
-	var slot := TetraTileAtlasSlot.new()
+		complement_transform: int = 0) -> PentaTileAtlasSlot:
+	var slot := PentaTileAtlasSlot.new()
 	slot.atlas_coords = Vector2i(tile_index, 0)                                   # horizontal: x-axis
 	slot.transform_flags = transform_flags
 	slot.alternative_tile = 0                                                     # Phase 1: no variation
