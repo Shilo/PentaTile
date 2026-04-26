@@ -20,7 +20,7 @@ The original v0.2 feature pillars (Y-axis variation, top tiles, non-rotating til
 - Integer phases (1, 2, 3, 4, 5): Planned milestone work
 - Decimal phases (e.g. 2.1): Reserved for urgent inserts (none currently)
 
-- [ ] **Phase 1: Contract Skeleton + Tetra Layouts** — Introduce `TetraTileAtlasContract` + `TetraTileLayout` base + `AtlasSlot`. Ship Tetra Horizontal + Tetra Vertical as the first two layout subclasses. v0.1 visuals continue unchanged via the bundled default contract OR the null-fallback path.
+- [x] **Phase 1: Contract Skeleton + Tetra Layouts** — Introduce `TetraTileAtlasContract` + `TetraTileLayout` base + `AtlasSlot`. Ship Tetra Horizontal + Tetra Vertical as the first two layout subclasses. v0.1 visuals continue unchanged via the bundled default contract OR the null-fallback path.
 - [ ] **Phase 2: Native Layouts** — Ship DualGrid16, Wang2Edge, Wang2Corner subclasses with hand-authored slot tables. Each gets a bundled fallback TileSet so the prototyping UX works for these layouts.
 - [ ] **Phase 3: TileBitTools-Decoded Layouts** — Transcribe slot tables from TBT's MIT-licensed `tilesetter_blob.tres`, `tilesetter_wang.tres`, and the matching Godot blob template `.tres`. Ship Blob47Godot, TilesetterWang15, TilesetterBlob47. Generate the 3 missing template PNGs from the slot tables. Add `ATTRIBUTION.md`.
 - [ ] **Phase 3.5: PixelLab Layouts + Variation-Seed Wiring** — Ship `TetraTileLayoutPixelLabTopDown` and `TetraTileLayoutPixelLabSideScroller` (8×8 atlas, single-grid, 4-bit corner mask, variation-bank). Wire `variation_seed` deterministic-hash bucket-pick. Add `TetraTileLayoutMinimal3x3` if not already shipped in Phase 2.
@@ -51,7 +51,7 @@ Plans:
 - [x] 01-02-PLAN.md — Wave 1: Resource skeleton (TetraTileAtlasSlot + TetraTileLayout base + TetraTileAtlasContract with locked D-08 setter)
 - [x] 01-03-PLAN.md — Wave 2: Concrete layout subclasses (TetraTileLayoutTetraHorizontal with relocated 16-state match + TetraTileLayoutTetraVertical axis-swap subclass)
 - [x] 01-04-PLAN.md — Wave 3: Layer dispatcher rewrite (hard-remove enum + atlas_layout export, add atlas_contract setter, _resolve_layout lazy singleton, dual+single grid pipeline branch)
-- [ ] 01-05-PLAN.md — Wave 4: Bundled .tres files + demo wiring + visual regression + idempotence/storm test + LOC checkpoint
+- [x] 01-05-PLAN.md — Wave 4: Bundled .tres files + demo wiring + visual regression + idempotence/storm test + LOC checkpoint
 
 ### Phase 2: Native Layouts
 
@@ -145,7 +145,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Contract Skeleton + Tetra Layouts | 4/5 | In progress | - |
+| 1. Contract Skeleton + Tetra Layouts | 5/5 | Complete | 2026-04-26 |
 | 2. Native Layouts | 0/TBD | Not started | - |
 | 3. TileBitTools-Decoded Layouts | 0/TBD | Not started | - |
 | 3.5. PixelLab Layouts + Variation-Seed Wiring | 0/TBD | Not started | - |
