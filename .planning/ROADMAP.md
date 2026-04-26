@@ -55,13 +55,15 @@ Plans:
 
 ### Phase 1.1: PentaTile Rename + Penta Codename Establishment (INSERTED)
 
-**Goal:** [Urgent work - to be planned]
-**Requirements**: TBD
+**Goal:** Project-wide rename TetraTile → PentaTile (source code, saved Godot resources, planning + project docs, GitHub repo, local clone directory, Claude memory directory) BEFORE Phase 2 ships new files under the old name. Coin "Penta" as the canonical codename for the 5-archetype tileset format via a load-bearing README definition ("What is a Penta tileset?") + a CLAUDE.md project invariant ("Coined-Term Discipline"). No backwards-compat shims per the no-compat policy; CHANGELOG documents the breakage.
+**Requirements**: NONE — rename phase, no formal REQ-IDs (success measured by CONTEXT.md scope items and goal-backward must_haves in each plan)
 **Depends on:** Phase 1
-**Plans:** 0 plans
+**Plans:** 3 plans
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 1.1 to break down)
+- [ ] 01.1-01-source-and-resources-PLAN.md — Rename addons/tetra_tile/ folder + GDScript classes + saved Godot resources (.tscn / .tres / .png.import) + project.godot in one atomic commit; Godot opens + demo paints under new name
+- [ ] 01.1-02-docs-and-codename-anchors-PLAN.md — Sweep .planning/ docs + root .md files (token rename) + add README "What is a Penta tileset?" section with labeled diagram + add CLAUDE.md "Coined-Term Discipline" section + create CHANGELOG.md with v0.2 BREAKING entry; protected scope (archived 01-* + spikes 001..003) preserved as historical record
+- [ ] 01.1-03-repo-git-memory-and-verify-PLAN.md — User renames GitHub repo (manual gate) → git remote set-url + verify tracking → user closes IDE + renames local directory (manual gate) → migrate Claude memory directory → final Godot/git verification → close-out commit + STATE/ROADMAP update
 
 ### Phase 2: Native Layouts + Architectural Simplification
 
