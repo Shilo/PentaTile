@@ -56,6 +56,12 @@ const _BR := Vector2i(0, 0)
 var _primary_layer: TileMapLayer
 var _overlay_layer: TileMapLayer
 
+# Debug-build instrumentation (Phase 1 Wave 0 — verifies CONTRACT-05 idempotence).
+# Counts every _queue_rebuild() call in debug builds. Read by verification recipes
+# (Plan 05 idempotence + signal-storm checks). Excluded from release builds via
+# OS.is_debug_build() gate inside _queue_rebuild.
+var _rebuild_count: int = 0
+
 
 func _ready() -> void:
 	_ensure_visual_layers()
@@ -256,5 +262,7 @@ func _apply_logic_collision() -> void:
 
 
 func _queue_rebuild() -> void:
+	if OS.is_debug_build():
+		_rebuild_count += 1
 	if is_inside_tree():
 		rebuild.call_deferred()
