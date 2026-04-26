@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
-status: planning
-stopped_at: Phase 2 context regenerated (fifth supersession; D-68..D-71)
-last_updated: "2026-04-26T18:54:39.529Z"
-last_activity: 2026-04-26 -- Phase 01.1 complete (PentaTile rename + Penta codename established)
+status: executing
+stopped_at: "Completed 02-01-PLAN.md (Wave 1 pre-work: base-class renames + verification migration)"
+last_updated: "2026-04-26T19:39:48.779Z"
+last_activity: 2026-04-26
 progress:
   total_phases: 7
   completed_phases: 2
   total_plans: 15
-  completed_plans: 8
-  percent: 53
+  completed_plans: 9
+  percent: 60
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-25 after v0.2 pivot to layout library)
 
 **Core value:** Painting tiles with the native `TileMapLayer` API produces correct dual-grid autotiled visuals — without the user maintaining caches, terrain metadata, or 16-tile blob sets.
-**Current focus:** Phase 2 — Native Layouts + Architectural Simplification
+**Current focus:** Phase 02 — native-layouts
 
 ## Current Position
 
-Phase: 2 (Native Layouts + Architectural Simplification) — READY TO PLAN
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-04-26 -- Phase 01.1 complete (PentaTile rename + Penta codename established)
+Phase: 02 (native-layouts) — EXECUTING
+Plan: 2 of 7
+Status: Ready to execute
+Last activity: 2026-04-26
 
-Progress: [██████████] 100% of currently-planned plans (Phase 2+ plans not yet authored)
+Progress: [██████░░░░] 60%
 
 > Out-of-band progress: 5 of 8 greyboxed template PNGs + the generator script shipped in commit e86036f as part of the discovery pass. Counted as TEMPLATE-01 + TEMPLATE-03 covered. The remaining 3 templates (Blob47Godot, TilesetterWang15, TilesetterBlob47) ship in Phase 3 once their slot tables are transcribed from TileBitTools.
 
@@ -54,6 +54,7 @@ Progress: [██████████] 100% of currently-planned plans (Phas
 - Trend: —
 
 *Updated after each plan completion*
+| Phase 02 P01 | 147 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -89,6 +90,8 @@ Recent decisions affecting current work:
 - **Architectural simplification sweep** (2026-04-26 third pivot): `PentaTileAtlasContract` deleted entirely (had a speculative `version: int` no consumer read; per the no-forward-compat policy, deleted). `layout: PentaTileLayout` lives directly on `PentaTileMapLayer`. `PentaTileLayoutPentaHorizontal`+`Vertical` merged into `PentaTileLayoutPenta` with `axis: Axis` and `tile_count: TileCountMode` (`AUTO`/`ONE`/`FOUR`/`FIVE`) enums. `template_image` renamed `bitmask_template`; `fallback_tile_set` hidden from inspector (codegen via `get_fallback_tile_set()`); `decoder_image` deleted. Templates restructured to `templates/[layout_name]/{atlas.png, bitmask.png}` per layout. PIXLAB-03 variation-bank pick moved to v2 backlog as VAR-PIXEL-01. Phase 1 still listed Complete but its CONTRACT-* / PENTA-01..03 / PREVIEW-01 / LAYOUT-03/04 are all reworked in Phase 2 — Phase 1 is partially superseded. Coverage 54 → 53 reqs.
 - **No-forward-compat policy** added 2026-04-26 alongside the existing no-backwards-compat rule. CLAUDE.md "Breaking Changes Policy (HARD RULE)" now covers BOTH directions: never write compat shims AND never speculate about forward versioning (`version: int` fields, schema markers, speculative extension points). Both rules captured in `feedback_breaking_changes.md` Claude memory.
 - **Five-mode progressive Penta design — locked** (2026-04-26 fourth pivot). Penta now supports five `tile_count` modes (`ONE`/`TWO`/`THREE`/`FOUR`/`FIVE`) plus `AUTO` (dimension-only) and `AUTO_STRIP` (per-strip detection). New slot ordering: `0=IsolatedCell, 1=Fill, 2=Border, 3=InnerCorner, 4=OppositeCorners`. **OuterCorner is implicit** — synthesized from slot 0's corners across all modes; never has a dedicated slot. Border at slot 2 (before InnerCorner at slot 3) prioritizes visual frequency over fill-percentage ordering — Border is the most visible archetype after Fill. Rationale: each step from ONE to FIVE adds one more explicit archetype slot, sacrificing quality for less authoring time. Single PNG per layout serves as BOTH inspector preview AND fallback TileSet source (no atlas/bitmask split). Templates folder deleted; bundled PNGs co-locate next to layout `.gd` files. Penta has 10 PNGs in `penta_tile_layout_penta/` subfolder; single-variant layouts use flat siblings. Coverage 53 → 56 reqs (added PENTA-SYNTH-10/11/12). Full design + decision history in `.planning/phases/02-native-layouts/02-DISCUSSION-LOG.md` FOURTH SUPERSESSION block.
+- template_image renamed to bitmask_template on PentaTileLayout base class (LAYOUT-03/PREVIEW-01); no @export_storage compat shim per CLAUDE.md HARD RULE
+- get_fallback_tile_set() virtual stub returns null in Wave 1; Wave 2 fills body with TileSet construction from bitmask_template (LAYOUT-06)
 
 ### Pending Todos
 
@@ -121,9 +124,9 @@ Items acknowledged and carried forward as v2 requirements (see REQUIREMENTS.md v
 
 ## Session Continuity
 
-Last session: --stopped-at
-Stopped at: Phase 2 context regenerated (fifth supersession; D-68..D-71)
-Resume file: --resume-file
+Last session: 2026-04-26T19:39:48.774Z
+Stopped at: Completed 02-01-PLAN.md (Wave 1 pre-work: base-class renames + verification migration)
+Resume file: None
 
 **Completed Phase:** 01 (Contract Skeleton + Penta Layouts) — 5/5 plans, 14/14 requirements, 26/26 automated tests PASS — 2026-04-26
 **Completed Phase:** 01.1 (PentaTile Rename + Penta Codename Establishment) — 3/3 plans, 0 formal REQ-IDs (rename phase), demo loads cleanly under new name, git remote tracks PentaTile origin — 2026-04-26
