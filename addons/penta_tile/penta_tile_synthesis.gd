@@ -168,7 +168,13 @@ static func transform_vertex(v: Vector2, flags: int) -> Vector2:
 	return out
 
 
-## Axis-aligned rectangle polygon clipping (Liang-Barsky-flavored).
+## Axis-aligned rectangle polygon clipping — canonical Sutherland-Hodgman algorithm.
+## Clips against each of the 4 half-planes (left, right, top, bottom) in turn so all
+## four crossing cases (in/in, in/out, out/in, out/out-but-crossing) fall out of the
+## per-edge logic naturally. WR-01 FIX: the prior hand-rolled all-edges-at-once
+## variant dropped the both-outside-but-segment-crosses-rect case, silently mis-clipping
+## non-convex source polygons.
+##
 ## `points` in tile-center-local coords; `sub_rect` also in tile-center-local coords.
 ## Returns clipped polygon rescaled from sub_rect-local coords to full tile coords.
 ## Drops polygon (returns empty) if < 3 vertices remain after clipping.
@@ -179,28 +185,18 @@ static func clip_polygon_to_subrect(
 	if points.size() < 3:
 		return PackedVector2Array()
 
-	var clipped: PackedVector2Array = PackedVector2Array()
-	var n := points.size()
-
-	for i in range(n):
-		var v_i: Vector2 = points[i]
-		var v_next: Vector2 = points[(i + 1) % n]
-		var v_i_in: bool = sub_rect.has_point(v_i)
-		var v_next_in: bool = sub_rect.has_point(v_next)
-
-		if v_i_in and v_next_in:
-			clipped.append(v_i)
-		elif v_i_in and not v_next_in:
-			clipped.append(v_i)
-			var intersect := _clip_segment_to_rect(v_i, v_next, sub_rect)
-			clipped.append(intersect)
-		elif not v_i_in and v_next_in:
-			var intersect := _clip_segment_to_rect(v_i, v_next, sub_rect)
-			clipped.append(intersect)
-		# else: both outside → skip
-
-	if clipped.size() < 3:
-		return PackedVector2Array()
+	# Sutherland-Hodgman: clip the polygon against each half-plane in sequence.
+	# Edge order: left, right, top, bottom. Edge constants encode which axis-aligned
+	# half-plane to keep ("inside" = on the rect's side of the edge).
+	#   0: left   — keep x >= rect.position.x
+	#   1: right  — keep x <= rect.end.x
+	#   2: top    — keep y >= rect.position.y
+	#   3: bottom — keep y <= rect.end.y
+	var clipped: PackedVector2Array = points
+	for edge in range(4):
+		clipped = _clip_against_edge(clipped, sub_rect, edge)
+		if clipped.size() < 3:
+			return PackedVector2Array()
 
 	# Rescale from sub_rect-local to full tile coords.
 	# sub_rect is tile-center-local; output tile is tile-center-local at full tile_size.
@@ -213,6 +209,77 @@ static func clip_polygon_to_subrect(
 	for v: Vector2 in clipped:
 		result.append((v - center) * scale)
 	return result
+
+
+## Clip a polygon against a single axis-aligned half-plane edge of `rect`.
+## edge: 0=left (x>=position.x), 1=right (x<=end.x), 2=top (y>=position.y), 3=bottom (y<=end.y).
+## Standard Sutherland-Hodgman per-edge logic — handles all four crossing cases naturally
+## (in/in, in/out, out/in, out/out — last case emits no vertices).
+static func _clip_against_edge(
+		points: PackedVector2Array,
+		rect: Rect2,
+		edge: int) -> PackedVector2Array:
+	var out: PackedVector2Array = PackedVector2Array()
+	var n := points.size()
+	if n == 0:
+		return out
+	for i in range(n):
+		var v_curr: Vector2 = points[i]
+		var v_prev: Vector2 = points[(i + n - 1) % n]
+		var curr_in: bool = _point_inside_edge(v_curr, rect, edge)
+		var prev_in: bool = _point_inside_edge(v_prev, rect, edge)
+		if curr_in:
+			if not prev_in:
+				out.append(_intersect_edge(v_prev, v_curr, rect, edge))
+			out.append(v_curr)
+		elif prev_in:
+			out.append(_intersect_edge(v_prev, v_curr, rect, edge))
+	return out
+
+
+## Returns true if `p` is on the "inside" side of the given axis-aligned half-plane edge.
+## Boundary points are treated as inside (consistent with Sutherland-Hodgman convention).
+static func _point_inside_edge(p: Vector2, rect: Rect2, edge: int) -> bool:
+	match edge:
+		0: return p.x >= rect.position.x
+		1: return p.x <= rect.end.x
+		2: return p.y >= rect.position.y
+		3: return p.y <= rect.end.y
+	return false
+
+
+## Compute intersection of segment p0→p1 with a single axis-aligned edge line.
+## edge: 0=left (x=position.x), 1=right (x=end.x), 2=top (y=position.y), 3=bottom (y=end.y).
+## Caller guarantees the segment crosses the edge line (one endpoint inside, one outside).
+static func _intersect_edge(p0: Vector2, p1: Vector2, rect: Rect2, edge: int) -> Vector2:
+	var dx := p1.x - p0.x
+	var dy := p1.y - p0.y
+	match edge:
+		0:
+			# x = rect.position.x
+			if dx == 0.0:
+				return Vector2(rect.position.x, p0.y)
+			var t := (rect.position.x - p0.x) / dx
+			return Vector2(rect.position.x, p0.y + t * dy)
+		1:
+			# x = rect.end.x
+			if dx == 0.0:
+				return Vector2(rect.end.x, p0.y)
+			var t := (rect.end.x - p0.x) / dx
+			return Vector2(rect.end.x, p0.y + t * dy)
+		2:
+			# y = rect.position.y
+			if dy == 0.0:
+				return Vector2(p0.x, rect.position.y)
+			var t := (rect.position.y - p0.y) / dy
+			return Vector2(p0.x + t * dx, rect.position.y)
+		3:
+			# y = rect.end.y
+			if dy == 0.0:
+				return Vector2(p0.x, rect.end.y)
+			var t := (rect.end.y - p0.y) / dy
+			return Vector2(p0.x + t * dx, rect.end.y)
+	return p0
 
 
 ## Tile-size validation per Gate 1 constraints.
@@ -644,42 +711,8 @@ static func _subrect_for_slot(slot: int, tile_size: Vector2i) -> Rect2:
 			return Rect2()
 
 
-## Liang-Barsky line-segment-to-rect-boundary intersection helper.
-## Returns the intersection point of segment p0→p1 with the boundary of `rect`.
-## Assumes one endpoint is inside and one is outside.
-static func _clip_segment_to_rect(p0: Vector2, p1: Vector2, rect: Rect2) -> Vector2:
-	var dx := p1.x - p0.x
-	var dy := p1.y - p0.y
-	var t := 1.0  # parameter along segment (0=p0, 1=p1)
-
-	# Test each of the four clipping edges.
-	# Left: x = rect.position.x
-	if dx != 0.0:
-		var t_left := (rect.position.x - p0.x) / dx
-		if t_left >= 0.0 and t_left < t:
-			var y_at := p0.y + t_left * dy
-			if y_at >= rect.position.y and y_at <= rect.end.y:
-				t = t_left
-	# Right: x = rect.end.x
-	if dx != 0.0:
-		var t_right := (rect.end.x - p0.x) / dx
-		if t_right >= 0.0 and t_right < t:
-			var y_at := p0.y + t_right * dy
-			if y_at >= rect.position.y and y_at <= rect.end.y:
-				t = t_right
-	# Top: y = rect.position.y
-	if dy != 0.0:
-		var t_top := (rect.position.y - p0.y) / dy
-		if t_top >= 0.0 and t_top < t:
-			var x_at := p0.x + t_top * dx
-			if x_at >= rect.position.x and x_at <= rect.end.x:
-				t = t_top
-	# Bottom: y = rect.end.y
-	if dy != 0.0:
-		var t_bot := (rect.end.y - p0.y) / dy
-		if t_bot >= 0.0 and t_bot < t:
-			var x_at := p0.x + t_bot * dx
-			if x_at >= rect.position.x and x_at <= rect.end.x:
-				t = t_bot
-
-	return Vector2(p0.x + t * dx, p0.y + t * dy)
+## Note: the legacy _clip_segment_to_rect helper was removed in WR-01 fix —
+## the canonical Sutherland-Hodgman implementation above (clip_polygon_to_subrect →
+## _clip_against_edge → _intersect_edge) supersedes it and handles all four crossing
+## cases correctly, including the previously-dropped both-outside-but-segment-crosses
+## case.
