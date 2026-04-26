@@ -1,31 +1,42 @@
 # 🍀 TetraTile
 
-**Just paint your tiles — TetraTile picks the right ones for you.** A friendly autotiling addon for Godot 4.6 that takes the pain out of building tilesets. Paint with Godot's normal tile tools and TetraTile fills in the corners, edges, and transitions automatically.
-
-**Start with as little as 4 tiles.** TetraTile's signature **Tetra** template needs only Fill, Inner Corner, Border, and Outer Corner to cover the exact same visuals as a traditional 47-tile blob set — a brand-new terrain can be in your game in minutes instead of hours. Drawing variations becomes painless too: tweak four tiles, get a whole new look.
-
-**Already have tiles in a different format? No problem.** TetraTile supports virtually every popular autotiling layout out of the box — **Tetra** (horizontal & vertical), **Dual Grid**, **Wang** (2-edge & 2-corner), the classic **47-tile blob**, and **Tilesetter**'s Wang and Blob atlases. Whatever convention your art was drawn for, TetraTile can paint with it. And if your favorite layout isn't built in, you can plug in a custom one of your own.
+**Just paint your tiles.** A friendly autotiling addon for Godot that takes the pain out of building tilesets: paint with Godot's normal tile tools and TetraTile fills in the corners, edges, and transitions automatically. Works with whatever atlas convention your art was made for, from a [4-tile minimum](#-the-tetra-system-template) up through every [popular layout](#-supported-layouts).
 
 <img src="addons/tetra_tile/templates/tetra_horizontal.png" width="256" alt="Tetra Horizontal Tileset Template">
 
 ## 📑 Table of Contents
 
 1. [Why TetraTile?](#-why-tetratile)
-2. [The Tetra-System Template](#-the-tetra-system-template)
-3. [Comparison: TetraTile vs. TileMapDual](#-tetratile-vs-tilemapdual-api)
-4. [Choosing the Right Tool](#-choosing-the-right-tool)
-5. [Addon Layout](#-addon-layout)
-6. [Current API](#-current-api)
-7. [Demo](#-demo)
-8. [Implementation Notes](#-implementation-notes)
-9. [Roadmap](#-roadmap)
-10. [External Resources](#-external-resources)
+2. [Supported Layouts](#-supported-layouts)
+3. [The Tetra-System Template](#-the-tetra-system-template)
+4. [Comparison: TetraTile vs. TileMapDual](#-tetratile-vs-tilemapdual-api)
+5. [Choosing the Right Tool](#-choosing-the-right-tool)
+6. [Addon Layout](#-addon-layout)
+7. [Current API](#-current-api)
+8. [Demo](#-demo)
+9. [Implementation Notes](#-implementation-notes)
+10. [Roadmap](#-roadmap)
+11. [External Resources](#-external-resources)
 
 ## 🚀 Why TetraTile?
 
 - **Reduced Tile Requirements:** Creating 47 tiles for a single terrain type is a time-consuming task. TetraTile reduces this requirement to just four tiles, lowering the barrier for creating custom game art while maintaining professional results.
 - **Efficient Visual Variation:** Managing only **four base tiles** allows for easier creation of **multiple variations**. Instead of redrawing dozens of tiles for a single alternative set, you can quickly iterate on the core four tiles to add organic variety and reduce repetitive patterns.
 - **Native Integration:** Built as a single-class subclass of `TileMapLayer`, TetraTile hooks directly into Godot's native API. It listens to standard drawing commands and updates the visual layers in real-time without requiring a custom drawing interface.
+
+## 🧩 Supported Layouts
+
+Already have tiles in a different format? No problem. TetraTile ships with a library of layouts covering virtually every popular autotiling convention out of the box:
+
+- **[Tetra](#-the-tetra-system-template)** (horizontal & vertical): the signature 4-tile minimum
+- **[Dual Grid](https://www.youtube.com/watch?v=jEWFSv3ivTg)**: the popular 16-tile corner-mask format
+- **[Wang](https://www.boristhebrave.com/permanent/24/06/cr31/stagecast/wang/intro.html)** (2-edge & 2-corner): the classic edge/corner-color system
+- **[47-tile Blob](https://www.boristhebrave.com/2021/11/14/classification-of-tilesets/)**: the full Godot/Wang blob set
+- **[Tilesetter](https://www.tilesetter.org/docs/generating_tilesets)** (Wang 15 & Blob 47): atlases as exported by Tilesetter
+- **[PixelLab](https://www.pixellab.ai/docs/tools/create-tileset)** (top-down & side-scroller): including the AI-generated variation tiles PixelLab's own exporter throws away
+- **Minimal 3x3**: the 9-tile match-sides format used by RPG Maker A2 and legacy Godot 3.x
+
+Whatever convention your art was drawn for, TetraTile can paint with it. And if your favorite isn't built in, you can plug in a custom layout of your own.
 
 ## 🎨 The Tetra-System Template
 
