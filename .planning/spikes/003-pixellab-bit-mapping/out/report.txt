@@ -1,0 +1,148 @@
+# Spike 003 -- PixelLab Aseprite native layout verification
+
+Locked role-to-mask mapping (Wang-16, TL=1 TR=2 BL=4 BR=8):
+  role:  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15
+  mask:  4 10 13 12  9 14 15  7  2  3 11  5  0  8  6  1
+
+========================================================================
+## Top-Down samples
+========================================================================
+
+### 20260422012401.png -- [2/16]
+  tile=32, transition=0.5, baseline_sep=35.9
+  inner: warm wooden floor
+  outer: warm wooden wall
+  role 0: corners=[oooo] decoded=mask 0 but expected mask 4
+  role 1: corners=[oooo] decoded=mask 0 but expected mask 10
+  role 2: corners=[oooo] decoded=mask 0 but expected mask 13
+  role 3: corners=[oooo] decoded=mask 0 but expected mask 12
+  role 4: corners=[oooo] decoded=mask 0 but expected mask 9
+  role 5: corners=[oooo] decoded=mask 0 but expected mask 14
+  role 7: corners=[Iooo] decoded=mask 1 but expected mask 7
+  role 8: corners=[oooo] decoded=mask 0 but expected mask 2
+  role 9: corners=[oooo] decoded=mask 0 but expected mask 3
+  role 10: corners=[oIoo] decoded=mask 2 but expected mask 11
+  role 11: corners=[oooo] decoded=mask 0 but expected mask 5
+  role 13: corners=[oooo] decoded=mask 0 but expected mask 8
+  role 14: corners=[oooo] decoded=mask 0 but expected mask 6
+  role 15: corners=[oooo] decoded=mask 0 but expected mask 1
+
+### 20260425205248.png -- [1/16]
+  tile=16, transition=0.5, baseline_sep=0.0
+  inner: 1 bit black and white tileset
+  outer: 1 bit black and white tileset
+  role 0: corners=[oooo] decoded=mask 0 but expected mask 4
+  role 1: corners=[oooo] decoded=mask 0 but expected mask 10
+  role 2: corners=[oooo] decoded=mask 0 but expected mask 13
+  role 3: corners=[oooo] decoded=mask 0 but expected mask 12
+  role 4: corners=[oooo] decoded=mask 0 but expected mask 9
+  role 5: corners=[oooo] decoded=mask 0 but expected mask 14
+  role 6: corners=[oooo] decoded=mask 0 but expected mask 15
+  role 7: corners=[oooo] decoded=mask 0 but expected mask 7
+  role 8: corners=[oooo] decoded=mask 0 but expected mask 2
+  role 9: corners=[oooo] decoded=mask 0 but expected mask 3
+  role 10: corners=[oooo] decoded=mask 0 but expected mask 11
+  role 11: corners=[oooo] decoded=mask 0 but expected mask 5
+  role 13: corners=[oooo] decoded=mask 0 but expected mask 8
+  role 14: corners=[oooo] decoded=mask 0 but expected mask 6
+  role 15: corners=[oooo] decoded=mask 0 but expected mask 1
+
+### 20260425205445.png -- [10/16]
+  tile=16, transition=0.5, baseline_sep=143.0
+  inner: 1 bit graybox template
+  outer: 1 bit graybox template
+  role 0: corners=[oooo] decoded=mask 0 but expected mask 4
+  role 4: corners=[oooo] decoded=mask 0 but expected mask 9
+  role 8: corners=[oooo] decoded=mask 0 but expected mask 2
+  role 13: corners=[oooo] decoded=mask 0 but expected mask 8
+  role 14: corners=[oooo] decoded=mask 0 but expected mask 6
+  role 15: corners=[oooo] decoded=mask 0 but expected mask 1
+
+### 20260425205736.png -- [PASS]
+  tile=16, transition=0.5, baseline_sep=327.6
+  inner: white graybox template tile
+  outer: black graybox template tile
+  visualization: out\annotated_topdown_20260425205736.png
+
+### 20260425213519.png -- [PASS]
+  tile=16, transition=0.5, baseline_sep=318.1
+  inner: white
+  outer: black
+  visualization: out\annotated_topdown_20260425213519.png
+
+### 20260425214337.png -- [12/16]
+  tile=16, transition=0, baseline_sep=316.8
+  inner: solid white
+  outer: solid black
+  role 0: corners=[oooo] decoded=mask 0 but expected mask 4
+  role 8: corners=[oooo] decoded=mask 0 but expected mask 2
+  role 13: corners=[oooo] decoded=mask 0 but expected mask 8
+  role 15: corners=[oooo] decoded=mask 0 but expected mask 1
+
+### 20260425222002.png -- [PASS]
+  tile=16, transition=0, baseline_sep=298.1
+  inner: solid white
+  outer: solid black
+  visualization: out\annotated_topdown_20260425222002.png
+
+========================================================================
+## Side-Scroller samples
+========================================================================
+
+### 20260423191810.png -- [PASS]
+  tile=16, transition=0.5, baseline_sep=362.3
+  inner: A Starbound-style plain metallic interior wall pan
+  visualization: out\annotated_sidescroller_20260423191810.png
+
+### 20260423192048.png -- [PASS]
+  tile=16, transition=0.5, baseline_sep=362.3
+  inner: A Starbound-style plain metallic interior wall pan
+  visualization: out\annotated_sidescroller_20260423192048.png
+
+### 20260423192318.png -- [PASS]
+  tile=16, transition=0.5, baseline_sep=362.3
+  inner: A Starbound-style plain metallic interior wall pan
+  visualization: out\annotated_sidescroller_20260423192318.png
+
+### 20260424125254.png -- [PASS]
+  tile=16, transition=0.5, baseline_sep=78.2
+  inner: Solid, clean ancient stone fill with non-direction
+  visualization: out\annotated_sidescroller_20260424125254.png
+
+### 20260424125416.png -- [PASS]
+  tile=16, transition=0.5, baseline_sep=78.2
+  inner: Solid, clean ancient stone fill with non-direction
+  visualization: out\annotated_sidescroller_20260424125416.png
+
+### 20260424125606.png -- [PASS]
+  tile=16, transition=0.5, baseline_sep=78.2
+  inner: Solid, clean ancient stone fill with non-direction
+  visualization: out\annotated_sidescroller_20260424125606.png
+
+### 20260425210212.png -- [PASS]
+  tile=16, transition=0.5, baseline_sep=37.5
+  inner: black graybox template
+  visualization: out\annotated_sidescroller_20260425210212.png
+
+### 20260425214626.png -- [PASS]
+  tile=16, transition=0, baseline_sep=52.4
+  inner: solid black
+  visualization: out\annotated_sidescroller_20260425214626.png
+
+### 20260425222337.png -- [PASS]
+  tile=16, transition=0.5, baseline_sep=80.3
+  inner: black
+  visualization: out\annotated_sidescroller_20260425222337.png
+
+========================================================================
+## Aggregate
+========================================================================
+  total samples: 16
+  full match (16/16): 12
+  partial match: 4
+  average matches per sample: 13.6 / 16
+
+  Note: partial matches are expected when AI generation didn't faithfully
+  render the inner/outer terrain distinction in every cell. The locked
+  role-to-mask mapping is independently verified against the 2 cleanest
+  samples (one top-down, one side-scroller). Both agree 16/16.
