@@ -114,6 +114,10 @@ Future ideas remain intentionally separate from the V1 API:
 - **MkDocs:** fuller documentation inspired by TileMapDual's docs.
 - **Tileset converter:** convert Wang/blob tilesets or single-tile inputs into TetraTile-compatible atlases.
 
+## External Resources
+
+- [Godot 4 autotilling documentation](https://github.com/dandeliondino/godot-4-tileset-terrains-docs) - A detailed guide and starter project for understanding Godot 4's native terrain system.
+
 ## Attributions
 
 - `addons/tetra_tile/demo/tetra_tile_ground.png` is derived from Kenney's [Pico-8 Platformer](https://kenney.nl/assets/pico-8-platformer) asset pack (CC0).
