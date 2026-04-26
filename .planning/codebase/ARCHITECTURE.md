@@ -32,7 +32,7 @@
 
 **Overlay Visual Layer (`_TetraTileDiagonalOverlay`):**
 - Purpose: Composition layer for disconnected diagonal states (when two diagonally opposite quadrants are filled)
-- Location: Internal `TileMapLayer` created at runtime (line 201 in tetra_tile_map_layer.gd)
+- Location: Internal `TileMapLayer` created at runtime (line 202 in tetra_tile_map_layer.gd)
 - Contains: Second outer-corner tile for masks 6 (TR+BL) and 9 (TL+BR)
 - Depends on: Mask calculation, primary layer positioning
 - Used by: Godot rendering pipeline for composite diagonal rendering

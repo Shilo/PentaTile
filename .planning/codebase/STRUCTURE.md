@@ -17,7 +17,7 @@ project-root/
 │           ├── tetra_tile_demo.tscn # Main demo scene entry point
 │           ├── demo_player.gd       # Player controller (CharacterBody2D)
 │           ├── demo_runtime_painter.gd  # Runtime tile painting system
-│           ├── tetra_tile_ground.png    # 16x4px tileset atlas (4 tiles)
+│           ├── tetra_tile_ground.png    # 64x16 px tileset atlas (4 tiles × 16 px)
 │           ├── tetra_tile_ground.tres   # TileSet resource with physics
 │           ├── tetra_tile_ground.png.import  # Texture import config
 │           ├── demo_player.gd.uid
@@ -60,7 +60,7 @@ project-root/
 
 **Assets:**
 - `addons/tetra_tile/demo/tetra_tile_ground.tres`: TileSet resource with physics polygons for all 4 tiles
-- `addons/tetra_tile/demo/tetra_tile_ground.png`: 16x4 pixel atlas (4 tiles × 8px, horizontally arranged)
+- `addons/tetra_tile/demo/tetra_tile_ground.png`: 64x16 pixel atlas (4 tiles × 16 px, horizontally arranged)
 - `addons/tetra_tile/tetra_tile_template.png`: Reference template (blank placeholder, not used at runtime)
 
 **Testing:**
@@ -86,8 +86,8 @@ project-root/
 **GDScript Classes and Methods:**
 - Class name: PascalCase (`TetraTileMapLayer`)
 - Private methods: Prefixed with underscore (`_ready()`, `_update_cells()`, `_mask_at()`)
-- Public methods: camelCase without underscore (`rebuild()`, inherited `set_cell()`, `erase_cell()`)
-- Export properties: camelCase (`atlas_source_id`, `atlas_layout`, `logic_layer_opacity`)
+- Public methods: snake_case without underscore (`rebuild()`, inherited `set_cell()`, `erase_cell()`)
+- Export properties: snake_case (`atlas_source_id`, `atlas_layout`, `logic_layer_opacity`)
 
 ## Where to Add New Code
 
@@ -108,7 +108,7 @@ project-root/
 **Assets (New TileSet/Atlas):**
 - Placement: `addons/tetra_tile/demo/` (co-locate with other demo assets)
 - Naming: `tetra_tile_[terrain_type].png` and `tetra_tile_[terrain_type].tres`
-- Format: 4 tiles, 8x8px each, horizontally or vertically arranged (configured via `atlas_layout`)
+- Format: 4 tiles, 16x16px each, horizontally or vertically arranged (configured via `atlas_layout`)
 
 ## Special Directories
 
