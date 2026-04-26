@@ -2,7 +2,7 @@
 phase: 02-native-layouts
 reviewed: 2026-04-26T00:00:00Z
 depth: standard
-files_reviewed: 17
+files_reviewed: 18
 files_reviewed_list:
   - addons/penta_tile/penta_tile_map_layer.gd
   - addons/penta_tile/penta_tile_atlas_slot.gd
@@ -25,8 +25,8 @@ files_reviewed_list:
 findings:
   critical: 0
   warning: 0
-  info: 9
-  total: 9
+  info: 13
+  total: 13
 status: clean
 ---
 
@@ -92,5 +92,63 @@ One new Info item below (IN-10) carries the residual gap from the WR-02 fix: the
 ---
 
 _Reviewed: 2026-04-26 (re-review)_
+_Reviewer: Claude (gsd-code-reviewer)_
+_Depth: standard_
+
+---
+
+# Phase 2: Code Review Report (Third Pass)
+
+**Reviewed:** 2026-04-26 (third pass — re-verification after the re-review marked status `clean`)
+**Depth:** standard
+**Files Reviewed:** 18 (full Phase 2 surface area; same scope as the re-review)
+**Status:** clean (no new Critical or Warning findings; 3 small new Info items appended as IN-11 / IN-12 / IN-13)
+
+## Summary
+
+This third pass exists to confirm that nothing regressed under the seven WR fix commits or the user-authored test commit, and to surface any genuinely new issues missed by the re-review. The re-verification covers four explicit checks raised by the orchestrator:
+
+**1. New Critical/Warning issues in the post-fix code?** None found.
+
+**2. Are the test additions correct?**
+- `_capture_baseline.gd`'s `--layout-path` parsing is **safe**. The flag is read via `OS.get_cmdline_user_args()`, which only returns args after the `--` sentinel — the script must be invoked with `--script` (a developer-only entry point), so command-line injection is not a meaningful threat (the user already has full code execution at that point). The value is fed to Godot's `load()`, which scopes resource resolution to `res://` by default; non-`res://` strings either fail the cast or load nothing, both handled by the explicit null guard. No path-traversal vulnerability.
+- `determinism_test.gd` sub-test (c) **does** catch what it claims. Pre-WR-07, `_make_slot` for VERTICAL FOUR returned `Vector2i(0, slot_index)`. The synthesizer always builds a horizontal strip with tiles registered at `(0..4, 0)`. After paint, either (i) Godot drops cells whose atlas coords don't resolve in the source — Assertion 1 (`cell_count == 46`) catches that, or (ii) Godot keeps the cell with an unrenderable atlas reference — Assertion 2 (`source.has_tile(atlas_coord)`) catches that. Both failure modes are covered. The test correctly uses a fresh demo scene instance distinct from the main test's instance, avoiding state pollution.
+
+**3. Did any WR fix introduce regressions missed by the re-review?**
+- **WR-01 (Sutherland-Hodgman replacement):** Algorithmic correctness verified. `_clip_against_edge` uses standard per-edge clipping with the four crossing cases collapsing naturally (in/in emits curr; in/out emits intersection; out/in emits intersection + curr; out/out emits nothing). `_point_inside_edge` is inclusive at the boundary (resolves IN-02 as documented). `_intersect_edge` guards `dx == 0.0` / `dy == 0.0` for axis-aligned segments. No edge case dropped.
+- **WR-04 (mode assert):** Verified the assert never trips on legitimate AUTO usage. `get_fallback_tile_set()` resolves AUTO/AUTO_STRIP → FOUR (line 366-368) BEFORE the `_bundled_png_path(axis, resolved_mode)` call (line 374), so the assert at line 350 only ever sees concrete ONE..FIVE on real call paths. Manual misuse (a future caller bypassing `get_fallback_tile_set`) is exactly what the assert is designed to catch.
+- **WR-07 (`_make_slot` axis-invariance):** No downstream consumer broken. `mask_to_atlas` returns the slot from `_make_slot` for every non-zero mask; the only consumer is `_paint_with_slot` in `penta_tile_map_layer.gd`, which feeds `slot.atlas_coords` straight into `layer.set_cell()`. The synthesized strip ALWAYS uses `(slot_index, 0)` keys (`build_tile_set_from_synthesis` line 389), so axis-invariant `_make_slot` is exactly correct. No path that sets atlas coords for the synthesized atlas via the user's `axis` enum remains.
+
+**4. New Info items?** Three small ones (IN-11 / IN-12 / IN-13), documented below. None promote to Warning.
+
+The re-review's headline is unchanged: **fixes are correct, tests are correct, no Critical/Warning issues**. The frontmatter `info: 9 / total: 9` from the re-review undercounted by 1 (IN-10 was added in the re-review body but the count wasn't bumped); this third pass corrects to `info: 13 / total: 13` (IN-01..IN-13).
+
+## Info
+
+### IN-11: `--layout-path` arg parsing silently picks the last value on duplicates
+
+**File:** `addons/penta_tile/tests/_capture_baseline.gd:24-27`
+**Issue:** The CLI loop iterates every cmdline user arg matching `--layout-path=` but never `break`s. If a developer accidentally passes the flag twice (e.g., `--layout-path=A --layout-path=B`), B silently wins with no warning. For a dev tool this is usually fine, but the silent-overwrite behavior is the kind of thing that wastes minutes of debug time when a CI invocation accidentally double-passes the arg.
+**Fix:** Add `break` after the assignment, or print a `printerr("...duplicate --layout-path; using last value")` when a second match overrides the first. One-line change either way; not blocking.
+
+### IN-12: `_capture_baseline.gd` LAYOUT_OVERRIDE print silently emits 0/0 for non-Penta layouts
+
+**File:** `addons/penta_tile/tests/_capture_baseline.gd:67-71`
+**Issue:** The post-swap diagnostic prints `LAYOUT_OVERRIDE=%s axis=%d tile_count=%d` using `int(override_layout.get("axis"))` and `int(override_layout.get("tile_count"))`. `Resource.get(prop)` returns `null` if the property doesn't exist, and `int(null)` evaluates to `0` in GDScript without warning. So passing a non-Penta layout (e.g., `penta_tile_layout_dual_grid_16.tres` once Wave 5 ships those .tres files) prints `axis=0 tile_count=0` — visually identical to "HORIZONTAL AUTO Penta layout" output, which would mislead a reader scanning the log to confirm the swap. Phase 2's only baseline-eligible layouts are Penta-axis × Penta-mode, so this is a latent risk for Phase 3+ when more layout types ship.
+**Fix:** Either (a) gate the print on `override_layout is PentaTileLayoutPenta` and emit a generic `"LAYOUT_OVERRIDE=%s class=%s" % [path, override_layout.get_class()]` for non-Penta layouts, or (b) print `null` explicitly when `get()` returns null (use `var ax = override_layout.get("axis"); var ax_str = str(ax) if ax != null else "(n/a)"`). Either keeps the diagnostic informative across all layout types.
+
+### IN-13: `determinism_test.gd` top-of-file doc comment doesn't list sub-test (c)
+
+**File:** `addons/penta_tile/tests/determinism_test.gd:1-10`
+**Issue:** The header doc-comment enumerates `Sub-test (a)`, `Sub-test (b)`, and `Main test`, but the third-pass-added `Sub-test (c) — VERTICAL-axis structural coverage` is absent from the list. The body of `_initialize()` correctly invokes all four; only the header is stale. A reader skimming the file header to understand test coverage would underestimate by one.
+**Fix:** Add a fourth bullet to the header doc-comment block:
+```gdscript
+##   Sub-test (c) — VERTICAL-axis structural coverage (WR-07 regression net)
+```
+Trivial doc sync; not blocking.
+
+---
+
+_Reviewed: 2026-04-26 (third pass)_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
