@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
 status: executing
-stopped_at: "Completed 02-01-PLAN.md (Wave 1 pre-work: base-class renames + verification migration)"
-last_updated: "2026-04-26T19:39:48.779Z"
+stopped_at: Completed 02-02-PLAN.md (Wave 2 architectural sweep)
+last_updated: "2026-04-26T19:50:38.683Z"
 last_activity: 2026-04-26
 progress:
   total_phases: 7
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-25 after v0.2 pivot to layout library
 ## Current Position
 
 Phase: 02 (native-layouts) — EXECUTING
-Plan: 2 of 7
+Plan: 3 of 7
 Status: Ready to execute
 Last activity: 2026-04-26
 
@@ -55,6 +55,7 @@ Progress: [██████░░░░] 60%
 
 *Updated after each plan completion*
 | Phase 02 P01 | 147 | 2 tasks | 3 files |
+| Phase 02 P02 | 539 | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -92,6 +93,9 @@ Recent decisions affecting current work:
 - **Five-mode progressive Penta design — locked** (2026-04-26 fourth pivot). Penta now supports five `tile_count` modes (`ONE`/`TWO`/`THREE`/`FOUR`/`FIVE`) plus `AUTO` (dimension-only) and `AUTO_STRIP` (per-strip detection). New slot ordering: `0=IsolatedCell, 1=Fill, 2=Border, 3=InnerCorner, 4=OppositeCorners`. **OuterCorner is implicit** — synthesized from slot 0's corners across all modes; never has a dedicated slot. Border at slot 2 (before InnerCorner at slot 3) prioritizes visual frequency over fill-percentage ordering — Border is the most visible archetype after Fill. Rationale: each step from ONE to FIVE adds one more explicit archetype slot, sacrificing quality for less authoring time. Single PNG per layout serves as BOTH inspector preview AND fallback TileSet source (no atlas/bitmask split). Templates folder deleted; bundled PNGs co-locate next to layout `.gd` files. Penta has 10 PNGs in `penta_tile_layout_penta/` subfolder; single-variant layouts use flat siblings. Coverage 53 → 56 reqs (added PENTA-SYNTH-10/11/12). Full design + decision history in `.planning/phases/02-native-layouts/02-DISCUSSION-LOG.md` FOURTH SUPERSESSION block.
 - template_image renamed to bitmask_template on PentaTileLayout base class (LAYOUT-03/PREVIEW-01); no @export_storage compat shim per CLAUDE.md HARD RULE
 - get_fallback_tile_set() virtual stub returns null in Wave 1; Wave 2 fills body with TileSet construction from bitmask_template (LAYOUT-06)
+- PentaTileSynthesis utility class ships as RefCounted (@tool); synthesis path uses needs_synthesis() virtual to avoid forward type reference to PentaTileLayoutPenta (Wave 3)
+- Tasks 2.2 and 2.3 combined into one atomic commit (b6349fa) — synthesis wiring required touching penta_tile_layout.gd (needs_synthesis virtual) which was already in the atomic sweep
+- _DEFAULT_LAYOUT singleton deleted atomically with _resolve_layout rewrite in same commit per CONTEXT.md D-68 constraint
 
 ### Pending Todos
 
@@ -124,8 +128,8 @@ Items acknowledged and carried forward as v2 requirements (see REQUIREMENTS.md v
 
 ## Session Continuity
 
-Last session: 2026-04-26T19:39:48.774Z
-Stopped at: Completed 02-01-PLAN.md (Wave 1 pre-work: base-class renames + verification migration)
+Last session: 2026-04-26T19:50:32.486Z
+Stopped at: Completed 02-02-PLAN.md (Wave 2 architectural sweep)
 Resume file: None
 
 **Completed Phase:** 01 (Contract Skeleton + Penta Layouts) — 5/5 plans, 14/14 requirements, 26/26 automated tests PASS — 2026-04-26
