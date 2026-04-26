@@ -3,3 +3,4 @@
 /android/
 .mcp.json
 .claude/settings.local.json
+.vscode/settings.json
