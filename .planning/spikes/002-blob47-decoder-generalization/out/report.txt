@@ -1,0 +1,69 @@
+# Spike 002 — generalized template decoder — report
+Python: 3.14.2
+Pillow: 12.0.0
+
+Computed valid blob47 masks: 47 (expected 48: 47 reachable + mask 0)
+
+=== TT tetra_horizontal (corner; 4 archetypes) ===
+  source: addons\tetra_tile\templates\tetra_horizontal.png  (64x16 px)
+  decode time: 77.8 us  (19.45 us/slot)
+  slots decoded: 4; unique masks: 4; expected 4
+  visualization: .planning\spikes\002-blob47-decoder-generalization\out\decode_tetra_horizontal.png
+
+=== TT tetra_vertical (corner; 4 archetypes) ===
+  source: addons\tetra_tile\templates\tetra_vertical.png  (16x64 px)
+  decode time: 65.8 us  (16.45 us/slot)
+  slots decoded: 4; unique masks: 4; expected 4
+  visualization: .planning\spikes\002-blob47-decoder-generalization\out\decode_tetra_vertical.png
+
+=== TT dual_grid_16 (corner; 16 unique) ===
+  source: addons\tetra_tile\templates\dual_grid_16.png  (64x64 px)
+  decode time: 276.2 us  (17.26 us/slot)
+  slots decoded: 16; unique masks: 16; expected 16
+  visualization: .planning\spikes\002-blob47-decoder-generalization\out\decode_dual_grid_16.png
+
+=== TT wang_2corner (corner; 16 unique) ===
+  source: addons\tetra_tile\templates\wang_2corner.png  (64x64 px)
+  decode time: 266.5 us  (16.66 us/slot)
+  slots decoded: 16; unique masks: 16; expected 16
+  visualization: .planning\spikes\002-blob47-decoder-generalization\out\decode_wang_2corner.png
+
+=== TT wang_2edge (edge; 16 unique) ===
+  source: addons\tetra_tile\templates\wang_2edge.png  (64x64 px)
+  decode time: 260.6 us  (16.29 us/slot)
+  slots decoded: 16; unique masks: 16; expected 16
+  visualization: .planning\spikes\002-blob47-decoder-generalization\out\decode_wang_2edge.png
+
+=== DD template_sides (edge; 16 unique) ===
+  source: .planning\spikes\002-blob47-decoder-generalization\templates\template_sides.png  (256x256 px)
+  decode time: 266.1 us  (16.63 us/slot)
+  slots decoded: 16; unique masks: 16; expected 16
+  visualization: .planning\spikes\002-blob47-decoder-generalization\out\decode_template_sides.png
+
+=== DD template_corners (corner; 16 unique) ===
+  source: .planning\spikes\002-blob47-decoder-generalization\templates\template_corners.png  (256x256 px)
+  decode time: 266.7 us  (16.67 us/slot)
+  slots decoded: 16; unique masks: 16; expected 16
+  visualization: .planning\spikes\002-blob47-decoder-generalization\out\decode_template_corners.png
+
+=== DD template_corners_alt (corner; 15 unique, no blank) ===
+  source: .planning\spikes\002-blob47-decoder-generalization\templates\template_corners_alt.png  (320x192 px)
+  decode time: 254.2 us  (16.95 us/slot)
+  slots decoded: 15; unique masks: 15; expected 15
+  visualization: .planning\spikes\002-blob47-decoder-generalization\out\decode_template_corners_alt.png
+
+=== DD template_corners_and_sides (blob47; 47 valid + 1 blank) ===
+  source: .planning\spikes\002-blob47-decoder-generalization\templates\template_corners_and_sides.png  (768x256 px)
+  decode time: 1695.3 us  (35.32 us/slot)
+  slots decoded: 48; unique masks: 47; expected 48
+  [OK] all decoded masks satisfy blob47 corner-implies-adjacent-edges constraint
+  [INFO] 46/47 non-zero blob masks present; mask 0 (blank) present
+  [WARN] expected 48 unique masks, got 47
+      duplicates: {0: 2}
+  visualization: .planning\spikes\002-blob47-decoder-generalization\out\decode_template_corners_and_sides.png
+
+============================================================
+## Summary
+  All blob47 constraints satisfied; decoder generalizes across template styles.
+  decode timing: avg 381.0 us per atlas across 9 templates
+  worst case: 1695.3 us (DD template_corners_and_sides (blob47; 47 valid + 1 blank))
