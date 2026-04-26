@@ -307,12 +307,22 @@ func _ensure_synthesized_tile_set(penta: PentaTileLayout, source_id: int) -> voi
 	var penta_axis: int = penta.get("axis") if penta.get("axis") != null else 0
 	var penta_tile_count: int = penta.get("tile_count") if penta.get("tile_count") != null else 0
 	var source_tile_set_id := tile_set.get_instance_id() if tile_set != null else 0
+	# WR-02 FIX: resolve AUTO/AUTO_STRIP → concrete mode BEFORE building the cache
+	# signature so AUTO drift (e.g., user mutates atlas to add a 5th tile while AUTO is
+	# active) re-triggers synthesis. The prior order built the signature from the raw
+	# (unresolved) tile_count, so AUTO + 4-tile atlas and AUTO + 5-tile atlas hashed
+	# identically and the second paint reused the stale FOUR-mode synthesized TileSet.
+	var mode := penta_tile_count
+	if penta.has_method("resolve_active_mode") and tile_set != null and source_id >= 0:
+		var active_mode_enum = penta.call("resolve_active_mode", tile_set, source_id)
+		mode = int(active_mode_enum)
 	var sig := hash([
 		penta.get_instance_id(),
 		penta_axis,
 		penta_tile_count,
 		source_tile_set_id,
 		source_id,
+		mode,                              # WR-02: resolved mode in signature catches AUTO drift
 	])
 	if sig == _synthesis_signature and _synthesized_tile_set != null:
 		return   # cache hit — PENTA-SYNTH-06 deterministic re-run guard
@@ -320,12 +330,6 @@ func _ensure_synthesized_tile_set(penta: PentaTileLayout, source_id: int) -> voi
 	_synthesized_tile_set = null
 	if tile_set == null or source_id < 0:
 		return   # no source — Phase 4 fallback path (PREVIEW-03/04) handles null tile_set
-	# Wave 6 extension over Wave 2: resolve AUTO/AUTO_STRIP to a concrete int via the new
-	# resolve_active_mode method on PentaTileLayoutPenta. Explicit ONE..FIVE pass through unchanged.
-	var mode := penta_tile_count
-	if penta.has_method("resolve_active_mode"):
-		var active_mode_enum = penta.call("resolve_active_mode", tile_set, source_id)
-		mode = int(active_mode_enum)
 	if mode < 1 or mode > 5:
 		# Unresolved (AUTO with axis_size 0 or 6+; or AUTO_STRIP returns AUTO_STRIP itself —
 		# per-strip dispatch is a future expansion; for now AUTO_STRIP renders empty until per-strip
