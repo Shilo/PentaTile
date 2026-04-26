@@ -49,7 +49,7 @@ Phase 2 ships the native layout family (Penta with synthesis, DualGrid16, Wang2E
 
 Most findings are correctness gaps in the synthesis polygon clipper and latent bugs in code paths that are not exercised by current call sites (multi-strip synthesis, in-place TileSet mutations under AUTO mode). One Warning category covers stale documentation in the README that no longer matches the Phase 2 architecture (overlay layer removed, four-tile minimum is no longer accurate). README staleness is flagged because Wave 5 is explicitly the README pass — these notes give that pass a punch list.
 
-No Critical issues found. No security issues are applicable (this is a pure GDScript editor/runtime addon with no I/O outside Godot's load() and no untrusted input).
+No security issues are applicable (this is a pure GDScript editor/runtime addon with no I/O outside Godot's load() and no untrusted input). One latent correctness BLOCKER (WR-07, added 2026-04-26 by independent post-implementation audit) — VERTICAL-axis Penta layouts silently render empty under any synthesis mode because the synthesizer always produces a horizontal output strip while `_make_slot` requests vertical-strip coords. The demo only exercises HORIZONTAL, so the FOUR-mode determinism baseline (`BASELINE_HASH=2986698704`) cannot detect this. Must be fixed before approving Phase 2.
 
 ## Warnings
 
@@ -130,6 +130,41 @@ This is a documentation issue, not a code defect, and Wave 5 (the README+CHANGEL
 2. Refresh the file-tree to include `layouts/`, `tests/`, `_generate_bitmasks.py`, `penta_tile_synthesis.gd`, `penta_tile_atlas_slot.gd`, the `layouts/penta_tile_layout_penta/` PNG bundle, and the four flat-sibling layout PNGs.
 3. Replace the `atlas_layout` row in the API table with `layout: PentaTileLayout`. Document `axis` and `tile_count` (Penta-specific) either inline or via a dedicated Penta layout subsection.
 4. Reword the "diagonal masks 6 and 9" paragraph to describe the OppositeCorners archetype (synthesized in modes ONE..FOUR; authored in mode FIVE) rather than the deleted overlay-layer composition.
+
+### WR-07: Synthesized atlas axis mismatch — VERTICAL renders empty under any synthesis mode
+
+**Severity:** HIGH (BLOCKER for VERTICAL-axis Penta layouts; latent because demo + determinism baseline are HORIZONTAL-only)
+**Files:** `addons/penta_tile/penta_tile_synthesis.gd:139,250,268,294` + `addons/penta_tile/layouts/penta_tile_layout_penta.gd:198-206`
+**Discovered:** 2026-04-26 by independent post-implementation audit (subagent cross-checked `_make_slot` axis output against synthesizer atlas-output coords — the prior WR-01..WR-06 review traced source-side axis math but never traced output-side coords).
+
+**Issue:** The synthesizer always commits output as a horizontal strip regardless of `axis`:
+- `penta_tile_synthesis.gd:250` — `strip_width = tile_size.x * slots.size()` (always X-axis)
+- `penta_tile_synthesis.gd:268` — `Vector2i(i * tile_size.x, 0)` (always row 0)
+- `penta_tile_synthesis.gd:139,294` — `Vector2i(i, 0)` for all atlas-coord registrations
+
+But `PentaTileLayoutPenta._make_slot` for `Axis.VERTICAL` returns `Vector2i(0, slot_index)` (lines 198-206). For example, mask 3 (TL+TR → Border facing top) routes through `_make_slot(_SLOT_BORDER, _ROTATE_180)` with slot_index=2 → coord `(0, 2)`. The synthesized atlas only has tiles at `(0,0)..(4,0)` → the lookup hits an unregistered atlas coord → `set_cell` paints nothing → all renders return empty.
+
+The `axis` parameter only correctly governs SOURCE READS in the synthesizer (which axis to walk in the source TileSet). The OUTPUT is always laid out as a horizontal strip regardless. This is consistent and intentional on the synthesizer side — the bug is that `_make_slot` doesn't know this contract.
+
+**Why missed by determinism baseline:** `BASELINE_HASH=2986698704` was captured under HORIZONTAL-axis `PentaTileLayoutPenta(axis=HORIZONTAL, tile_count=FOUR)`. There is no equivalent VERTICAL baseline. The bug is dormant against the test corpus but surfaces immediately on any user binding a vertical Penta atlas.
+
+**Fix:** Make `_make_slot` always return `Vector2i(slot_index, 0)` since the synthesized atlas is always horizontal. The user-facing `axis` enum then governs only source READS (already correctly handled by the synthesizer's source-side axis math). ~5 LOC change in `penta_tile_layout_penta.gd:198-206` plus a comment clarifying the contract:
+
+```gdscript
+# The synthesized atlas is ALWAYS a horizontal strip regardless of `axis`.
+# `axis` only governs which axis the synthesizer walks when READING the source.
+# Therefore `_make_slot` always returns horizontal-strip coords.
+func _make_slot(slot_index: int, transform_flags: int) -> PentaTileAtlasSlot:
+	var slot := PentaTileAtlasSlot.new()
+	slot.atlas_coords = Vector2i(slot_index, 0)
+	slot.transform_flags = transform_flags
+	slot.alternative_tile = 0
+	return slot
+```
+
+**Verification:** Add a VERTICAL-axis pixel-hash baseline to `_capture_baseline.gd` companion to the existing HORIZONTAL baseline. The new test asserts `PentaTileLayoutPenta(axis=VERTICAL, tile_count=FOUR)` produces non-empty output for a known set of mask states. Both baselines must pass before approval.
+
+**Cross-cutting:** WR-03 (hardcoded 5-stride in `synthesize_strip`) is independent of this fix — both bugs need to be addressed but they don't conflict.
 
 ## Info
 
