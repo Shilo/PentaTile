@@ -1,10 +1,10 @@
-# TetraTile — Claude Code Project Guide
+# PentaTile — Claude Code Project Guide
 
 ## Project
 
-TetraTile is a lightweight dual-grid autotiling addon for **Godot 4.6** built around a single public node, `TetraTileMapLayer`, that subclasses `TileMapLayer`. Users paint with the native `set_cell()` / `erase_cell()` API and the addon generates dual-grid visuals automatically through `_update_cells()`.
+PentaTile is a lightweight dual-grid autotiling addon for **Godot 4.6** built around a single public node, `PentaTileMapLayer`, that subclasses `TileMapLayer`. Users paint with the native `set_cell()` / `erase_cell()` API and the addon generates dual-grid visuals automatically through `_update_cells()`.
 
-The current codebase is v0.1.0 (4-tile binary atlas: Fill, Inner Corner, Border, Outer Corner). The active milestone is **v0.2.0 — "Layout Library + Preview Fallback"** which ships a library of pluggable `TetraTileLayout` Resources covering every popular Godot autotiling atlas convention (Tetra, DualGrid16, Wang2Edge, Wang2Corner, Min3x3, TBT-decoded Blob/Wang, PixelLab, plus a Single-Tile prototyping layout). The original v0.2 pillars (Y-axis variation, top tiles, non-rotating tilesets) deferred to v2 backlog. See `.planning/ROADMAP.md` for current phases.
+The current codebase is v0.1.0 (4-tile binary atlas: Fill, Inner Corner, Border, Outer Corner). The active milestone is **v0.2.0 — "Layout Library + Preview Fallback"** which ships a library of pluggable `PentaTileLayout` Resources covering every popular Godot autotiling atlas convention (Penta, DualGrid16, Wang2Edge, Wang2Corner, Min3x3, TBT-decoded Blob/Wang, PixelLab, plus a Single-Tile prototyping layout). The original v0.2 pillars (Y-axis variation, top tiles, non-rotating tilesets) deferred to v2 backlog. See `.planning/ROADMAP.md` for current phases.
 
 ## Stack
 
@@ -17,20 +17,20 @@ Key Godot APIs in use:
 - `TileMapLayer._update_cells(coords, forced_cleanup)` — the single autotile egress point
 - `TileSetAtlasSource` + `alternative_tile` int packing (`TRANSFORM_FLIP_H=4096 | FLIP_V=8192 | TRANSPOSE=16384` OR'd with low-bit alt-IDs)
 - `TileData.probability` — read-only weights for variation (Godot does NOT auto-pick at `set_cell` time; the addon runs its own deterministic-hash `rand_weighted` inside `_update_cells`)
-- `TileSet.custom_data_layers` — for per-tile flags like `tetra_role` and `tetra_lock_rotation`
+- `TileSet.custom_data_layers` — for per-tile flags like `penta_role` and `penta_lock_rotation`
 
 ## Layout
 
 ```
-addons/tetra_tile/
+addons/penta_tile/
   plugin.cfg
-  tetra_tile_map_layer.gd          # core class (~261 LOC at v0.1.0)
-  tetra_tile_template.png          # blank 4-tile reference template
+  penta_tile_map_layer.gd          # core class (~261 LOC at v0.1.0)
+  penta_tile_template.png          # blank 4-tile reference template
   demo/
-    tetra_tile_demo.tscn           # main demo scene (entry point)
+    penta_tile_demo.tscn           # main demo scene (entry point)
     demo_player.gd                 # CharacterBody2D platformer player
     demo_runtime_painter.gd        # left-click paint, right-click erase, drag-paint
-    tetra_tile_ground.png/.tres    # demo TileSet with collision polygons
+    penta_tile_ground.png/.tres    # demo TileSet with collision polygons
 .planning/                         # GSD planning artifacts (committed to git)
   PROJECT.md                       # what we're building, why, constraints
   REQUIREMENTS.md                  # 30 v1 REQ-IDs + v2 deferred + Out of Scope
@@ -45,9 +45,9 @@ addons/tetra_tile/
 
 This project uses Get Shit Done (GSD) for structured execution. The phases of v0.2.0 are:
 
-1. **Contract Skeleton + Tetra Layouts** ✅ DONE — `TetraTileAtlasContract` + `TetraTileLayout` base + `AtlasSlot`; Tetra Horizontal + Vertical layouts.
-2. **Native Layouts** — DualGrid16, Wang2Edge, Wang2Corner, Min3x3 + Tetra layouts gain load-time synthesis of the 5th `OppositeCorners` archetype (drops the runtime overlay layer entirely).
-2.1 **Single-Tile Layout (Prototyping)** — `TetraTileLayoutSingleTile` slices ONE source image into 5 archetypes at load time.
+1. **Contract Skeleton + Tetra Layouts** ✅ DONE — `PentaTileAtlasContract` + `PentaTileLayout` base + `AtlasSlot`; Tetra Horizontal + Vertical layouts.
+2. **Native Layouts** — DualGrid16, Wang2Edge, Wang2Corner, Min3x3 + Penta layouts gain load-time synthesis of the 5th `OppositeCorners` archetype (drops the runtime overlay layer entirely).
+2.1 **Single-Tile Layout (Prototyping)** — `PentaTileLayoutSingleTile` slices ONE source image into 5 archetypes at load time.
 3. **TileBitTools-Decoded Layouts** — Blob47Godot, TilesetterWang15, TilesetterBlob47 with attribution.
 3.5 **PixelLab Layouts + Variation-Bank Wiring** — PixelLabTopDown + PixelLabSideScroller (8×8 atlas, internal variation banks).
 4. **Fallback Routing** — `tile_set == null` → `layout.fallback_tile_set`.
@@ -67,7 +67,7 @@ The active config is in `.planning/config.json`: interactive mode, standard gran
 
 ## Identity Guardrails
 
-The PROJECT.md identity constraint is **"TetraTile must remain visibly smaller and simpler than TileMapDual."** When making implementation decisions, reject:
+The PROJECT.md identity constraint is **"PentaTile must remain visibly smaller and simpler than TileMapDual."** When making implementation decisions, reject:
 
 - Terrain peering metadata or terrain rule tries (TileMapDual / Better Terrain territory)
 - Multi-terrain transitions (deferred to a future milestone)
@@ -121,16 +121,27 @@ When implementing v0.2.0 features, watch for:
 
 Full pitfall analysis is in `.planning/research/PITFALLS.md`.
 
+## Coined-Term Discipline
+
+**"Penta" is reserved exclusively for the 5-archetype tileset format used by PentaTile.** This is a project invariant — never use "Penta" for anything else, or the term loses descriptive meaning.
+
+- Use **PentaTile** for the project name, public class prefixes (`PentaTileMapLayer`, `PentaTileAtlasContract`, `PentaTileLayout*`), file/folder names (`addons/penta_tile/`, `penta_tile_map_layer.gd`), the plugin id, and demo scene names. The project happens to share its name with its native layout family — that coincidence is load-bearing for the codename to land.
+- Use **Penta** as a generic codename in phrases like "a Penta tileset," "the Penta layout family," "Penta archetypes," "Penta slot order." Never coin "Penta" prefixes for unrelated subsystems (e.g., do NOT introduce `PentaCache`, `PentaDecoder`, `PentaToolkit` for things that aren't the 5-archetype format).
+- The labeled archetype diagram in `README.md` § What is a Penta tileset? is **load-bearing** for codename propagation — without the picture-with-named-archetypes, the codename cannot spread (the Boris-the-Brave precedent for "Blob": classification stuck because the diagram was canonical).
+- When introducing the term to a new reader (docs, CHANGELOG, release notes), link or excerpt from the canonical README definition rather than re-explaining inline. Single source of truth keeps the term stable.
+
+Canonical "What is a Penta tileset?" definition lives in `README.md`.
+
 ## Coding Conventions
 
-- Class names: PascalCase (`TetraTileMapLayer`, `TetraTileAtlasContract`)
+- Class names: PascalCase (`PentaTileMapLayer`, `PentaTileAtlasContract`)
 - Public methods: `snake_case` without leading underscore (`rebuild()`, `set_cell()`)
 - Private methods: `_snake_case` (`_resolve_slot()`, `_pick_alternative()`)
 - Constants: `_UPPER_SNAKE_CASE` (private, `_FILL`, `_ROTATE_90`)
 - Enum members: `UPPER_CASE` (`HORIZONTAL`, `NON_ROTATING`)
 - Export properties: `snake_case` (`atlas_source_id`, `atlas_contract`)
-- File names: snake_case matching class name (`tetra_tile_map_layer.gd` → `TetraTileMapLayer`)
+- File names: snake_case matching class name (`penta_tile_map_layer.gd` → `PentaTileMapLayer`)
 
 ## Next Step
 
-Run `/gsd-progress` to see current position, or jump into Phase 1 with `/gsd-discuss-phase 1` (recommended) or `/gsd-plan-phase 1`.
+Run `/gsd-progress` to see current position. Phase 1.1 (this rename) is in progress; Phase 2 is the next major work.
