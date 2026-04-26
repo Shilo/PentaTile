@@ -18,11 +18,11 @@ The original v0.2 feature pillars (Y-axis variation, top tiles, non-rotating til
 
 **Phase Numbering:**
 - Integer phases (1, 2, 3, 4, 5): Planned milestone work
-- Decimal phases (e.g. 3.5): Reserved for inserts that extend an adjacent integer phase without renumbering. Currently in use: 3.5 (PixelLab layouts, extends Phase 3). Phase 2.1 was inserted 2026-04-26 then **collapsed into Phase 2** on 2026-04-26 when the Tetra layout absorbed Single-Tile mode via auto-detect.
+- Decimal phases (e.g. 3.5): Reserved for inserts that extend an adjacent integer phase without renumbering. Currently in use: 3.5 (PixelLab layouts, extends Phase 3). Phase 2.1 was inserted 2026-04-26 then **collapsed into Phase 2** on 2026-04-26 when the Penta layout absorbed Single-Tile mode via auto-detect.
 
-- [x] **Phase 1: Contract Skeleton + Tetra Layouts** — Introduce `PentaTileAtlasContract` + `PentaTileLayout` base + `AtlasSlot`. Ship Tetra Horizontal + Tetra Vertical as the first two layout subclasses. v0.1 visuals continue unchanged via the bundled default contract OR the null-fallback path.
+- [x] **Phase 1: Contract Skeleton + Penta Layouts** — Introduce `PentaTileAtlasContract` + `PentaTileLayout` base + `AtlasSlot`. Ship Penta Horizontal + Penta Vertical as the first two layout subclasses. v0.1 visuals continue unchanged via the bundled default contract OR the null-fallback path.
 - [x] **Phase 1.1: PentaTile Rename + Penta Codename Establishment** — Project-wide rename to `PentaTile` (source code, saved resources, planning + project docs, GitHub repo, local clone, Claude memory) before Phase 2 ships new files under the old name. "Penta" coined as the 5-archetype tileset codename via canonical README anchor + CLAUDE.md project invariant. CHANGELOG.md ships the v0.2 BREAKING entry.
-- [ ] **Phase 2: Native Layouts + Tetra Synthesis (1/4/5 auto-detect)** — Ship DualGrid16, Wang2Edge, Wang2Corner, Min3x3 subclasses. Plus the architectural pivot: existing `PentaTileLayoutPentaHorizontal`/`Vertical` gain load-time synthesis with auto-detect of three modes per strip — PENTA1 (1 source tile → 5 archetypes synthesized), PENTA4 (4 sources → 5th synthesized), PENTA5 (5 authored, no synthesis). Runtime overlay layer DELETED entirely (single-layer dispatch only). `TileCountMode` enum on the layout for explicit override. Companion artifact: `.planning/research/layouts/RPG_MAKER.md` documents the deferred RPG Maker family for v0.3+.
+- [ ] **Phase 2: Native Layouts + Penta Synthesis (1/2/3/4/5 auto-detect)** — Ship DualGrid16, Wang2Edge, Wang2Corner, Min3x3 subclasses. Plus the architectural pivot: Phase 1's `PentaTileLayoutPentaHorizontal`/`Vertical` are merged into a single `PentaTileLayoutPenta` class with `axis: Axis` enum and `tile_count: TileCountMode { AUTO, AUTO_STRIP, ONE, TWO, THREE, FOUR, FIVE }` enum — five progressive synthesis modes per strip with AUTO/AUTO_STRIP detection variants. Runtime overlay layer DELETED entirely (single-layer dispatch only). New slot ordering: `0=IsolatedCell, 1=Fill, 2=Border, 3=InnerCorner, 4=OppositeCorners`; OuterCorner is implicit (synthesized from slot 0). Companion artifact: `.planning/research/layouts/RPG_MAKER.md` documents the deferred RPG Maker family for v0.3+.
 - [ ] **Phase 3: TileBitTools-Decoded Layouts** — Transcribe slot tables from TBT's MIT-licensed `tilesetter_blob.tres`, `tilesetter_wang.tres`, and the matching Godot blob template `.tres`. Ship Blob47Godot, TilesetterWang15, TilesetterBlob47. Generate the 3 missing template PNGs from the slot tables. Add `ATTRIBUTION.md`.
 - [ ] **Phase 3.5: PixelLab Layouts + Variation-Seed Wiring** — Ship `PentaTileLayoutPixelLabTopDown` and `PentaTileLayoutPixelLabSideScroller` (8×8 atlas, single-grid, 4-bit corner mask, variation-bank). Wire `variation_seed` deterministic-hash bucket-pick. Add `PentaTileLayoutMinimal3x3` if not already shipped in Phase 2.
 - [ ] **Phase 4: Fallback Routing** — Wire `PentaTileMapLayer` to use `layout.fallback_tile_set` when `tile_set == null`. Verify all 8 layouts paint correctly with their bundled fallback. Visual regression on the demo scene.
@@ -30,7 +30,7 @@ The original v0.2 feature pillars (Y-axis variation, top tiles, non-rotating til
 
 ## Phase Details
 
-### Phase 1: Contract Skeleton + Tetra Layouts
+### Phase 1: Contract Skeleton + Penta Layouts
 
 **Goal**: A typed `PentaTileAtlasContract` Resource owning a `PentaTileLayout` reference is the source of truth for atlas shape; v0.1 scenes that don't migrate continue to render unchanged via either the bundled default contract OR the null-fallback path.
 
@@ -77,10 +77,10 @@ Plans:
 4. **Synthesize missing archetypes** at load time per mode (drops the runtime overlay layer entirely)
 5. **Delete** `PentaTileAtlasContract` — `layout: PentaTileLayout` directly on `PentaTileMapLayer` (no version field, no contract wrapper)
 6. **Rename** `template_image` → `bitmask_template` (single image serves as inspector preview AND fallback TileSet source — no atlas/bitmask split). **Hide** `fallback_tile_set` from inspector. **Delete** speculative `decoder_image`.
-7. **Co-locate bundled bitmask PNGs** next to layout `.gd` files. Tetra has 10 PNGs in `penta_tile_layout_penta/` subfolder (5 modes × 2 axes); single-variant layouts use flat siblings. The `templates/` folder is deleted entirely.
+7. **Co-locate bundled bitmask PNGs** next to layout `.gd` files. Penta has 10 PNGs in `penta_tile_layout_penta/` subfolder (5 modes × 2 axes); single-variant layouts use flat siblings. The `templates/` folder is deleted entirely.
 8. **Delete** the entire `addons/penta_tile/contracts/` folder + `penta_tile_atlas_contract.gd` + the original v0.1 `penta_tile_template.png`
 
-This phase supersedes Phase 1's CONTRACT-* (deleted), separate Tetra* classes (merged), `template_image` naming (renamed), `fallback_tile_set` @export (hidden), `decoder_image` (deleted), and the previously-planned Penta5-as-separate-class + Phase 2.1 SingleTile-as-separate-class plans. Per the [no-backwards-compat AND no-forward-compat policy](../../CLAUDE.md#breaking-changes-policy-hard-rule), all of this proceeds without compat shims; CHANGELOG documents the breakage.
+This phase supersedes Phase 1's CONTRACT-* (deleted), separate Penta H/V classes (merged), `template_image` naming (renamed), `fallback_tile_set` @export (hidden), `decoder_image` (deleted), and the previously-planned Penta5-as-separate-class + Phase 2.1 SingleTile-as-separate-class plans. Per the [no-backwards-compat AND no-forward-compat policy](../../CLAUDE.md#breaking-changes-policy-hard-rule), all of this proceeds without compat shims; CHANGELOG documents the breakage.
 
 **Depends on**: Phase 1 (layout dispatch foundation; Phase 2 modifies but doesn't replace it).
 
@@ -182,7 +182,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 3.5 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Contract Skeleton + Tetra Layouts | 5/5 | Complete (substantially superseded by Phase 2 architectural sweep) | 2026-04-26 |
+| 1. Contract Skeleton + Penta Layouts | 5/5 | Complete (substantially superseded by Phase 2 architectural sweep) | 2026-04-26 |
 | 1.1. PentaTile Rename + Penta Codename Establishment | 3/3 | Complete | 2026-04-26 |
 | 2. Native Layouts + Architectural Simplification | 0/TBD | Not started | - |
 | 3. TileBitTools-Decoded Layouts | 0/TBD | Not started | - |
@@ -196,7 +196,7 @@ All 58 v1 requirements mapped to exactly one phase. No orphans, no duplicates.
 
 | Phase | Requirements (count) |
 |-------|----------------------|
-| 1. Contract Skeleton + Tetra Layouts (residual) | LAYOUT-01, LAYOUT-02, LAYOUT-05 (3) |
+| 1. Contract Skeleton + Penta Layouts (residual) | LAYOUT-01, LAYOUT-02, LAYOUT-05 (3) |
 | 2. Native Layouts + Architectural Simplification | NATIVE-01..03, MIN3x3-01, LAYER-01..05, LAYOUT-03/04/06/07, PENTA-01..03, PENTA-SYNTH-01..12, PREVIEW-01..02, TEMPLATE-01/03/04 (33) |
 | 3. TileBitTools-Decoded Layouts | TBT-01..04, TEMPLATE-02, DOC-05 (6) |
 | 3.5. PixelLab Layouts | PIXLAB-01..04 (4) |
@@ -212,7 +212,7 @@ All 58 v1 requirements mapped to exactly one phase. No orphans, no duplicates.
 > - **New slot ordering**: `0=IsolatedCell, 1=Fill, 2=Border, 3=InnerCorner, 4=OppositeCorners`. OuterCorner is implicit (synthesized from slot 0 across all modes; no dedicated slot)
 > - `template_image` → `bitmask_template` (single image per layout, doubles as inspector preview AND fallback TileSet source — no atlas/bitmask split)
 > - `fallback_tile_set` hidden from inspector (codegen via `get_fallback_tile_set()`); `decoder_image` deleted (was speculative)
-> - **Bundled PNGs co-located** next to layout `.gd` files. Tetra: 10 PNGs in `penta_tile_layout_penta/` subfolder. Single-variant layouts: flat siblings. The `templates/` folder is deleted entirely.
+> - **Bundled PNGs co-located** next to layout `.gd` files. Penta: 10 PNGs in `penta_tile_layout_penta/` subfolder. Single-variant layouts: flat siblings. The `templates/` folder is deleted entirely.
 > - VAR-PIXEL-01 (PixelLab variation-bank pick) moved to v2 backlog with VAR-01 / MULTITERR-* (all Y-axis-coupled, must be designed together)
 > - Phase 2.1 collapsed back into Phase 2 (ONE mode handles SingleTile prototyping via auto-detect)
 

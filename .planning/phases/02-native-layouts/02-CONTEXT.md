@@ -28,7 +28,7 @@ Phase 2 ships **five native layout subclasses** plus a sweeping architectural si
 - **Merge `PentaTileLayoutPentaHorizontal` + `PentaTileLayoutPentaVertical`** into a single `PentaTileLayoutPenta` class with `axis: Axis = HORIZONTAL` enum and `tile_count: TileCountMode { AUTO, AUTO_STRIP, ONE = 1, TWO = 2, THREE = 3, FOUR = 4, FIVE = 5 }` enum. Five progressive synthesis modes; AUTO is dimension-only, AUTO_STRIP is per-strip detection.
 - **New slot ordering** across all Penta modes: `0=IsolatedCell, 1=Fill, 2=Border, 3=InnerCorner, 4=OppositeCorners`. **OuterCorner is implicit** — synthesized from slot 0's corners; never has a dedicated slot.
 - **Rename `template_image` → `bitmask_template`.** Single PNG per layout serves as BOTH the inspector preview AND the prototyping fallback's source pixels. **Hide `fallback_tile_set`** from the inspector (replaced by `get_fallback_tile_set() -> TileSet` virtual that codegens at first call). **Delete `decoder_image`** (was speculative).
-- **Co-locate bundled PNGs** next to layout `.gd` files. Tetra has 10 PNGs in `addons/penta_tile/layouts/penta_tile_layout_penta/` (5 modes × 2 axes); single-variant layouts use flat siblings under `addons/penta_tile/layouts/`. The entire `addons/penta_tile/templates/` folder is deleted; `addons/penta_tile/contracts/` folder is deleted; `addons/penta_tile/penta_tile_template.png` (original v0.1 reference) is deleted.
+- **Co-locate bundled PNGs** next to layout `.gd` files. Penta has 10 PNGs in `addons/penta_tile/layouts/penta_tile_layout_penta/` (5 modes × 2 axes); single-variant layouts use flat siblings under `addons/penta_tile/layouts/`. The entire `addons/penta_tile/templates/` folder is deleted; `addons/penta_tile/contracts/` folder is deleted; `addons/penta_tile/penta_tile_template.png` (original v0.1 reference) is deleted.
 
 ### What Phase 2 does NOT do (consumed in later phases)
 
@@ -79,7 +79,7 @@ Decision IDs in this round start at **D-68**, continuing the trail in `02-DISCUS
 
 ### Documentation drift fix
 
-- **D-71: Phase 1 directory name drift acknowledged and routed.** The actual on-disk directory is `.planning/phases/01-contract-skeleton-tetra-layouts/`. References in `REQUIREMENTS.md` (LAYER-05) and `ROADMAP.md` (Phase 2 success criterion 17) to `01-contract-skeleton-penta-layouts/` are stale — Phase 1.1's PentaTile rename swept source code + saved resources + most docs but left phase directory names untouched. (Verified via grep: PROJECT.md is clean; only REQUIREMENTS.md and ROADMAP.md contain the stale string.) This CONTEXT.md (canonical_refs section below) authors against the **actual** path. The cross-doc drift is captured as a deferred cleanup item (out of Phase 2 scope per the breaking-changes-but-no-cleanup-bloat heuristic; can be addressed in any future docs sweep). Downstream agents reading this CONTEXT.md should NOT trust the `penta-layouts/` paths in REQUIREMENTS.md / ROADMAP.md without first checking that the actual directory is named `tetra-layouts/`.
+- **D-71: Phase 1 directory name drift — RESOLVED in this round (2026-04-26).** Originally captured as deferred cleanup (the on-disk directory was `.planning/phases/01-contract-skeleton-tetra-layouts/` while REQUIREMENTS.md LAYER-05 and ROADMAP.md success criterion 17 referenced `01-contract-skeleton-penta-layouts/`). Resolved via `git mv` of the directory to match the Penta codename + a project-wide Tetra→Penta sweep of live planning docs (REQUIREMENTS.md, ROADMAP.md, STATE.md, this CONTEXT.md, CLAUDE.md). The audit-trail Tetra references in `02-DISCUSSION-LOG.md` (FIRST..FOURTH supersessions describing past states like the now-renamed `TETRA1/TETRA4/TETRA5` enum members) are intentionally preserved. CHANGELOG.md, the Phase 1.1 rename phase folder, and STATE.md's timestamped Roadmap Evolution entries also keep their historical Tetra references because they describe what was true *at the time*.
 
 ### Architectural decisions (locked elsewhere — pointers only)
 
@@ -95,7 +95,7 @@ The locked architecture is in the supersession trail. This section maps each req
 | LAYOUT-03 (`bitmask_template` rename) | THIRD SUPERSESSION D-59 | Single user-facing image; `decoder_image` deleted; `fallback_tile_set` hidden |
 | LAYOUT-04 (`AtlasSlot` field deletion) | FIRST SUPERSESSION D-51 | `diagonal_complement_atlas_coords` deleted |
 | LAYOUT-06 (`get_fallback_tile_set()` virtual) | THIRD SUPERSESSION D-59 | Default impl builds TileSet from `bitmask_template` at first call |
-| LAYOUT-07 (co-located PNGs) | FOURTH SUPERSESSION D-66 | Tetra subfolder; flat siblings for single-variant |
+| LAYOUT-07 (co-located PNGs) | FOURTH SUPERSESSION D-66 | Penta subfolder; flat siblings for single-variant |
 | NATIVE-01..03, MIN3x3-01 | Carried forward unchanged | 4 single-variant layouts |
 | PENTA-01 (merged class with `axis` enum) | THIRD SUPERSESSION D-57 | `PentaTileLayoutPenta` |
 | PENTA-02 (`tile_count` enum) | FOURTH SUPERSESSION D-61, D-64 | 5 modes × 2 detection variants |
@@ -137,7 +137,7 @@ The user explicitly waved off the four-concerns deep-dive with *"only discuss th
 
 **Downstream agents (researcher, planner, executor) MUST read these before planning or implementing.**
 
-> ⚠ **Doc drift notice.** The actual Phase 1 directory on disk is `.planning/phases/01-contract-skeleton-tetra-layouts/`. References in `REQUIREMENTS.md` (LAYER-05) and `ROADMAP.md` (Phase 2 success criterion 17) to `01-contract-skeleton-penta-layouts/` are stale (Phase 1.1 rename did not sweep phase directory names). PROJECT.md is clean. The paths below use the **actual** directory name. See D-71 for the deferred cleanup.
+> ✓ **Doc drift resolved (2026-04-26).** The Phase 1 directory was renamed from `01-contract-skeleton-tetra-layouts/` → `01-contract-skeleton-penta-layouts/` via `git mv` so the on-disk path matches the Penta codename and the references in REQUIREMENTS.md / ROADMAP.md. The paths below use the new directory name. See D-71 for the resolution record.
 
 ### Project + roadmap
 
@@ -150,11 +150,11 @@ The user explicitly waved off the four-concerns deep-dive with *"only discuss th
 
 - `.planning/phases/02-native-layouts/02-DISCUSSION-LOG.md` — **REQUIRED READING.** Records the four supersession rounds (D-47..D-67) that locked the architecture, plus the fifth supersession round (this re-discussion) at the bottom. Plan-phase, researcher, and executor agents MUST read the FIRST/SECOND/THIRD/FOURTH SUPERSESSION sections to understand WHY each decision is what it is. Skipping the log will cause agents to re-litigate decisions that took 4 iterations to lock.
 
-### Phase 1 carry-forward (note: actual directory is `tetra-layouts/`, not `penta-layouts/` per D-71)
+### Phase 1 carry-forward
 
-- `.planning/phases/01-contract-skeleton-tetra-layouts/01-CONTEXT.md` — Phase 1 decisions (D-01..D-27); the axis-swap inheritance pattern (D-16) does NOT carry forward (Phase 2 merges H/V into one class)
-- `.planning/phases/01-contract-skeleton-tetra-layouts/01-VERIFICATION.md` — 26 tests against the deleted API surface; Wave 1 migrates these (LAYER-05). Marked HISTORICAL after Wave 1 completes.
-- `.planning/phases/01-contract-skeleton-tetra-layouts/01-PATTERNS.md` — naming/inheritance patterns from Phase 1; the snake_case-file-matches-class-name convention still applies, but the H/V-axis-swap inheritance pattern is superseded by the merged class with `axis` enum
+- `.planning/phases/01-contract-skeleton-penta-layouts/01-CONTEXT.md` — Phase 1 decisions (D-01..D-27); the axis-swap inheritance pattern (D-16) does NOT carry forward (Phase 2 merges H/V into one class)
+- `.planning/phases/01-contract-skeleton-penta-layouts/01-VERIFICATION.md` — 26 tests against the deleted API surface; Wave 1 migrates these (LAYER-05). Marked HISTORICAL after Wave 1 completes.
+- `.planning/phases/01-contract-skeleton-penta-layouts/01-PATTERNS.md` — naming/inheritance patterns from Phase 1; the snake_case-file-matches-class-name convention still applies, but the H/V-axis-swap inheritance pattern is superseded by the merged class with `axis` enum
 
 ### Research (architecture + design)
 
@@ -269,7 +269,7 @@ CHANGELOG entries required for ALL of the above (DOC-04 in Phase 5).
 
 ### Phase 1 directory drift fix
 
-Captured in D-71: the actual on-disk directory is `01-contract-skeleton-tetra-layouts/`. References in `REQUIREMENTS.md` (LAYER-05) and `ROADMAP.md` (Phase 2 success criterion 17) to `01-contract-skeleton-penta-layouts/` are stale (PROJECT.md is clean — no stale reference there). This CONTEXT.md uses the actual path everywhere; the cross-doc fix is deferred (see `<deferred>` below).
+Captured in D-71 and RESOLVED in this round (2026-04-26): the on-disk directory was renamed `01-contract-skeleton-tetra-layouts/` → `01-contract-skeleton-penta-layouts/` via `git mv`, and a project-wide Tetra→Penta sweep aligned REQUIREMENTS.md / ROADMAP.md / STATE.md / CLAUDE.md / this CONTEXT.md with the Penta codename. Audit-trail Tetra references (DISCUSSION-LOG.md supersession history, CHANGELOG.md migration record, Phase 1.1 rename phase folder, STATE.md timestamped Roadmap Evolution entries) are intentionally preserved.
 
 ### Penta canonical paint anchoring (preserved from old D-32 / D-46)
 
@@ -314,9 +314,9 @@ Per CLAUDE.md "Coined-Term Discipline": "Penta" is reserved exclusively for the 
 - **Shader fallback for diagonal compositing** (PERF-01) — partially obviated by overlay-layer deletion.
 - **Asset Library distribution, MkDocs site, formal GUT test suite** (DIST-01/02).
 
-### Doc-drift cleanup (deferred per D-71)
+### Doc-drift cleanup (D-71 — RESOLVED 2026-04-26)
 
-- **Preferred fix:** Rename `.planning/phases/01-contract-skeleton-tetra-layouts/` → `.planning/phases/01-contract-skeleton-penta-layouts/` (matches the project-wide PentaTile codename established in Phase 1.1's "Coined-Term Discipline"; the existing `tetra-layouts/` name is a leftover from before that phase ran and is the actual stale token, not the references). The two stale references in `REQUIREMENTS.md` (LAYER-05) and `ROADMAP.md` (Phase 2 success criterion 17) become correct automatically. **Alternative fix:** if a directory rename is too disruptive in git history, instead update both stale references to point at the existing `tetra-layouts/` path. PROJECT.md needs no edit either way (already clean). Out of Phase 2 scope; can be folded into any Phase 5 docs sweep or a standalone docs cleanup phase.
+- ✓ **DONE.** The Phase 1 directory was renamed from `01-contract-skeleton-tetra-layouts/` → `01-contract-skeleton-penta-layouts/` via `git mv` (history preserved as renames). REQUIREMENTS.md (LAYER-05) and ROADMAP.md (Phase 2 success criterion 17) path references became correct automatically. Project-wide Tetra→Penta sweep also applied to live planning docs (REQUIREMENTS.md, ROADMAP.md, STATE.md, CLAUDE.md, this CONTEXT.md). Audit-trail Tetra references in DISCUSSION-LOG.md, CHANGELOG.md, the Phase 1.1 rename phase folder, and STATE.md's timestamped Roadmap Evolution entries are intentionally preserved (those describe what was true *at the time* and editing them would falsify the historical record).
 
 ### Items considered and rejected during the supersession trail (preserved from the historical CONTEXT.md so future agents don't re-litigate)
 

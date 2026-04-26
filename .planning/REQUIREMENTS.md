@@ -15,7 +15,7 @@ Phase 2 architectural simplification (2026-04-26): the `PentaTileAtlasContract` 
 
 - [ ] **LAYER-01**: `PentaTileMapLayer` exposes `@export var layout: PentaTileLayout` directly (no contract wrapper). Replaces the deleted `atlas_contract: PentaTileAtlasContract` property. Setter has idempotence guard + disconnect-before-reconnect on `layout.changed` per PITFALLS.md §5.
 - [ ] **LAYER-02**: `_resolve_slot(mask)` reads `self.layout` directly (one fewer hop than the prior contract chain). When `layout == null`, the layer renders nothing (no v0.1 hardcoded fallback — Phase 1's complete refactor + breaking-changes policy means there's no v0.1 path to preserve). The static `_DEFAULT_LAYOUT` singleton at `penta_tile_map_layer.gd:193-198` is also deleted as part of this requirement (it allocated a class that no longer exists).
-- [ ] **LAYER-03**: `PentaTileAtlasContract` class file (`addons/penta_tile/penta_tile_atlas_contract.gd`) deleted. Bundled `.tres` files in `addons/penta_tile/contracts/` (`default_horizontal.tres`, `default_vertical.tres`, plus any `tetra_*_default.tres` files present) deleted with the folder. The original v0.1 reference `addons/penta_tile/penta_tile_template.png` deleted. The `addons/penta_tile/templates/` folder is also deleted entirely (per LAYOUT-07: bundled bitmask PNGs co-locate next to layout `.gd` files under `addons/penta_tile/layouts/`).
+- [ ] **LAYER-03**: `PentaTileAtlasContract` class file (`addons/penta_tile/penta_tile_atlas_contract.gd`) deleted. Bundled `.tres` files in `addons/penta_tile/contracts/` (`default_horizontal.tres`, `default_vertical.tres`, `penta_horizontal_default.tres`, `penta_vertical_default.tres`) deleted with the folder. The original v0.1 reference `addons/penta_tile/penta_tile_template.png` deleted. The `addons/penta_tile/templates/` folder is also deleted entirely (per LAYOUT-07: bundled bitmask PNGs co-locate next to layout `.gd` files under `addons/penta_tile/layouts/`).
 - [ ] **LAYER-04**: Demo scene `addons/penta_tile/demo/penta_tile_demo.tscn` updated atomically with the contract deletion: remove the `[ext_resource ... contracts/default_horizontal.tres]` reference and replace `atlas_contract = ExtResource(...)` with `layout = ExtResource(...)` pointing at a bundled `PentaTileLayoutPenta` `.tres` (or `null` if no fallback `.tres` ships). Demo must load cleanly in the Godot editor after Wave 2 lands; this is a non-skippable Wave 2 acceptance criterion.
 - [ ] **LAYER-05**: Phase 1's verification suite (`.planning/phases/01-contract-skeleton-penta-layouts/01-VERIFICATION.md`, 26/26 tests passing as of Phase 1 close) references `atlas_contract`, `PentaTileLayoutPentaHorizontal`, `PentaTileLayoutPentaVertical`, and the old property names. Phase 2 Wave 1 migrates these tests to the new API (`layout: PentaTileLayout`, `PentaTileLayoutPenta(axis=…)`, `bitmask_template`, etc.). Test count may grow as new modes (TWO/THREE) gain coverage. Migrated tests live alongside Phase 2's new tests; Phase 1's 01-VERIFICATION.md is marked as historical record.
 
@@ -31,12 +31,12 @@ The Resource hierarchy that lets every supported atlas convention plug into the 
 - [ ] **LAYOUT-06**: `PentaTileLayout` defines virtual `get_fallback_tile_set() -> TileSet` method. Default implementation builds a TileSet at first call from the layout's `bitmask_template` (the SAME image that's the inspector preview — single PNG per layout serves both roles). Layouts can override to inject custom logic. Consumer (`PentaTileMapLayer`) calls this method when `tile_set == null` to get prototyping-mode rendering (PREVIEW-03 wiring lands in Phase 4).
 - [ ] **LAYOUT-07**: Bundled bitmask templates co-locate next to their layout `.gd` file (the `templates/` folder is deleted entirely):
   - **Single-PNG layouts** (DualGrid16, Wang2Edge, Wang2Corner, Min3x3, future PixelLab + TBT): flat sibling — `addons/penta_tile/layouts/penta_tile_layout_<slug>.gd` + `addons/penta_tile/layouts/penta_tile_layout_<slug>.png`
-  - **Multi-variant layouts** (Tetra has 5 modes × 2 axes = 10 variants): per-layout subfolder — `addons/penta_tile/layouts/penta_tile_layout_penta/<mode>_<axis>.png` (e.g. `one_horizontal.png`, `four_vertical.png`)
+  - **Multi-variant layouts** (Penta has 5 modes × 2 axes = 10 variants): per-layout subfolder — `addons/penta_tile/layouts/penta_tile_layout_penta/<mode>_<axis>.png` (e.g. `one_horizontal.png`, `four_vertical.png`)
   - Each PNG is BOTH the inspector bitmask reference AND the prototyping fallback's source pixels (no separate atlas/bitmask split)
 
-### Tetra Layout (TETRA)
+### Penta Layout (PENTA)
 
-The Penta layout is the addon's signature 4-archetype convention. Per the Phase 2 architectural pivot (2026-04-26): one merged class with `axis: Axis` enum and `tile_count: TileCountMode` enum (auto-detect of 1/4/5 source-tile-per-strip modes). The Phase 1 separate `PentaTileLayoutPentaHorizontal`/`PentaTileLayoutPentaVertical` classes are deleted in favor of unified `PentaTileLayoutPenta`.
+The Penta layout is the addon's signature 5-archetype convention. Per the Phase 2 architectural pivot (2026-04-26): one merged class with `axis: Axis` enum and `tile_count: TileCountMode` enum (auto-detect of 1/2/3/4/5 source-tile-per-strip modes). The Phase 1 separate `PentaTileLayoutPentaHorizontal`/`PentaTileLayoutPentaVertical` classes are deleted in favor of unified `PentaTileLayoutPenta`.
 
 - [ ] **PENTA-01**: Single `PentaTileLayoutPenta` subclass with `axis: Axis = HORIZONTAL` enum (members: `HORIZONTAL`, `VERTICAL`). Slot 0 is always `IsolatedCell`; subsequent slots (1-4) progressively add `Fill`, `Border`, `InnerCorner`, `OppositeCorners` based on `tile_count` mode. **OuterCorner is implicit** — synthesized from slot 0's corners across all modes; never has its own slot. Strip axis is X for HORIZONTAL, Y for VERTICAL.
 - [ ] **PENTA-02**: `tile_count: TileCountMode` enum (members: `AUTO = 0`, `AUTO_STRIP`, `ONE = 1`, `TWO = 2`, `THREE = 3`, `FOUR = 4`, `FIVE = 5`) on the same class. `AUTO` does dimension-only detection (cheapest, all strips share mode). `AUTO_STRIP` does per-strip detection (each strip independently 1-5). Explicit numeric values skip detection.
@@ -56,7 +56,7 @@ Per D-24 — added during Phase 1 discuss session. Covers PixelLab Tileset 3×3 
 
 - [ ] **MIN3x3-01**: `PentaTileLayoutMinimal3x3` subclass — 3×3 atlas, 9 unique tiles, single-grid, 4-bit edge mask (T=1/E=2/B=4/W=8). Lands in Phase 2 alongside Wang2Edge.
 
-### Tetra Synthesis & Overlay-Layer Removal (PENTA-SYNTH)
+### Penta Synthesis & Overlay-Layer Removal (PENTA-SYNTH)
 
 Phase 2 architectural pivot (2026-04-26, locked after fourth iteration): single merged `PentaTileLayoutPenta` class with `axis: Axis` and `tile_count: TileCountMode` enums. **Five progressive modes (ONE → FIVE)**, each adding one explicit archetype slot. Slot 0 is always `IsolatedCell` (the synthesis source for OuterCorner across all modes); each subsequent slot adds explicit artist control over the next-most-impactful archetype.
 
@@ -148,7 +148,7 @@ The drop-in prototyping UX. Each layout has an inspector-visible thumbnail (the 
 Greyboxed silhouette PNGs the artist paints over.
 
 - [ ] **TEMPLATE-01**: Single bundled bitmask template PNG ships per layout (no atlas/bitmask split — one image serves both inspector preview and fallback TileSet source). Co-located next to each layout `.gd` file:
-  - **Tetra (multi-variant)**: `addons/penta_tile/layouts/penta_tile_layout_penta/{one,two,three,four,five}_{horizontal,vertical}.png` — 10 PNGs in a subfolder
+  - **Penta (multi-variant)**: `addons/penta_tile/layouts/penta_tile_layout_penta/{one,two,three,four,five}_{horizontal,vertical}.png` — 10 PNGs in a subfolder
   - **Single-variant layouts**: `addons/penta_tile/layouts/penta_tile_layout_<slug>.png` — flat sibling to the `.gd` file (DualGrid16, Wang2Edge, Wang2Corner, Min3x3)
   - The existing flat PNGs in `templates/` are migrated to the new locations and the `templates/` folder is deleted
 - [ ] **TEMPLATE-02**: Same convention for TBT-decoded layouts (Phase 3): `penta_tile_layout_blob_47_godot.png`, `penta_tile_layout_tilesetter_wang_15.png`, `penta_tile_layout_tilesetter_blob_47.png` — each as a flat sibling to its `.gd` file.
@@ -188,9 +188,9 @@ Deferred to a future milestone but acknowledged. The original v0.2 feature pilla
 
 ### Multi-Terrain in One Tileset (MULTITERR)
 
-Backlog item added 2026-04-26 from Phase 2.1 brainstorm. Goal: support multiple terrain types in a single atlas where each terrain auto-tiles independently and synthesized "extra" tiles (e.g. OppositeCorners for Tetra) are appended per-terrain without collision. Distinct from TERRAIN-01 (multi-terrain *transitions* — grass-to-dirt blending); MULTITERR is "each terrain abuts the others as if they were `empty`, no transitions."
+Backlog item added 2026-04-26 from Phase 2.1 brainstorm. Goal: support multiple terrain types in a single atlas where each terrain auto-tiles independently and synthesized "extra" tiles (e.g. OppositeCorners for Penta) are appended per-terrain without collision. Distinct from TERRAIN-01 (multi-terrain *transitions* — grass-to-dirt blending); MULTITERR is "each terrain abuts the others as if they were `empty`, no transitions."
 
-- **MULTITERR-01**: Strip layouts (Single-Tile, Tetra) interpret atlas Y-axis as terrain. Source `4 × N` (Penta4) or `1 × N` (Single-Tile) → synthesized output `5 × N`. Each row is one terrain. `compute_mask` parameterized by `terrain_id`; samples neighbors with the rule "is neighbor's terrain == terrain_id?" → independent per-terrain masks. **Design-coupled with VAR-01 above** — Y-axis interpretation conflict must be resolved together.
+- **MULTITERR-01**: Strip layouts (Single-Tile, Penta) interpret atlas Y-axis as terrain. Source `4 × N` (Penta FOUR) or `1 × N` (Single-Tile / Penta ONE) → synthesized output `5 × N`. Each row is one terrain. `compute_mask` parameterized by `terrain_id`; samples neighbors with the rule "is neighbor's terrain == terrain_id?" → independent per-terrain masks. **Design-coupled with VAR-01 above** — Y-axis interpretation conflict must be resolved together.
 - **MULTITERR-02**: Block layouts (DualGrid16, Wang2Edge, Wang2Corner, Blob47*, PixelLab) need a different multi-terrain mechanism since each terrain occupies a 2D sub-block. Likely: multiple atlas sources, with `AtlasSlot` gaining a `source_id` field. Distinct architectural fork from MULTITERR-01.
 - **MULTITERR-03**: Painting API documented for multi-terrain — user picks the terrain row when calling `set_cell` (atlas_coords.y = terrain_id). Demo runtime painter gains a hotkey to switch terrains.
 - **MULTITERR-04**: `update_configuration_warnings()` flags out-of-range `terrain_y` values painted in the scene if the source atlas has fewer rows than referenced.
@@ -306,7 +306,7 @@ Which phases cover which requirements. Empty initially — populated by `gsd-roa
 | PREVIEW-02 | 2 | Pending (now `get_fallback_tile_set()` codegen, no bundled .tres) |
 | PREVIEW-03 | 4 | Pending |
 | PREVIEW-04 | 4 | Pending |
-| TEMPLATE-01 | 2 | Pending (5 source PNGs shipped flat in commit e86036f need migration to new co-located scheme; new TWO/THREE/FIVE Tetra PNGs added; total 14 bundled PNGs at end of Phase 2) |
+| TEMPLATE-01 | 2 | Pending (5 source PNGs shipped flat in commit e86036f need migration to new co-located scheme; new TWO/THREE/FIVE Penta PNGs added; total 14 bundled PNGs at end of Phase 2) |
 | TEMPLATE-02 | 3 | Pending |
 | TEMPLATE-03 | Pre-shipped | Pending |
 | TEMPLATE-04 | 2 | Pending |
@@ -333,7 +333,7 @@ Which phases cover which requirements. Empty initially — populated by `gsd-roa
   - `PentaTileLayoutPentaHorizontal`/`Vertical` MERGED into `PentaTileLayoutPenta` with `axis: Axis` enum.
   - `template_image` → `bitmask_template`; `fallback_tile_set` HIDDEN; `decoder_image` DELETED.
   - **Single PNG per layout** serves both inspector preview AND fallback TileSet source (no atlas/bitmask split).
-  - **Templates folder DELETED**; bundled PNGs co-locate next to layout `.gd` files. Tetra has 10 PNGs in `penta_tile_layout_penta/` subfolder; single-variant layouts use flat siblings.
+  - **Templates folder DELETED**; bundled PNGs co-locate next to layout `.gd` files. Penta has 10 PNGs in `penta_tile_layout_penta/` subfolder; single-variant layouts use flat siblings.
   - Phase 2.1 (SingleTile separate class) DROPPED — PENTA1 mode handles via auto-detect.
 
 ---
