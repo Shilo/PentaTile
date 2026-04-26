@@ -51,6 +51,16 @@ Per D-24 — added during Phase 1 discuss session. Covers PixelLab Tileset 3×3 
 
 - [ ] **MIN3x3-01**: `TetraTileLayoutMinimal3x3` subclass — 3×3 atlas, 9 unique tiles, single-grid, 4-bit edge mask (T=1/E=2/B=4/W=8). Lands in Phase 2 alongside Wang2Edge.
 
+### Single-Tile Layout (SINGLE)
+
+Inserted as Phase 2.1 on 2026-04-26 after user-requested ideation. Ships a layout where the user provides ONE source image depicting an isolated cell with all 4 corners + 4 edges + center fill drawn in (reference: https://user-images.githubusercontent.com/47016402/87044533-f5e89f00-c1f6-11ea-9178-67b2e357ee8a.png coord (0,3)). The layout slices the source tile into sub-regions to synthesize the 4 Tetra archetypes at contract-load time, then renders through the existing dual-grid pipeline. Prototyping UX: one tile in, coherent autotiled output, zero broken seams. RPG Maker family considered and deferred to v0.3+ (see `.planning/research/layouts/RPG_MAKER.md`).
+
+- [ ] **SINGLE-01**: `TetraTileLayoutSingleTile` subclass extends `TetraTileLayout`. Exposes `source_atlas_coords: Vector2i = Vector2i(0, 0)` pointing at the single user-authored tile within the atlas.
+- [ ] **SINGLE-02**: At contract-load time (or first `_resolve_layout()` call), the layout synthesizes the 4 Tetra archetype slots from sub-regions of the source cell. Result is cached on the layout instance and regenerated only when `source_atlas_coords` or the underlying atlas changes. Same input → same output (deterministic, no shimmering across `rebuild()` calls).
+- [ ] **SINGLE-03**: All 16 mask states render correctly through the existing dual-grid `_paint_via_layout` pipeline using the synthesized archetypes. Visual regression: an isolated cell, a horizontal strip, an L-shape, and a filled rectangle all render with no broken seams using the same single source tile.
+- [ ] **SINGLE-04**: Bundled fallback `addons/tetra_tile/templates/single_tile.png` ships — one greyboxed cell with all-edges-and-corners-and-fill drawn so the layout has a working preview out of the box (consistent with the v0.2 fallback-tileset pattern).
+- [ ] **SINGLE-05**: The demo scene (or a sub-scene) demonstrates "draw with one tile, get coherent autotiling" — proves the prototyping UX win at runtime.
+
 ### TileBitTools-Decoded Layouts (TBT)
 
 Layouts whose slot tables are transcribed from TileBitTools' MIT-licensed `.tres` files (with attribution).
@@ -206,6 +216,11 @@ Which phases cover which requirements. Empty initially — populated by `gsd-roa
 | NATIVE-02 | 2 | Pending |
 | NATIVE-03 | 2 | Pending |
 | MIN3x3-01 | 2 | Pending |
+| SINGLE-01 | 2.1 | Pending |
+| SINGLE-02 | 2.1 | Pending |
+| SINGLE-03 | 2.1 | Pending |
+| SINGLE-04 | 2.1 | Pending |
+| SINGLE-05 | 2.1 | Pending |
 | TBT-01 | 3 | Pending |
 | TBT-02 | 3 | Pending |
 | TBT-03 | 3 | Pending |
@@ -236,8 +251,8 @@ Which phases cover which requirements. Empty initially — populated by `gsd-roa
 | REL-03 | 5 | Pending |
 
 **Coverage:**
-- v1 requirements: 45 total (39 original + 6 added per Phase 1 discuss session)
-- Mapped to phases: 45 (after this update)
+- v1 requirements: 50 total (39 original + 6 added per Phase 1 discuss session + 5 added 2026-04-26 for Phase 2.1 single-tile insert)
+- Mapped to phases: 50 (after this update)
 - Unmapped: 0
 
 ---

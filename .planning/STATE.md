@@ -7,7 +7,7 @@ stopped_at: Phase 2 context gathered (Tetra5 append + overlay-skip refactor)
 last_updated: "2026-04-26T08:19:53.959Z"
 last_activity: 2026-04-26
 progress:
-  total_phases: 6
+  total_phases: 7
   completed_phases: 1
   total_plans: 5
   completed_plans: 5
@@ -56,6 +56,10 @@ Progress: [░░░░░░░░░░] 0%
 *Updated after each plan completion*
 
 ## Accumulated Context
+
+### Roadmap Evolution
+
+- 2026-04-26: Phase 2.1 inserted after Phase 2 (single-tile-layout) — direct architectural extension of Phase 2 native-layouts work, ships `TetraTileLayoutSingleTile` (one source image → 4 synthesized Tetra archetypes via sub-region slicing). Adds 5 requirements (SINGLE-01..05). Companion artifact: `.planning/research/layouts/RPG_MAKER.md` audits the RPG Maker family (RM2K, RM2K3, XP, VX, VX Ace, MV, MZ) and recommends offline-importer path for v0.3+ — explicitly out of scope for v0.2.0 per the existing REQUIREMENTS Out-of-Scope decision.
 
 ### Decisions
 
