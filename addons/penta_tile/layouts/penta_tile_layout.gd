@@ -31,6 +31,13 @@ func is_dual_grid() -> bool:
 	return true
 
 
+# Returns true if this layout needs synthesis (i.e. is a PentaTileLayoutPenta instance).
+# Default false. PentaTileLayoutPenta overrides to return true in Wave 3.
+# Used by PentaTileMapLayer._ensure_visual_layers to branch without a forward type reference.
+func needs_synthesis() -> bool:
+	return false
+
+
 # PITFALLS.md §3 + LAYOUT-05: alt-id and TRANSFORM_FLIP_* flags share one int.
 # `alternative_tile` low bits go below 4096; transform flags are >= 4096.
 # Always OR via this helper; assert prevents silent collision.
