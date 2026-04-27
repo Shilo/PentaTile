@@ -170,7 +170,7 @@ Additional exported properties:
 | Property     | Purpose                                                                                                    |
 | ------------ | ---------------------------------------------------------------------------------------------------------- |
 | `axis`       | `HORIZONTAL` (slots along X) or `VERTICAL` (slots along Y).                                                |
-| `tile_count` | `AUTO` / `AUTO_STRIP` / `ONE..FIVE`. AUTO detects from atlas size; explicit modes pin the authoring scale. |
+| `tile_count` | `AUTO` / `AUTO_STRIP` / `ONE..FIVE`. AUTO detects from atlas size; explicit modes pin the authoring scale. `AUTO_STRIP` detects per strip — each row (HORIZONTAL) or column (VERTICAL) of the source atlas can have its own mode count. Per-cell strip dispatch picks the strip from the first non-empty TL/TR/BL/BR neighbor's source atlas coords; mixed-strip neighbors at a tile-boundary may render visually wrong (proper terrain transitions are deferred to a future milestone). |
 
 Public helper:
 
