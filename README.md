@@ -2,7 +2,7 @@
 
 **Just paint your tiles.** Intuitive Godot autotiling addon that takes the pain out of tilesets, with no manual terrain setup needed. Supports [5-archetype **Penta**](#-what-is-a-penta-tileset) and [popular layouts](#-supported-layouts). Paint with Godot's normal tools and PentaTile fills in the corners, edges, and transitions for you.
 
-<img src="addons/penta_tile/brand/brand/penta_tile_logo.png" width="188" alt="PentaTile Logo">
+<img src="addons/penta_tile/brand/penta_tile_logo.png" width="188" alt="PentaTile Logo">
 
 ## 📑 Table of Contents
 
