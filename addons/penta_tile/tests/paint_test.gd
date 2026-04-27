@@ -24,6 +24,16 @@ const _LayoutScript = preload("res://addons/penta_tile/layouts/penta_tile_layout
 const _PentaScript = preload("res://addons/penta_tile/layouts/penta_tile_layout_penta.gd")
 const _LayerScript = preload("res://addons/penta_tile/penta_tile_map_layer.gd")
 
+# Native layout subclass scripts — preloaded so headless runs hit parse-time
+# signature checks even though paint_test only instantiates PentaTileLayoutPenta
+# directly. Without these preloads, base-class signature drift on virtuals like
+# `mask_to_atlas` only surfaces when the editor parses every script at startup
+# (and the headless test passes against a broken project).
+const _DualGrid16Script = preload("res://addons/penta_tile/layouts/penta_tile_layout_dual_grid_16.gd")
+const _Wang2EdgeScript = preload("res://addons/penta_tile/layouts/penta_tile_layout_wang_2_edge.gd")
+const _Wang2CornerScript = preload("res://addons/penta_tile/layouts/penta_tile_layout_wang_2_corner.gd")
+const _Min3x3Script = preload("res://addons/penta_tile/layouts/penta_tile_layout_minimal_3x3.gd")
+
 # Locked Phase 2 mask → (slot_index, transform_flags) mapping per
 # penta_tile_layout_penta.gd:146-191. Used to verify mask_to_atlas output.
 const _ROTATE_0 := 0
