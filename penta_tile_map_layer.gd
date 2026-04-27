@@ -26,6 +26,7 @@ const _PentaTileSynthesis = preload("res://addons/penta_tile/penta_tile_synthesi
 		if layout != null and layout.changed.is_connected(_on_layout_changed):
 			layout.changed.disconnect(_on_layout_changed)
 		layout = value
+		_abstract_base_warning_emitted = false                                     # re-arm one-shot warning on rebind
 		if layout != null:
 			layout.changed.connect(_on_layout_changed)
 		_queue_rebuild()
@@ -186,8 +187,28 @@ func _has_logic_cell(logic_cell: Vector2i) -> bool:
 # LAYER-02: read self.layout directly (one fewer hop than the prior contract chain).
 # Returns null when layout is unassigned — the layer renders nothing in that case
 # (no v0.1 hardcoded fallback per Phase 2 Breaking Changes Policy).
+#
+# Also returns null when `layout` is exactly the abstract `PentaTileLayout` base class
+# (no subclass picked yet). The user can hit this state by selecting "New PentaTileLayout"
+# in the inspector dropdown — without this guard, every paint would call abstract
+# compute_mask / is_dual_grid and spam the console with `push_error` lines.
 func _resolve_layout() -> PentaTileLayout:
+	if layout == null:
+		return null
+	# Abstract-base guard. Direct script comparison (not is_class) — only the EXACT
+	# base class is rejected; any subclass passes through.
+	var script := layout.get_script()
+	if script != null and script.resource_path == "res://addons/penta_tile/layouts/penta_tile_layout.gd":
+		if not _abstract_base_warning_emitted:
+			push_warning("PentaTileMapLayer: `layout` is the abstract `PentaTileLayout` base class — pick a concrete subclass (PentaTileLayoutPenta / DualGrid16 / Wang2Edge / Wang2Corner / Minimal3x3). Painting suppressed until a subclass is bound.")
+			_abstract_base_warning_emitted = true
+		return null
 	return layout
+
+
+# One-shot warning gate for the abstract-base layout case. Reset on layout setter so
+# fixing the binding re-arms the warning if the user ever re-introduces the bug.
+var _abstract_base_warning_emitted: bool = false
 
 
 func _resolve_source_id() -> int:

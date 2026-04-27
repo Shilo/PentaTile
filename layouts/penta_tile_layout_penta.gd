@@ -54,6 +54,7 @@ enum TileCountMode {
 		if axis == value:
 			return
 		axis = value
+		_refresh_preset_bitmask()
 		notify_property_list_changed()
 		emit_changed()
 
@@ -62,7 +63,14 @@ enum TileCountMode {
 		if tile_count == value:
 			return
 		tile_count = value
+		_refresh_preset_bitmask()
 		emit_changed()
+
+# When true, `bitmask_template` was auto-assigned from the (axis × tile_count) preset
+# lookup and may be replaced when those properties change. When the user assigns a
+# texture themselves, this flips false and `_refresh_preset_bitmask` becomes a no-op
+# so user art is never silently overwritten.
+@export_storage var _bitmask_is_preset: bool = true
 
 # Class-level lookup table for axis × mode → bundled bitmask PNG path.
 # Used by _validate_property to hide bitmask_template AND by get_fallback_tile_set()
@@ -326,16 +334,54 @@ func get_configuration_warnings_for(tile_set: TileSet, source_id: int) -> Packed
 	return out
 
 
-# PENTA-SYNTH-09: hide bitmask_template from inspector. Auto-resolved per axis × mode
-# via _BITMASK_TEMPLATE_LOOKUP at fallback-TileSet construction time.
-func _validate_property(property: Dictionary) -> void:
-	if property.name == "bitmask_template":
-		# H-1 BLOCKER FIX: bitwise-clear PROPERTY_USAGE_EDITOR (1<<2) to remove inspector
-		# visibility while preserving storage + other existing flags. An overwrite approach
-		# (assigning a composite constant directly) discards any pre-existing flags —
-		# the &= ~ pattern is the canonical Godot 4.6 idiom for hiding properties without
-		# losing storage/READ_ONLY semantics.
-		property.usage &= ~PROPERTY_USAGE_EDITOR
+# bitmask_template is VISIBLE in the inspector for PentaTileLayoutPenta. Auto-populated
+# from `_BITMASK_TEMPLATE_LOOKUP[axis × tile_count]` so users see the canonical preset
+# silhouette as soon as they pick a layout, AND can override with their own art (the
+# override flips `_bitmask_is_preset = false` so axis/tile_count changes stop overwriting).
+
+
+# Track whether bitmask_template assignment came from a manual user action vs the
+# auto-preset path. Suppressed during the preset write so internal assignments do not
+# flip the flag.
+var _suppress_preset_override := false
+
+
+# Intercepts inspector / scripted assignments to bitmask_template. Returning false
+# lets the default property handler proceed AFTER our hook records the override.
+# This is the canonical Godot 4 pattern for "observe writes to an existing @export var".
+func _set(property: StringName, value: Variant) -> bool:
+	if property == "bitmask_template" and not _suppress_preset_override:
+		if value != bitmask_template:
+			_bitmask_is_preset = false                                                # user picked their own art
+	return false
+
+
+# Auto-populate bitmask_template from the (axis × tile_count) preset PNG. No-op when
+# the user has overridden with their own texture. Called from axis/tile_count setters
+# and from _init for fresh resources.
+func _refresh_preset_bitmask() -> void:
+	if not _bitmask_is_preset:
+		return
+	var resolved := tile_count
+	if resolved == TileCountMode.AUTO or resolved == TileCountMode.AUTO_STRIP:
+		resolved = TileCountMode.FOUR                                                 # inspector preview default
+	var path: String = _bundled_png_path(axis, resolved)
+	if path.is_empty():
+		return
+	var tex := load(path) as Texture2D
+	if tex == null:
+		return
+	_suppress_preset_override = true
+	bitmask_template = tex
+	_suppress_preset_override = false
+
+
+func _init() -> void:
+	# Fires for both fresh-in-inspector instantiation AND .tres-loaded resources. For
+	# .tres-loaded the property loader runs AFTER _init and overwrites with saved state
+	# (correct: saved bitmask wins). For fresh inspector instantiation, _init's preset
+	# binding makes the canonical FOUR-mode silhouette visible immediately.
+	_refresh_preset_bitmask()
 
 
 # WR-04 FIX: typed accessor for the axis × mode → bundled PNG lookup. Enforces the
