@@ -58,30 +58,12 @@ def _orange_border(draw: ImageDraw.ImageDraw, x0: int, y0: int, x1: int, y1: int
 
 
 def draw_isolated_cell(img: Image.Image, col: int) -> None:
-    """Slot 0 — FULL IsolatedCell silhouette (4 outer corners + 4 edges + center fill).
-
-    Per the user's design intent: source slot 0 is the full preview / authored
-    IsolatedCell silhouette. The SYNTHESIZER extracts a BL-quadrant sub-region for
-    the OuterCorner piece used by the dispatcher (so rotation produces 4 orientations).
-
-    Source slot 0 needs the silhouette's outer corners at the actual silhouette
-    outer corners (TL, TR, BL, BR of the tile) and orange wires along the
-    silhouette edges (T, R, B, L of the tile). The synthesizer pulls the BL
-    quadrant which contains the BL outer corner motif at slot tile-local (0, 16-ish)
-    — that's the silhouette's BL outer corner.
-
-    For the rotation trick: the synthesizer extracts the BL quadrant in such a way
-    that the corner motif lands at the synthesized tile's CENTER (since the dual-grid
-    silhouette outer corners map to the center of display cells). The
-    orange-wire L+B edges of the BL quadrant become the synthesized tile's wire
-    placement — they tile into a cross when rotated and composed only if my
-    quadrant-with-wires-on-L+B is wrong. Correct authoring: put wires on the
-    silhouette's outer edges (perimeter), NOT on the quadrant boundaries."""
+    """Slot 0 — IsolatedCell. The four outer corners + edges + fill all rendered
+    in a single tile (so a fully-isolated cell shows the complete silhouette)."""
     draw = ImageDraw.Draw(img)
     x0, y0 = col * TILE, 0
     x1, y1 = x0 + TILE, y0 + TILE
     _stippled_fill(draw, x0, y0, x1, y1)
-    # Orange wires on all 4 silhouette outer edges (perimeter of the tile).
     _orange_border(draw, x0, y0, x1, y1, "TBLR")
 
 

@@ -93,14 +93,7 @@ def draw_edge_mask(draw: ImageDraw.ImageDraw, col: int, row: int, mask: int) -> 
 # ---- Penta archetype drawers (NEW in Phase 2; pixel coords spelled out above) ----
 
 def draw_penta_isolated_cell(draw, col, row):
-    """Slot 0 -- FULL IsolatedCell silhouette (preview + ONE-mode source).
-
-    Slot 0 is authored as the COMPLETE isolated-cell silhouette with all 4 outer
-    corners + 4 edges + center fill. The synthesizer extracts a single-quadrant
-    OuterCorner piece (BL quadrant) from this art at synthesis time, which the
-    dispatcher rotates 4 ways for the 4 outer-corner mask cases. The synthesizer
-    also extracts Fill (center 50%), Border (bottom-half), InnerCorner (3-quadrant
-    L), and OppositeCorners (TL+BR) from this slot 0 in ONE mode."""
+    """Slot 0 -- IsolatedCell silhouette: 4 corners + 4 edges + center fill."""
     ox, oy = col * TILE, row * TILE
     # Center 16x16 fill
     draw.rectangle((ox + 8, oy + 8, ox + 24, oy + 24), fill=GREY)
