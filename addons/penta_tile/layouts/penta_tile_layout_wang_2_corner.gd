@@ -43,7 +43,7 @@ func compute_mask(coord: Vector2i, sample_fn: Callable) -> int:
 	return mask
 
 
-func mask_to_atlas(mask: int) -> PentaTileAtlasSlot:
+func mask_to_atlas(mask: int, _strip_index: int = 0) -> PentaTileAtlasSlot:
 	if mask == 0:
 		return null
 	var slot := PentaTileAtlasSlot.new()
