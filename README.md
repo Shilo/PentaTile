@@ -1,8 +1,8 @@
-# 🍀 PentaTile
+# <img src="addons/penta_tile/brand/penta_tile_icon.png" width="32" alt="PentaTile Icon"> PentaTile
 
 **Just paint your tiles.** Intuitive Godot autotiling addon that takes the pain out of tilesets, with no manual terrain setup needed. Supports [5-archetype **Penta**](#-what-is-a-penta-tileset) and [popular layouts](#-supported-layouts). Paint with Godot's normal tools and PentaTile fills in the corners, edges, and transitions for you.
 
-<img src="addons/penta_tile/layouts/penta_tile_layout_penta/five_horizontal.png" width="256" alt="Penta Horizontal Tileset Template">
+<img src="addons/penta_tile/brand/brand/penta_tile_logo.png" width="188" alt="PentaTile Logo">
 
 ## 📑 Table of Contents
 
@@ -44,10 +44,10 @@ A **Penta tileset** is a 5-archetype autotile format. The five archetypes, **lis
 **How "Penta" relates to other tileset codenames:**
 
 | Format | Tiles authored | Slot count | Year coined |
-|--------|---------------|------------|-------------|
-| Wang   | 16 / 64 / 256 | varies     | ~1986       |
-| Blob   | 47            | 47         | ~2010       |
-| Penta  | 1–5           | 5          | 2026        |
+| ------ | -------------- | ---------- | ----------- |
+| Wang   | 16 / 64 / 256  | varies     | ~1986       |
+| Blob   | 47             | 47         | ~2010       |
+| Penta  | 1–5            | 5          | 2026        |
 
 "Penta" is reserved for the 5-archetype format only — never for unrelated 5-tile arrangements. This rule is encoded as a project invariant in `CLAUDE.md` § Coined-Term Discipline.
 
@@ -156,21 +156,21 @@ Use the native TileMapLayer API:
 
 Additional exported properties:
 
-| Property                      | Purpose                                                                                                                          |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Property                      | Purpose                                                                                                                            |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | `layout`                      | A `PentaTileLayout` resource — pick one of the bundled subclasses (Penta, DualGrid16, Wang2Edge, Wang2Corner, Min3x3) or a custom. |
-| `atlas_source_id`             | Atlas source to read from. `-1` uses the first source in the TileSet.                                                            |
-| `logic_layer_opacity`         | Opacity for the hidden/editable logic layer. Defaults to `0.0`.                                                                  |
-| `visual_z_index_offset`       | Z index applied to generated internal visual layers.                                                                             |
-| `generated_collision_enabled` | Enables collisions on generated visual layers when the TileSet tiles have physics polygons.                                      |
-| `logic_collision_enabled`     | Enables collisions on the source logic layer. Defaults to `false` to avoid hidden full-cell colliders.                           |
+| `atlas_source_id`             | Atlas source to read from. `-1` uses the first source in the TileSet.                                                              |
+| `logic_layer_opacity`         | Opacity for the hidden/editable logic layer. Defaults to `0.0`.                                                                    |
+| `visual_z_index_offset`       | Z index applied to generated internal visual layers.                                                                               |
+| `generated_collision_enabled` | Enables collisions on generated visual layers when the TileSet tiles have physics polygons.                                        |
+| `logic_collision_enabled`     | Enables collisions on the source logic layer. Defaults to `false` to avoid hidden full-cell colliders.                             |
 
 **Penta-specific layout properties** (on `PentaTileLayoutPenta`):
 
-| Property       | Purpose                                                                                                       |
-| -------------- | ------------------------------------------------------------------------------------------------------------- |
-| `axis`         | `HORIZONTAL` (slots along X) or `VERTICAL` (slots along Y).                                                    |
-| `tile_count`   | `AUTO` / `AUTO_STRIP` / `ONE..FIVE`. AUTO detects from atlas size; explicit modes pin the authoring scale.   |
+| Property     | Purpose                                                                                                    |
+| ------------ | ---------------------------------------------------------------------------------------------------------- |
+| `axis`       | `HORIZONTAL` (slots along X) or `VERTICAL` (slots along Y).                                                |
+| `tile_count` | `AUTO` / `AUTO_STRIP` / `ONE..FIVE`. AUTO detects from atlas size; explicit modes pin the authoring scale. |
 
 Public helper:
 
@@ -212,6 +212,7 @@ Future ideas remain intentionally separate from the V1 API:
 
 - **PentaBake:** edit-time utility to procedurally compose a fifth edge/diagonal connector tile when useful.
 - **Y-axis variations:** support atlas rows for deterministic/random visual variation.
+- **Shader fallback:** single-pass shader option for diagonal compositing.
 - **Collision tooling:** research automatic collision generation and better collision presets. V1 supports TileSet-authored collision polygons on generated visual layers.
 - **Outer transition tile support:** support transitions between terrain types, such as grass to dirt.
 - **Top tiles:** support sets with designated top visuals for platformer-style grass caps.
