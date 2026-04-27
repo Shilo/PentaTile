@@ -608,22 +608,35 @@ static func _synthesize_slot_image(
 			return full_img
 
 		SLOT_OPPOSITE_CORNERS:
-			# TL_quad composited at TL position, BR_quad composited at BR position.
-			# Canvas: tile_size × tile_size, transparent.
+			# OppositeCorners (mask 9 = "\\" diagonal: TL + BR painted) needs a tile
+			# with TL-outer-corner art + BR-outer-corner art composited.
+			#
+			# Slot 0 canonical = BL-outer-corner art (BL quadrant filled, others
+			# transparent). To get the TL/BR corner orientations:
+			#   - Rotate slot 0 90° CW  → BL becomes TL (TL-outer-corner art)
+			#   - Rotate slot 0 90° CCW → BL becomes BR (BR-outer-corner art)
+			#
+			# Take the relevant quadrant from each rotated copy and composite onto
+			# a transparent canvas at the right position.
 			var canvas := Image.create(ts.x, ts.y, false, Image.FORMAT_RGBA8)
 			canvas.fill(Color(0.0, 0.0, 0.0, 0.0))
 			var half_x := ts.x / 2
 			var half_y := ts.y / 2
 
-			# TL quad: slot0_px + (0, 0), size = half_x × half_y
-			var tl_region := Rect2i(slot0_px.x, slot0_px.y, half_x, half_y)
-			var tl_img := atlas_image.get_region(tl_region)
-			canvas.blit_rect(tl_img, Rect2i(Vector2i.ZERO, Vector2i(half_x, half_y)), Vector2i(0, 0))
+			# Extract slot 0 as a separate Image so rotation does not mutate atlas_image.
+			var slot0_full := atlas_image.get_region(Rect2i(slot0_px.x, slot0_px.y, ts.x, ts.y))
 
-			# BR quad: slot0_px + (half_x, half_y), size = half_x × half_y
-			var br_region := Rect2i(slot0_px.x + half_x, slot0_px.y + half_y, half_x, half_y)
-			var br_img := atlas_image.get_region(br_region)
-			canvas.blit_rect(br_img, Rect2i(Vector2i.ZERO, Vector2i(half_x, half_y)), Vector2i(half_x, half_y))
+			# Rotate 90° CW → BL quadrant content moves to TL → TL-corner art.
+			var tl_corner_image := slot0_full.duplicate() as Image
+			tl_corner_image.rotate_90(CLOCKWISE)
+			var tl_quad := tl_corner_image.get_region(Rect2i(0, 0, half_x, half_y))
+			canvas.blit_rect(tl_quad, Rect2i(Vector2i.ZERO, Vector2i(half_x, half_y)), Vector2i(0, 0))
+
+			# Rotate 90° CCW → BL quadrant content moves to BR → BR-corner art.
+			var br_corner_image := slot0_full.duplicate() as Image
+			br_corner_image.rotate_90(COUNTERCLOCKWISE)
+			var br_quad := br_corner_image.get_region(Rect2i(half_x, half_y, half_x, half_y))
+			canvas.blit_rect(br_quad, Rect2i(Vector2i.ZERO, Vector2i(half_x, half_y)), Vector2i(half_x, half_y))
 
 			return canvas
 
