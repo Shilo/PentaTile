@@ -18,27 +18,17 @@ const _LayoutScript = preload("res://addons/penta_tile/layouts/penta_tile_layout
 const _PentaScript = preload("res://addons/penta_tile/layouts/penta_tile_layout_penta.gd")
 const _LayerScript = preload("res://addons/penta_tile/penta_tile_map_layer.gd")
 
-# FOUR-mode baseline.
-# 2986698704 — original Wave 6 baseline against full-silhouette demo slot 0
-# 162924070  — current baseline after demo's slot 0 was re-authored as
-#              BL-quadrant-only (Gate 1 escape hatch — see
-#              addons/penta_tile/demo/_regen_demo_ground.py draw_isolated_cell).
-#              Source PNG changed → synthesized atlas pixels changed → hash
-#              changed. Dispatch math + slot ordering + transforms still
-#              deterministic across the 11 reruns.
-const BASELINE_HASH := 162924070
+# FOUR-mode baseline from Wave 6 (addons/penta_tile/tests/baselines/four_mode_5x5.txt).
+# Stable across the demo's faded-silhouette slot 0 (Gate 1 escape hatch — see
+# _regen_demo_ground.py draw_isolated_cell): the fade reduces alpha but keeps
+# the same opacity geometry the baseline was captured against.
+const BASELINE_HASH := 2986698704
 
-# Expected painted cell count for the demo scene's PentaTileMapLayer.
-# Used by sub-test (c) VERTICAL coverage as a regression net for WR-07 (if
-# `_make_slot` regresses to out-of-grid coords for VERTICAL, painted cells
-# drop and this count fails — the regression net the bare hash misses).
-#
-# 46  — original baseline against the smaller v0.2 demo paint set (Wave 6).
-# 333 — current baseline after demo .tscn was painted out for visual UAT
-#       (multi-room platformer scene). Sub-test (c) asserts VERTICAL paints
-#       the same count as HORIZONTAL — the constant just has to match the
-#       current .tscn's tile_map_data state.
-const BASELINE_CELLS := 333
+# Expected painted cell count for the demo scene's PentaTileMapLayer. Used by both
+# the main HORIZONTAL test and sub-test (c) VERTICAL coverage. If WR-07 regresses
+# (`_make_slot` returning out-of-grid coords for VERTICAL), painted cells drop and
+# this count fails — the regression net the bare hash misses.
+const BASELINE_CELLS := 46
 
 # WR-07 regression net path — the alt layout used by sub-test (c). The .tres mirrors
 # penta_layout_four_horizontal.tres with axis = 1 (VERTICAL).
