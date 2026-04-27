@@ -58,13 +58,45 @@ def _orange_border(draw: ImageDraw.ImageDraw, x0: int, y0: int, x1: int, y1: int
 
 
 def draw_isolated_cell(img: Image.Image, col: int) -> None:
-    """Slot 0 — IsolatedCell. The four outer corners + edges + fill all rendered
-    in a single tile (so a fully-isolated cell shows the complete silhouette)."""
+    """Slot 0 — IsolatedCell. Authored as ONLY the BL-quadrant outer-corner art
+    so the OuterCorner-via-rotation dispatch (masks 1/2/4/8 → slot 0 + ROTATE_*)
+    places the corner art at the correct corner of each display cell. The other
+    3 quadrants are fully transparent — rotated copies don't overdraw each other
+    when 4 display cells render around a single painted logic cell, so the 4
+    rotations compose to form ONE coherent silhouette of the painted cell.
+
+    Anchoring derivation (16x16 tile, slot 0 = BL quadrant filled at pixels
+    x:0-7, y:8-15):
+      - ROTATE_0 (mask 4 / BL bit set, cell south of painted cell): BL → BL of
+        cell. Lands at the cell's BL corner = the corner adjacent to the
+        painted cell's lower-left visual.
+      - ROTATE_90 (mask 1, cell SE of painted): BL → TL of cell. Lands at the
+        cell's TL corner = adjacent to the painted cell's upper-left visual.
+      - ROTATE_180 (mask 2, cell SW of painted): BL → TR of cell. Lands at the
+        cell's TR corner = adjacent to the painted cell's upper-right visual.
+      - ROTATE_270 (mask 8, cell NW of painted): BL → BR of cell. Lands at the
+        cell's BR corner = adjacent to the painted cell's lower-right visual.
+    All 4 corner pieces meet at the painted cell's center → coherent silhouette.
+
+    Tradeoff (Gate 1 documented escape hatch — see 02-02-PLAN.md:134):
+    slot 4 OppositeCorners synthesis (FOUR mode) extracts TL+BR quadrants of
+    slot 0, which are now transparent. Masks 6 and 9 (diagonal-only
+    OppositeCorners) will render empty in the demo. Acceptable — diagonal-only
+    paints are rare in the demo's terrain layout. Artists who need pixel-perfect
+    OppositeCorners can author slot 4 explicitly via FIVE-mode atlases.
+
+    The bundled greybox PNGs (addons/penta_tile/_generate_bitmasks.py) keep
+    the full-silhouette slot 0 as the documentation reference; this faded
+    variant is demo-specific."""
     draw = ImageDraw.Draw(img)
     x0, y0 = col * TILE, 0
-    x1, y1 = x0 + TILE, y0 + TILE
-    _stippled_fill(draw, x0, y0, x1, y1)
-    _orange_border(draw, x0, y0, x1, y1, "TBLR")
+    mid_x, mid_y = x0 + TILE // 2, y0 + TILE // 2
+    bl_x1, bl_y1 = mid_x, y0 + TILE
+    # BL quadrant only — TL/TR/BR stay transparent.
+    _stippled_fill(draw, x0, mid_y, bl_x1, bl_y1)
+    # Orange wires on the L and B sides of the BL quadrant — these become the
+    # outer perimeter of the composed silhouette under rotation+tiling.
+    _orange_border(draw, x0, mid_y, bl_x1, bl_y1, "LB")
 
 
 def draw_fill(img: Image.Image, col: int) -> None:
