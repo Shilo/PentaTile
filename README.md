@@ -233,3 +233,4 @@ Future ideas remain intentionally separate from the V1 API:
 ## 🙏 Attributions
 
 - <a href="https://kenney.nl/assets/pico-8-platformer" target="_blank" rel="noopener">Kenney's Pico-8 Platformer ↗︎</a> - Asset pack used for the demo ground texture (CC0).
+- The pixel-art Godot robot mascot in PentaTile's brand assets is an original drawing inspired by <a href="https://godotengine.org/press/" target="_blank" rel="noopener">Godot's official icon ↗︎</a> and <a href="https://toongoat.itch.io/godot-pixel-art-emoji-pack" target="_blank" rel="noopener">Krad's Godot Pixel Art Emoji Pack ↗︎</a>. It's a "powered by Godot" nod, not PentaTile branding — the Godot logo and name are trademarks of the Godot Foundation, and PentaTile claims no ownership of either.
