@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 2 code-complete + clean code review (3 passes); awaiting human visual UAT (4 items in 02-HUMAN-UAT.md) before approval
-last_updated: "2026-04-26T23:00:00.000Z"
-last_activity: 2026-04-26
+stopped_at: Phase 2 code-complete + clean code review (3 passes); AUTO_STRIP per-strip dispatch un-deferred and shipped in 29cba37; 1/4 UAT items pass programmatically + 1 partial; 2 visual items still need human editor verification
+last_updated: "2026-04-27T13:00:00.000Z"
+last_activity: 2026-04-27
 progress:
   total_phases: 7
   completed_phases: 3
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-04-25 after v0.2 pivot to layout library
 
 ## Current Position
 
-Phase: 02 (native-layouts) — CODE-COMPLETE; AWAITING HUMAN UAT
-Plan: 7 of 7 executed
-Status: All plans done. Code review passed cleanly across 3 passes (initial → re-review after WR fixes → third pass after VERTICAL baseline + IN fixes). 7 Critical/Warning findings (WR-01..WR-07) all fixed and verified. 3 new Info findings (IN-11/12/13) fixed in commit c9a6aa9. Phase 2 entry remains `[ ]` in ROADMAP.md per user instruction (LOC overage + visual UAT both unresolved).
-Last activity: 2026-04-26
+Phase: 02 (native-layouts) — CODE-COMPLETE + AUTO_STRIP DEFERRAL UN-DEFERRED; AWAITING HUMAN VISUAL UAT
+Plan: 7 of 7 executed (+ retroactive AUTO_STRIP per-strip dispatch wave outside the 7 — see 2026-04-27 entry)
+Status: All plans done. Code review passed cleanly across 3 passes. 7 Critical/Warning findings (WR-01..WR-07) all fixed and verified. 3 new Info findings (IN-11/12/13) fixed in commit c9a6aa9. AUTO_STRIP per-strip dispatch — originally deferred to Phase 5 in Wave 6 — completed retroactively in commit 29cba37 (2026-04-27) after UAT exposed the gap; paint_test grew 4 new AUTO_STRIP cases (uniform, mixed, gap-with-warning-C, VERTICAL); determinism BASELINE_HASH=2986698704 still holds across 11 runs. Phase 2 entry remains `[ ]` in ROADMAP.md per user instruction (LOC overage + 2 visual UAT items still unresolved).
+Last activity: 2026-04-27
 
-Progress: [██████████] 100% (plans executed) | UAT: 0/4
+Progress: [██████████] 100% (plans executed) | UAT: 1 pass + 1 partial / 4 (AUTO/AUTO_STRIP detection ✓ programmatic; Penta multi-mode synthesis dispatch ✓ programmatic, visual seam-check still pending; DualGrid16/Wang2*/Min3x3 visual + Min3x3 collapse pending human editor)
 
 > Out-of-band progress: 5 of 8 greyboxed template PNGs + the generator script shipped in commit e86036f as part of the discovery pass. Counted as TEMPLATE-01 + TEMPLATE-03 covered. The remaining 3 templates (Blob47Godot, TilesetterWang15, TilesetterBlob47) ship in Phase 3 once their slot tables are transcribed from TileBitTools.
 
@@ -79,6 +79,7 @@ Progress: [██████████] 100% (plans executed) | UAT: 0/4
 - 2026-04-26 (re-review): **Second code review pass after WR fixes.** Verified all 7 WR fixes correct; added IN-10 (WR-02 fix covers AUTO mode drift but not in-place TileSet pixel mutations under explicit modes — Phase 3.5 territory). Status: clean. Commit `49852b9`.
 - 2026-04-26 (VERTICAL baseline addition): **WR-07 regression net.** User-authored test commit `673ace0` adds `addons/penta_tile/demo/penta_layout_four_vertical.tres` (axis=1, tile_count=4 mirror of horizontal demo layout), `--layout-path=<res_path>` CLI flag in `_capture_baseline.gd`, and Sub-test (c) in `determinism_test.gd` that asserts (1) painted cell count matches `BASELINE_CELLS=46` from HORIZONTAL, (2) every painted cell's atlas coord exists in synthesized atlas via `source.has_tile()`. Catches WR-07's two failure modes (cell-drop AND unrenderable-coord) without requiring a per-axis pixel-hash baseline (post-WR-07 both axes produce identical `tile_map_data` hashes). All 4 sub-tests pass.
 - 2026-04-26 (third review pass): **Third code review pass after VERTICAL baseline.** Re-verified all 7 WR fixes once more; surfaced 3 new cosmetic Info items in test scaffolding: IN-11 (`--layout-path` parse loop never `break`s on duplicate flags), IN-12 (`LAYOUT_OVERRIDE` print silently emits `axis=0` for non-Penta layouts via `int(null)`), IN-13 (header doc-comment doesn't list sub-test (c)). All 3 fixed atomically in commit `c9a6aa9`. Third-pass review report committed at `aa07ac1`. Final REVIEW.md status: clean (0 Critical, 0 Warning, 13 Info — IN-01..IN-13).
+- 2026-04-27 (UAT-driven AUTO_STRIP completion): **AUTO_STRIP per-strip dispatch un-deferred and shipped retroactively** (commit `29cba37`). Discovered during user UAT that AUTO_STRIP rendered nothing — Wave 6 had explicitly deferred per-strip dispatch to Phase 5, but the deferral was buried in the summary and the verifier marked SC-7 ✓ on detector existence alone (`resolve_strip_modes()` was implemented but never called). Sweep also surfaced a same-file spec contradiction: Wave 2's `synthesize_strip` docstring described Interpretation B (cumulative offset along slot axis); Wave 6's `resolve_strip_modes` implemented Interpretation A (strips perpendicular to slot axis). A locked. Fix: layer's `_ensure_synthesized_tile_set` now branches on AUTO_STRIP, calls `resolve_strip_modes`, threads cumulative `strip_origin` per strip, builds 5×N synthesized atlas (single source, output coord = `Vector2i(slot, strip_index)`); `mask_to_atlas` + `_make_slot` gain `strip_index: int = 0` parameter; new virtual `resolve_display_strip` returns first-non-empty-neighbor's source-atlas-coord (TL→TR→BL→BR canonical order); Penta-only override (non-Penta layouts use base default = 0). Bonus bug found: `resolve_strip_modes` was treating trailing empties as gaps; now only flags "empty-then-populated" patterns. paint_test grew 4 new AUTO_STRIP cases (uniform [3,3] HORIZONTAL, mixed [3,5] HORIZONTAL, gap-with-warning-C, VERTICAL [4,2]) — ALL PASS. Determinism BASELINE_HASH=2986698704 still holds across 11 runs. Documented Gate 1 OuterCorner-via-rotation tradeoff stays as locked spec; user accepts; data-side fix path is artist-authored faded slot 0. Workflow-quality root cause logged: verifier checked existence not wiring; deferrals weren't loud at sign-off; demo bound only FOUR mode so non-FOUR coverage required manual `.tres` swap.
 
 ### Decisions
 
@@ -117,7 +118,7 @@ Recent decisions affecting current work:
 - line-70 README retarget -> four_horizontal.png (4-tile-template feel of v0.1); lines 5 and 30 -> five_horizontal.png (matches all-5-archetypes alt-text)
 - TILE=32px for Phase 2 generator (doubles Phase 1 TILE=16); draw_edge_mask center hint rescaled proportionally
 - Task 5.3 human-verify checkpoint auto-approved; IsolatedCell slot 0 geometry verified programmatically (TEMPLATE-04 pass)
-- resolve_active_mode returns AUTO_STRIP unchanged — per-strip dispatch deferred to Phase 5
+- ~~resolve_active_mode returns AUTO_STRIP unchanged — per-strip dispatch deferred to Phase 5~~ — **Superseded 2026-04-27**: AUTO_STRIP per-strip dispatch shipped in commit `29cba37` after UAT exposed the gap. Layer now branches on AUTO_STRIP, calls `resolve_strip_modes`, builds 5×N synthesized atlas. See 2026-04-27 entry in Roadmap Evolution.
 - BASELINE_HASH=2986698704 captured via headless Godot 4.6 for FOUR-mode determinism test (PENTA-SYNTH-12 / PENTA-03)
 - preload() const _PentaTileSynthesis added to map layer — fixes class_name symbol failure in headless/--script mode
 - LOC hard gate fired at Wave 7 closeout (1961 total / 1827 runtime LOC, 31% above ~1500 trigger) — Phase 2 ROADMAP left unchecked pending user design review; determinism test PASS with BASELINE_HASH=2986698704
@@ -160,13 +161,13 @@ Items acknowledged and carried forward as v2 requirements (see REQUIREMENTS.md v
 
 ## Session Continuity
 
-Last session: 2026-04-26T23:00:00.000Z
-Stopped at: Phase 2 code-complete; 3 review passes clean; awaiting human visual UAT (4 items) before approval
+Last session: 2026-04-27T13:00:00.000Z
+Stopped at: Phase 2 code-complete; AUTO_STRIP per-strip dispatch un-deferred and shipped retroactively (29cba37); 1/4 UAT items pass programmatically + 1 partial; 2 visual items still pending human editor verification before approval
 Resume file: None
 
 **Completed Phase:** 01 (Contract Skeleton + Penta Layouts) — 5/5 plans, 14/14 requirements, 26/26 automated tests PASS — 2026-04-26
 **Completed Phase:** 01.1 (PentaTile Rename + Penta Codename Establishment) — 3/3 plans, 0 formal REQ-IDs (rename phase), demo loads cleanly under new name, git remote tracks PentaTile origin — 2026-04-26
-**In-progress Phase:** 02 (Native Layouts + Architectural Simplification) — 7/7 plans executed, 30/30 requirements satisfied programmatically, 3 code review passes clean (status: clean; 0 Critical / 0 Warning / 13 Info), 4 determinism sub-tests pass (BASELINE_HASH=2986698704, BASELINE_CELLS=46), VERTICAL regression net active. **Outstanding gates:** (1) human visual UAT — 4 items in `02-HUMAN-UAT.md` (DualGrid16/Wang2*/Min3x3 visual correctness, Min3x3 collapse, Penta synthesis seam quality, AUTO/AUTO_STRIP detection), (2) LOC overage decision — 1827 runtime LOC vs ~1500 trigger (informational at Phase 2; formal gate is Phase 5 final audit). ROADMAP Phase 2 entry intentionally `[ ]` until both gates resolved.
+**In-progress Phase:** 02 (Native Layouts + Architectural Simplification) — 7/7 plans executed + retroactive AUTO_STRIP dispatch wave (29cba37), 30/30 requirements satisfied programmatically, 3 code review passes clean (status: clean; 0 Critical / 0 Warning / 13 Info), 4 determinism sub-tests pass (BASELINE_HASH=2986698704, BASELINE_CELLS=46), VERTICAL regression net active, paint_test ALL PASS across 6 single-strip modes + 4 AUTO_STRIP cases + abstract guard. **Outstanding gates:** (1) human visual UAT — 2 items still pending in `02-HUMAN-UAT.md` (DualGrid16/Wang2*/Min3x3 visual correctness, Min3x3 collapse) + 1 partial (Penta multi-mode visual seam-check; programmatic dispatch ✓), (2) LOC overage decision — 1827 runtime LOC vs ~1500 trigger (informational at Phase 2; formal gate is Phase 5 final audit). AUTO/AUTO_STRIP detection UAT (test 4) now ✓ pass programmatically. ROADMAP Phase 2 entry intentionally `[ ]` until both gates resolved.
 **Next Phase:** 03 (TileBitTools-Decoded Layouts) — Blob47Godot, TilesetterWang15, TilesetterBlob47 + ATTRIBUTION.md (chains automatically once Phase 2 approved in --auto mode)
 
 **Planned Phase:** 02 (native-layouts) — 7 plans — 2026-04-26T18:54:39.523Z
