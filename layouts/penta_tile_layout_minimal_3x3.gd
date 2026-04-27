@@ -52,7 +52,7 @@ func compute_mask(coord: Vector2i, sample_fn: Callable) -> int:
 # Open-side collisions (both open or both closed on one axis) resolve to col/row 1
 # (the center column/row). This means mask 0 (all-open) → (1,1), but mask 0 returns
 # null below (isolated cell). Masks 5 (T+B) and 10 (E+W) collapse to center (1,1).
-func mask_to_atlas(mask: int) -> PentaTileAtlasSlot:
+func mask_to_atlas(mask: int, _strip_index: int = 0) -> PentaTileAtlasSlot:
 	if mask == 0:
 		return null
 	# Open sides: bit NOT set means that neighbor is absent.
