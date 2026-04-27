@@ -466,17 +466,13 @@ func _check_synthesized_atlas() -> void:
 							opaque += 1
 				var pct := 100.0 * float(opaque) / float(total)
 				print("  slot %d opacity: %d/%d pixels (%.1f%%)" % [slot_index, opaque, total, pct])
-				# Sanity guard — slots 0-3 must have art (authored or synthesized from
-				# slot 0's bottom half / center / L-shape regions). Slot 4 OppositeCorners
-				# is synthesized from slot 0's TL+BR quadrants; under the demo PNG's
-				# BL-quadrant-only slot 0 (Gate 1 escape hatch — see _regen_demo_ground.py
-				# draw_isolated_cell), TL+BR are transparent so slot 4 is intentionally
-				# empty. Mask 6/9 (diagonal-only OppositeCorners) render empty in the
-				# demo as the documented tradeoff.
-				if opaque == 0 and slot_index != 4:
+				# Sanity guard — every slot must have SOME opaque pixels. The user's
+				# locked design (session a69c3ba5) requires ONE/TWO/THREE/FOUR mode to
+				# synthesize all missing slots from slot 0 at load time, INCLUDING slot 4
+				# OppositeCorners (which reads slot 0's TL+BR quadrants). slot 0 must keep
+				# enough alpha in all quadrants for synthesis to produce visible art.
+				if opaque == 0:
 					_fail("synth_pixels", "slot %d is fully transparent — no art rendered" % slot_index)
-				elif opaque == 0 and slot_index == 4:
-					print("    (slot 4 transparent — expected under BL-quadrant-only demo slot 0; masks 6/9 render empty)")
 
 
 func _test_pattern(name: String, logic_cells: Array) -> void:

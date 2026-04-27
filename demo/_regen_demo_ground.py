@@ -58,45 +58,68 @@ def _orange_border(draw: ImageDraw.ImageDraw, x0: int, y0: int, x1: int, y1: int
 
 
 def draw_isolated_cell(img: Image.Image, col: int) -> None:
-    """Slot 0 — IsolatedCell. Authored as ONLY the BL-quadrant outer-corner art
-    so the OuterCorner-via-rotation dispatch (masks 1/2/4/8 → slot 0 + ROTATE_*)
-    places the corner art at the correct corner of each display cell. The other
-    3 quadrants are fully transparent — rotated copies don't overdraw each other
-    when 4 display cells render around a single painted logic cell, so the 4
-    rotations compose to form ONE coherent silhouette of the painted cell.
+    """Slot 0 — IsolatedCell. Full-silhouette authoring with the BL quadrant
+    drawn at full opacity and the other 3 quadrants composited at reduced
+    alpha (Gate 1 documented escape hatch — see 02-02-PLAN.md:134). This is
+    the "appropriately faded extras" path the spec explicitly calls out.
 
-    Anchoring derivation (16x16 tile, slot 0 = BL quadrant filled at pixels
-    x:0-7, y:8-15):
-      - ROTATE_0 (mask 4 / BL bit set, cell south of painted cell): BL → BL of
-        cell. Lands at the cell's BL corner = the corner adjacent to the
-        painted cell's lower-left visual.
-      - ROTATE_90 (mask 1, cell SE of painted): BL → TL of cell. Lands at the
-        cell's TL corner = adjacent to the painted cell's upper-left visual.
-      - ROTATE_180 (mask 2, cell SW of painted): BL → TR of cell. Lands at the
-        cell's TR corner = adjacent to the painted cell's upper-right visual.
-      - ROTATE_270 (mask 8, cell NW of painted): BL → BR of cell. Lands at the
-        cell's BR corner = adjacent to the painted cell's lower-right visual.
-    All 4 corner pieces meet at the painted cell's center → coherent silhouette.
+    Why full silhouette + faded extras (NOT BL-only):
+    - Synthesis at load time (Image.blit_rect) reads slot 0's regions to
+      generate the OTHER 4 archetypes when ONE/TWO/THREE/FOUR mode leaves
+      them unauthored. Recipes:
+        slot 1 Fill              ← center 50% of slot 0
+        slot 2 Border            ← bottom half of slot 0
+        slot 3 InnerCorner       ← full slot 0 minus TR quadrant
+        slot 4 OppositeCorners   ← TL quadrant + BR quadrant composited
+      Making TL/TR/BR fully transparent breaks slot 4 (OppositeCorners
+      renders empty for masks 6 and 9). The user's locked design (session
+      a69c3ba5) explicitly chose load-time OppositeCorners synthesis over
+      a runtime overlay layer — this asset must support that.
 
-    Tradeoff (Gate 1 documented escape hatch — see 02-02-PLAN.md:134):
-    slot 4 OppositeCorners synthesis (FOUR mode) extracts TL+BR quadrants of
-    slot 0, which are now transparent. Masks 6 and 9 (diagonal-only
-    OppositeCorners) will render empty in the demo. Acceptable — diagonal-only
-    paints are rare in the demo's terrain layout. Artists who need pixel-perfect
-    OppositeCorners can author slot 4 explicitly via FIVE-mode atlases.
+    - For the OuterCorner-via-rotation visual (masks 1/2/4/8 → slot 0 +
+      ROTATE_*), the BL quadrant's higher opacity dominates the rendered
+      pixels so each rotated copy reads as "one strong corner + ghost rest."
+      4 display cells around a painted logic cell each show a strong corner
+      at the cell's inner-toward-painted side; the ghost regions are still
+      visible but don't overpower the silhouette like full-opacity-everywhere
+      does.
+
+    BL-quadrant anchor derivation (16x16 tile, BL = pixels x:0-7, y:8-15):
+      ROTATE_0   (mask 4): BL stays at BL of cell south of painted cell.
+      ROTATE_90  (mask 1): BL → TL of cell SE of painted cell.
+      ROTATE_180 (mask 2): BL → TR of cell SW of painted cell.
+      ROTATE_270 (mask 8): BL → BR of cell NW of painted cell.
+    The 4 strong-opacity corners meet at the painted cell's center.
 
     The bundled greybox PNGs (addons/penta_tile/_generate_bitmasks.py) keep
-    the full-silhouette slot 0 as the documentation reference; this faded
-    variant is demo-specific."""
+    the uniform-opacity full silhouette as the documentation reference; this
+    fade is demo-specific art polish."""
     draw = ImageDraw.Draw(img)
     x0, y0 = col * TILE, 0
+    x1, y1 = x0 + TILE, y0 + TILE
     mid_x, mid_y = x0 + TILE // 2, y0 + TILE // 2
-    bl_x1, bl_y1 = mid_x, y0 + TILE
-    # BL quadrant only — TL/TR/BR stay transparent.
-    _stippled_fill(draw, x0, mid_y, bl_x1, bl_y1)
-    # Orange wires on the L and B sides of the BL quadrant — these become the
-    # outer perimeter of the composed silhouette under rotation+tiling.
-    _orange_border(draw, x0, mid_y, bl_x1, bl_y1, "LB")
+
+    # Step 1: stippled-fill the entire tile + TBLR wires at full opacity.
+    _stippled_fill(draw, x0, y0, x1, y1)
+    _orange_border(draw, x0, y0, x1, y1, "TBLR")
+
+    # Step 2: knock down the alpha of TL/TR/BR quadrants — fade-not-erase so
+    # synthesis recipes still extract real (dimmer) art for slots 1/2/3/4.
+    # 60% alpha leaves the BL quadrant clearly dominant under rotation while
+    # keeping enough signal in TL+BR for OppositeCorners synthesis to render
+    # visibly (~36% effective opacity composited).
+    FADE_ALPHA = 102                                                                  # ~40% (out of 255) — strong fade
+    pixels = img.load()
+    for py in range(y0, y1):
+        for px in range(x0, x1):
+            in_bl = (px < mid_x) and (py >= mid_y)
+            if in_bl:
+                continue
+            r, g, b, a = pixels[px, py]
+            if a == 0:
+                continue
+            new_a = max(0, a - FADE_ALPHA)
+            pixels[px, py] = (r, g, b, new_a)
 
 
 def draw_fill(img: Image.Image, col: int) -> None:
