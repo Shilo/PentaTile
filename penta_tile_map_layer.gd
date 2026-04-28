@@ -11,6 +11,14 @@ const _PRIMARY_LAYER_NAME := "_PentaTileVisual"
 # registry state (Rule 1 fix — bare class_name references break outside editor).
 const _PentaTileSynthesis = preload("res://addons/penta_tile/penta_tile_synthesis.gd")
 
+# Default-layout script preload. Used by the `layout` @export default expression
+# so a fresh PentaTileMapLayer node has a working Penta layout out of the box —
+# combined with the auto-fill chain in the layout setter, dropping a node into
+# a scene gives Penta autotiling against the bundled FIVE-mode greybox without
+# any manual setup. Using preload() (not the class_name) avoids class-registry
+# ordering failures in headless / --script mode.
+const _DEFAULT_LAYOUT_SCRIPT = preload("res://addons/penta_tile/layouts/penta_tile_layout_penta.gd")
+
 @export var atlas_source_id: int = -1:
 	set(value):
 		atlas_source_id = value
@@ -19,7 +27,12 @@ const _PentaTileSynthesis = preload("res://addons/penta_tile/penta_tile_synthesi
 # LAYER-01: layout lives directly on PentaTileMapLayer (no PentaTileAtlasContract wrapper).
 # Setter: idempotence guard first, then disconnect-before-reconnect on layout.changed.
 # PITFALLS §5 — no signal-storm risk; _queue_rebuild coalesces via call_deferred.
-@export var layout: PentaTileLayout:
+#
+# Default value is a fresh PentaTileLayoutPenta per instance. Users who want
+# native TileMapLayer behavior (no autotile dispatch) can clear the layout to
+# null via the inspector — null-layout fallback in _sync_visual_layers makes
+# the parent render its tile_map_data directly via Godot's stock pipeline.
+@export var layout: PentaTileLayout = _DEFAULT_LAYOUT_SCRIPT.new():
 	set(value):
 		if layout == value:
 			return                                                                  # idempotence (PITFALLS §5)
