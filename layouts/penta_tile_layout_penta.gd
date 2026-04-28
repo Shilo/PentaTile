@@ -408,7 +408,7 @@ func _refresh_preset_bitmask() -> void:
 		return
 	var resolved := tile_count
 	if resolved == TileCountMode.AUTO or resolved == TileCountMode.AUTO_STRIP:
-		resolved = TileCountMode.FOUR                                                 # inspector preview default
+		resolved = TileCountMode.FIVE                                                 # inspector preview default — show all 5 archetypes
 	var path: String = _bundled_png_path(axis, resolved)
 	if path.is_empty():
 		return
@@ -455,7 +455,7 @@ func _bundled_png_path(a: Axis, m: TileCountMode) -> String:
 func _fallback_atlas_grid_size() -> Vector2i:
 	var resolved_mode := tile_count
 	if resolved_mode == TileCountMode.AUTO or resolved_mode == TileCountMode.AUTO_STRIP:
-		resolved_mode = TileCountMode.FOUR
+		resolved_mode = TileCountMode.FIVE                                            # inspector preview default — show all 5 archetypes
 	var mode_count: int = int(resolved_mode)
 	if mode_count <= 0:
 		return Vector2i.ZERO
