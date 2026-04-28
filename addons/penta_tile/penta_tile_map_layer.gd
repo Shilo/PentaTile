@@ -248,6 +248,22 @@ func _paint_via_layout(display_cell: Vector2i, active_layout: PentaTileLayout, s
 	var atlas_sample_fn := Callable(self, "_sample_logic_atlas_coords")
 	var strip_index := active_layout.resolve_display_strip(display_cell, atlas_sample_fn)
 
+	# Clamp strip_index to the actual strip count in the synthesized atlas.
+	# resolve_display_strip returns the painted neighbor's source-atlas .x or .y
+	# (depending on axis) as the strip — but if the user has painted with stale
+	# atlas coords (e.g. painted in HORIZONTAL with atlas (3, 0), then switched to
+	# VERTICAL where the source atlas is (1, 5) so strip count is 1), strip_index
+	# can exceed the synth atlas's actual row count. Without clamping, the cell
+	# dispatches to a non-existent (slot, strip) and renders empty. Clamping to 0
+	# matches AUTO's "all cells dispatch to strip 0" behavior when there's only
+	# one detected strip — and gracefully handles the cross-axis stale-coord case.
+	if _synthesized_tile_set != null:
+		var _ssrc := _synthesized_tile_set.get_source(0) as TileSetAtlasSource
+		if _ssrc != null:
+			var _strip_count: int = _ssrc.get_atlas_grid_size().y
+			if _strip_count > 0 and strip_index >= _strip_count:
+				strip_index = 0
+
 	var slot := active_layout.mask_to_atlas(mask, strip_index)
 	if slot == null:
 		return
