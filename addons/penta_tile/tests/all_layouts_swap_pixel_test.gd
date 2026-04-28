@@ -244,9 +244,68 @@ func _verify_layer(layer: Node, label: String) -> void:
 		if interior_coverage_pct < 80.0 and max_interior_count >= 5:
 			_record(label, "interior tile %s coverage %.0f%% < 80%% — adjacent cells will leave visible transparent gaps when tiled (plus-pattern with hollow corners)" % [interior_atlas, interior_coverage_pct])
 
+	# Per-cell EDGE-CONTINUITY assertion (cardinal-edge mask layouts only).
+	#
+	# For every painted cell, check the 4 edges of its dispatched tile against
+	# its mask: any edge facing a painted neighbor (mask bit set on that side)
+	# MUST be mostly opaque, otherwise the seam between this cell and that
+	# neighbor leaves a visible transparent gap (the dark squares between
+	# adjacent cells in the user's screenshot).
+	#
+	# Gated to Min3x3 + Wang2Edge — the layouts whose compute_mask uses
+	# CARDINAL neighbors with bit convention N/T=1, E=2, S/B=4, W=8. Other
+	# layouts use corner masks (TL/TR/BL/BR or NE/SE/SW/NW diagonals) where
+	# bits don't map to cell edges:
+	#   - DualGrid16, Penta: dual-grid corner mask → interior coverage check
+	#     (mask=15 ≥ 80%) covers continuity instead.
+	#   - Wang2Corner: single-grid but DIAGONAL-neighbor mask. Has its own
+	#     unrelated coherence concern (cardinal seams not encoded in mask)
+	#     that needs a separate test design.
+	var script_path: String = layer.layout.get_script().resource_path
+	var is_cardinal_edge_layout: bool = (
+		script_path.ends_with("penta_tile_layout_minimal_3x3.gd") or
+		script_path.ends_with("penta_tile_layout_wang_2_edge.gd")
+	)
+	var edge_failures := 0
+	var first_edge_fail: Variant = null
+	if is_cardinal_edge_layout and atlas_img != null:
+		var sample_fn2 := Callable(layer, "_has_logic_cell")
+		# (name, mask_bit, px0, py0, px1, py1) — all coords are within-tile pixels.
+		var edges := [
+			["N", 1, 0, 0, tile_size.x - 1, 0],
+			["E", 2, tile_size.x - 1, 0, tile_size.x - 1, tile_size.y - 1],
+			["S", 4, 0, tile_size.y - 1, tile_size.x - 1, tile_size.y - 1],
+			["W", 8, 0, 0, 0, tile_size.y - 1],
+		]
+		for cell: Vector2i in painted:
+			var ac2: Vector2i = primary.get_cell_atlas_coords(cell)
+			if not eff_src.has_tile(ac2):
+				continue
+			var ax0: int = ac2.x * tile_size.x
+			var ay0: int = ac2.y * tile_size.y
+			var mask2: int = layer.layout.compute_mask(cell, sample_fn2)
+			for e: Array in edges:
+				var bit: int = e[1]
+				if (mask2 & bit) == 0:
+					continue
+				var ex0: int = e[2]; var ey0: int = e[3]; var ex1: int = e[4]; var ey1: int = e[5]
+				var op := 0; var total := 0
+				for py in range(ey0, ey1 + 1):
+					for px in range(ex0, ex1 + 1):
+						total += 1
+						if atlas_img.get_pixel(ax0 + px, ay0 + py).a > 0.01:
+							op += 1
+				var pct: float = 100.0 * float(op) / float(max(1, total))
+				if pct < 80.0:
+					edge_failures += 1
+					if first_edge_fail == null:
+						first_edge_fail = "cell %s mask=%d edge %s atlas %s opacity %.0f%%" % [cell, mask2, e[0], ac2, pct]
+		if edge_failures > 0:
+			_record(label, "%d cell-edges face a painted neighbor with <80%% opacity along that edge — visible seam (first: %s)" % [edge_failures, first_edge_fail])
+
 	# Output summary line for visibility.
-	print("  [%s] painted=%d unrenderable=%d transparent=%d max_interior=%d (atlas %s, %.0f%% coverage) pos=%s" % [
-		label, painted.size(), unrenderable_atlas, transparent_atlas, max_interior_count, interior_atlas, interior_coverage_pct, primary.position
+	print("  [%s] painted=%d unrenderable=%d transparent=%d max_interior=%d (atlas %s, %.0f%% coverage) edge_fails=%d pos=%s" % [
+		label, painted.size(), unrenderable_atlas, transparent_atlas, max_interior_count, interior_atlas, interior_coverage_pct, edge_failures, primary.position
 	])
 
 
