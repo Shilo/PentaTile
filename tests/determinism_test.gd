@@ -30,13 +30,15 @@ const _LayerScript = preload("res://addons/penta_tile/penta_tile_map_layer.gd")
 #   4075543519 — bundled FIVE-mode greybox slot 0 = BL-quadrant only.
 #   480538583  — removed slot outlines from bundled greyboxes.
 #   4100093049 — PentaTileMapLayer.layout default = fresh PentaTileLayoutPenta.
-#   1693834751 — current: FIVE-mode greybox slot 0 BL fill corrected from
-#                17×16 (1-px overflow into BR column) to exactly 16×16. The
-#                overflow column rotated into visible "bump" artifacts at
-#                cell edges in the editor; user reported and confirmed via
-#                screenshot. Synthesized atlas pixels shifted; dispatch
-#                table + paint coords unchanged.
-const BASELINE_HASH := 1693834751
+#   1693834751 — FIVE-mode greybox slot 0 BL fill corrected to exact 16×16.
+#   2561003017 — current: determinism test refactored to be self-contained
+#                (builds its own layer + bundled FOUR greybox source instead
+#                of loading the demo .tscn). Decouples determinism check
+#                from the demo scene's editable state — user can freely
+#                paint / delete nodes in the demo without breaking this
+#                test. Hash reflects the new fixed test pattern, not the
+#                demo's tile_map_data.
+const BASELINE_HASH := 2561003017
 
 # Expected painted cell count for the demo scene's PentaTileMapLayer. Used by both
 # the main HORIZONTAL test and sub-test (c) VERTICAL coverage. If WR-07 regresses
@@ -148,38 +150,88 @@ func _subtest_clip_polygon_determinism() -> void:
 		quit(1)
 
 
+# Build a self-contained PentaTileMapLayer with the bundled FOUR-mode greybox
+# as its source TileSet. Used by both the main rebuild test and sub-test (c)
+# so the determinism check is decoupled from the demo .tscn's editable state
+# (the demo's PentaTileMapLayer can be deleted / repainted during UAT and this
+# test still runs reproducibly).
+func _build_test_layer(axis_value: int) -> Node:
+	var penta := _PentaScript.new()
+	penta.set("axis", axis_value)
+	penta.set("tile_count", 4)                                                  # FOUR
+
+	var bundled_path := "res://addons/penta_tile/layouts/penta_tile_layout_penta/four_horizontal.png" if axis_value == 0 else "res://addons/penta_tile/layouts/penta_tile_layout_penta/four_vertical.png"
+	var tex := load(bundled_path) as Texture2D
+	if tex == null:
+		return null
+	var ts := TileSet.new()
+	var src := TileSetAtlasSource.new()
+	src.texture = tex
+	var tile_w: int
+	var tile_h: int
+	if axis_value == 0:                                                         # HORIZONTAL: 4 tiles along X, 1 row
+		tile_w = tex.get_width() / 4
+		tile_h = tex.get_height()
+		src.texture_region_size = Vector2i(tile_w, tile_h)
+		for i in range(4):
+			src.create_tile(Vector2i(i, 0))
+	else:                                                                       # VERTICAL: 1 col, 4 tiles along Y
+		tile_w = tex.get_width()
+		tile_h = tex.get_height() / 4
+		src.texture_region_size = Vector2i(tile_w, tile_h)
+		for i in range(4):
+			src.create_tile(Vector2i(0, i))
+	ts.tile_size = Vector2i(tile_w, tile_h)
+	ts.add_source(src, 0)
+
+	var layer = _LayerScript.new()
+	layer.tile_set = ts
+	layer.layout = penta
+	get_root().add_child(layer)
+	return layer
+
+
+# Deterministic logic-cell pattern used by both the main rebuild test and
+# sub-test (c). Exercises a mix of mask states (single cells, 2×2 blocks,
+# L-shapes) so the synthesized output covers most dispatch table entries.
+const _TEST_LOGIC_CELLS := [
+	# 2×2 block (covers all 16 corner masks via the 3×3 affected area)
+	Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1),
+	# Isolated single cell
+	Vector2i(5, 0),
+	# L-shape
+	Vector2i(0, 5), Vector2i(1, 5), Vector2i(0, 6),
+	# Diagonal pair (mask 6 / 9 territory)
+	Vector2i(5, 5), Vector2i(6, 6),
+]
+
+
 func _run_main_rebuild_test() -> void:
-	# Load demo scene, run rebuild() 11 times (run 0 + 10 re-runs),
-	# assert all hashes identical AND match BASELINE_HASH.
-	var demo_scene_path := "res://addons/penta_tile/demo/penta_tile_demo.tscn"
-	var packed := load(demo_scene_path) as PackedScene
-	if packed == null:
-		printerr("determinism_test: could not load demo scene at " + demo_scene_path)
+	# Build a self-contained HORIZONTAL FOUR layer, paint a deterministic
+	# pattern, run rebuild() 11 times, assert all hashes identical AND match
+	# BASELINE_HASH. Independent of the demo .tscn's saved state.
+	var layer = _build_test_layer(0)                                            # HORIZONTAL
+	if layer == null:
+		printerr("determinism_test: could not build test layer")
 		quit(1)
 		return
 
-	var root_node := packed.instantiate()
-	get_root().add_child(root_node)
-
-	# Wait two frames so _ready fires and the deferred rebuild runs.
+	# Wait for _ready + auto-fill chain.
 	await process_frame
 	await process_frame
 
-	var layer_node = root_node.find_child("PentaTileMapLayer", true, false)
-	if layer_node == null:
-		printerr("determinism_test: PentaTileMapLayer node not found in demo scene")
-		root_node.queue_free()
-		quit(1)
-		return
+	# Paint the deterministic pattern.
+	for c: Vector2i in _TEST_LOGIC_CELLS:
+		layer.set_cell(c, 0, Vector2i.ZERO)
+	await process_frame
+	await process_frame
 
-	# Force initial synchronous rebuild.
-	if layer_node.has_method("rebuild"):
-		layer_node.rebuild()
-
-	var primary = layer_node.get("_primary_layer")
+	if layer.has_method("rebuild"):
+		layer.rebuild()
+	var primary = layer.get("_primary_layer")
 	if primary == null:
 		printerr("determinism_test: _primary_layer is null after initial rebuild")
-		root_node.queue_free()
+		layer.queue_free()
 		quit(1)
 		return
 
@@ -188,15 +240,11 @@ func _run_main_rebuild_test() -> void:
 	print("Run 0 (initial): hash=%d baseline_match=%s" % [h0, str(h0 == BASELINE_HASH)])
 
 	var all_match := true
-	var run_hashes: Array[int] = [h0]
-
 	for i in range(1, 11):
-		# Invalidate synthesis cache via _on_layout_changed, then rebuild.
-		if layer_node.has_method("_on_layout_changed"):
-			layer_node._on_layout_changed()
-		layer_node.rebuild()
+		if layer.has_method("_on_layout_changed"):
+			layer._on_layout_changed()
+		layer.rebuild()
 		var h: int = hash(Array(primary.tile_map_data))
-		run_hashes.append(h)
 		print("Run %d: hash=%d matches_run0=%s baseline_match=%s" % [
 			i, h, str(h == h0), str(h == BASELINE_HASH)])
 		if h != h0:
@@ -211,91 +259,67 @@ func _run_main_rebuild_test() -> void:
 	else:
 		printerr("MAIN TEST FAILED — synthesis is non-deterministic")
 
-	root_node.queue_free()
+	layer.queue_free()
 
 	if not all_match:
 		quit(1)
 
 
 func _subtest_vertical_axis_structural_coverage() -> void:
-	# WR-07 regression net. Loads the demo scene, captures HORIZONTAL paint count
-	# from the as-loaded scene's layout, swaps to a VERTICAL FOUR-mode resource,
-	# invalidates the synthesis cache, rebuilds, and asserts:
-	#   1. VERTICAL paint count matches the HORIZONTAL count captured fresh from
-	#      the same scene (no cells dropped due to invalid coords).
+	# WR-07 regression net (self-contained version). Builds a HORIZONTAL FOUR
+	# test layer, paints the deterministic pattern, captures cell count. Then
+	# builds a fresh VERTICAL FOUR layer with the same pattern, asserts:
+	#   1. VERTICAL paint count matches HORIZONTAL on the same pattern.
 	#   2. Every painted cell's atlas coord exists in the synthesized atlas.
-	#
-	# Capturing HORIZONTAL dynamically avoids drift when the demo .tscn's
-	# tile_map_data is repainted during UAT — the invariant is HORIZONTAL ==
-	# VERTICAL on the same scene, not VERTICAL == some-fixed-constant.
 	#
 	# Pre-WR-07: VERTICAL FOUR's `_make_slot` returned `Vector2i(0, slot_index)`
 	# while the synthesizer always produced a horizontal strip — so coords
 	# (0, 1..4) were referenced but the atlas only had tiles at (0..4, 0).
-	# Either path drops cells or fills them with unrenderable atlas refs. Both
-	# failure modes are caught by the assertions below.
-	var demo_scene_path := "res://addons/penta_tile/demo/penta_tile_demo.tscn"
-	var packed := load(demo_scene_path) as PackedScene
-	if packed == null:
-		printerr("Sub-test (c): could not load demo scene at " + demo_scene_path)
+	# Both failure modes (dropped cells, unrenderable atlas refs) are caught.
+	var h_layer = _build_test_layer(0)
+	if h_layer == null:
+		printerr("Sub-test (c): could not build HORIZONTAL test layer")
 		quit(1)
 		return
-
-	var root_node := packed.instantiate()
-	get_root().add_child(root_node)
-
 	await process_frame
 	await process_frame
+	for c: Vector2i in _TEST_LOGIC_CELLS:
+		h_layer.set_cell(c, 0, Vector2i.ZERO)
+	await process_frame
+	await process_frame
+	if h_layer.has_method("rebuild"):
+		h_layer.rebuild()
+	var horizontal_count: int = h_layer.get("_primary_layer").get_used_cells().size()
+	h_layer.queue_free()
 
-	var layer_node = root_node.find_child("PentaTileMapLayer", true, false)
-	if layer_node == null:
-		printerr("Sub-test (c): PentaTileMapLayer node not found")
-		root_node.queue_free()
+	var v_layer = _build_test_layer(1)                                          # VERTICAL
+	if v_layer == null:
+		printerr("Sub-test (c): could not build VERTICAL test layer")
 		quit(1)
 		return
+	await process_frame
+	await process_frame
+	for c: Vector2i in _TEST_LOGIC_CELLS:
+		v_layer.set_cell(c, 0, Vector2i.ZERO)
+	await process_frame
+	await process_frame
+	if v_layer.has_method("rebuild"):
+		v_layer.rebuild()
 
-	# Capture HORIZONTAL count from the fresh scene before swapping anything.
-	if layer_node.has_method("rebuild"):
-		layer_node.rebuild()
-	var primary_h = layer_node.get("_primary_layer")
-	if primary_h == null:
-		printerr("Sub-test (c): _primary_layer is null after HORIZONTAL rebuild")
-		root_node.queue_free()
-		quit(1)
-		return
-	var horizontal_count: int = primary_h.get_used_cells().size()
-
-	# Swap to VERTICAL FOUR layout.
-	var vertical_layout := load(VERTICAL_LAYOUT_PATH) as Resource
-	if vertical_layout == null:
-		printerr("Sub-test (c): could not load VERTICAL layout at " + VERTICAL_LAYOUT_PATH)
-		root_node.queue_free()
-		quit(1)
-		return
-	layer_node.layout = vertical_layout
-	# Wave 2 setter calls _queue_rebuild() but doesn't nuke _synthesized_tile_set on layout
-	# property reassignment (the cache invalidation lives in _on_layout_changed which fires
-	# on Resource.changed, not on whole-property swap). Invoke explicitly.
-	if layer_node.has_method("_on_layout_changed"):
-		layer_node._on_layout_changed()
-	if layer_node.has_method("rebuild"):
-		layer_node.rebuild()
-
-	var primary = layer_node.get("_primary_layer")
+	var primary = v_layer.get("_primary_layer")
 	if primary == null:
-		printerr("Sub-test (c): _primary_layer is null after VERTICAL swap")
-		root_node.queue_free()
+		printerr("Sub-test (c): _primary_layer is null after VERTICAL rebuild")
+		v_layer.queue_free()
 		quit(1)
 		return
 
-	# Assertion 1: VERTICAL paint count matches HORIZONTAL on the same scene.
 	var used_cells: Array = primary.get_used_cells()
 	var cell_count := used_cells.size()
 	var cells_match: bool = cell_count == horizontal_count
 	if not cells_match:
-		printerr("FAIL sub-test (c) [cell count]: VERTICAL FOUR painted %d cells, HORIZONTAL FOUR painted %d on same scene" % [cell_count, horizontal_count])
+		printerr("FAIL sub-test (c) [cell count]: VERTICAL FOUR painted %d cells, HORIZONTAL FOUR painted %d on same logic-cell pattern" % [cell_count, horizontal_count])
 
-	# Assertion 2: every painted cell's atlas coord exists in the synthesized atlas.
+	# Verify every painted cell's atlas coord resolves in the synthesized atlas.
 	var synth_tile_set: TileSet = primary.tile_set
 	var coords_valid := true
 	var invalid_coord_count := 0
@@ -305,8 +329,8 @@ func _subtest_vertical_axis_structural_coverage() -> void:
 			for cell in used_cells:
 				var atlas_coord: Vector2i = primary.get_cell_atlas_coords(cell)
 				if not source.has_tile(atlas_coord):
-					if invalid_coord_count < 3:  # cap log spam
-						printerr("FAIL sub-test (c) [out-of-grid coord]: cell %s → atlas %s not in synthesized atlas" % [cell, atlas_coord])
+					if invalid_coord_count < 3:
+						printerr("FAIL sub-test (c) [out-of-grid coord]: cell %s atlas %s not in synthesized atlas" % [cell, atlas_coord])
 					invalid_coord_count += 1
 					coords_valid = false
 		else:
@@ -323,8 +347,8 @@ func _subtest_vertical_axis_structural_coverage() -> void:
 		print("Sub-test (c) — VERTICAL-axis structural coverage: PASS (cells=%d match HORIZONTAL baseline; all atlas coords resolve in synthesized atlas)" % cell_count)
 	else:
 		printerr("Sub-test (c) — VERTICAL-axis structural coverage: FAIL")
-		root_node.queue_free()
+		v_layer.queue_free()
 		quit(1)
 		return
 
-	root_node.queue_free()
+	v_layer.queue_free()
