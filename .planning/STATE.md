@@ -126,7 +126,7 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-None yet.
+- **Re-research editor line/rect/bucket tool preview during drag** (`general`, far-future) — preview invisible when `layout` is bound because Godot's editor draws the line/rect preview as a viewport overlay multiplied by `self_modulate.a`, which PentaTile zeroes via `logic_layer_opacity=0`. Two paths on revisit: (a) ghost-material refactor for raw preview parity with TileMapDual (~30 LOC, breaking change to `logic_layer_opacity`), or (b) custom `EditorPlugin` for true dispatched preview (full new phase). Defer until after v0.2.0 ships. See `.planning/research/editor-line-rect-preview.md` and `.planning/todos/pending/2026-04-28-re-research-editor-line-rect-tool-preview-during-drag.md`.
 
 ### Blockers/Concerns
 
