@@ -41,6 +41,7 @@ $allTests = @(
     "paint_test",
     "all_layouts_test",
     "visual_render_test",
+    "strict_pixel_test",
     "determinism_test"
 )
 

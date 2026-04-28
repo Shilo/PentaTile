@@ -133,44 +133,48 @@ def draw_penta_isolated_cell(draw, col, row, bl_only=False):
         # the edges of OuterCorner-rendered cells.
         draw.rectangle((ox, oy + 16, ox + 15, oy + TILE - 1), fill=GREY)
         return
-    # Full silhouette
-    draw.rectangle((ox + 8, oy + 8, ox + 24, oy + 24), fill=GREY)
+    # Full silhouette. PIL draw.rectangle endpoints are INCLUSIVE on both ends,
+    # so to fill exactly N pixels we use (start, start+N-1). Earlier revisions
+    # used (ox+TILE, oy+TILE) which overran by 1 pixel/column into the NEXT
+    # slot's first column, polluting that slot's pixel content. The strict_pixel
+    # test catches this class of bug.
+    draw.rectangle((ox + 8, oy + 8, ox + 23, oy + 23), fill=GREY)            # center 16x16
     # 4 edge slabs (between corner caps)
-    draw.rectangle((ox + 10, oy + 0,  ox + 22, oy + 4),  fill=GREY)   # top
-    draw.rectangle((ox + 10, oy + 28, ox + 22, oy + 32), fill=GREY)   # bottom
-    draw.rectangle((ox + 0,  oy + 10, ox + 4,  oy + 22), fill=GREY)   # left
-    draw.rectangle((ox + 28, oy + 10, ox + 32, oy + 22), fill=GREY)   # right
+    draw.rectangle((ox + 10, oy + 0,  ox + 21, oy + 3),  fill=GREY)          # top
+    draw.rectangle((ox + 10, oy + 28, ox + 21, oy + 31), fill=GREY)          # bottom
+    draw.rectangle((ox + 0,  oy + 10, ox + 3,  oy + 21), fill=GREY)          # left
+    draw.rectangle((ox + 28, oy + 10, ox + 31, oy + 21), fill=GREY)          # right
     # 4 corner caps
-    draw.rectangle((ox + 0,  oy + 0,  ox + 4,  oy + 4),  fill=GREY)   # TL
-    draw.rectangle((ox + 28, oy + 0,  ox + 32, oy + 4),  fill=GREY)   # TR
-    draw.rectangle((ox + 0,  oy + 28, ox + 4,  oy + 32), fill=GREY)   # BL
-    draw.rectangle((ox + 28, oy + 28, ox + 32, oy + 32), fill=GREY)   # BR
+    draw.rectangle((ox + 0,  oy + 0,  ox + 3,  oy + 3),  fill=GREY)          # TL
+    draw.rectangle((ox + 28, oy + 0,  ox + 31, oy + 3),  fill=GREY)          # TR
+    draw.rectangle((ox + 0,  oy + 28, ox + 3,  oy + 31), fill=GREY)          # BL
+    draw.rectangle((ox + 28, oy + 28, ox + 31, oy + 31), fill=GREY)          # BR
 
 
 def draw_penta_fill(draw, col, row):
     """Slot 1 -- Fill silhouette: solid 32x32 grey square."""
     ox, oy = col * TILE, row * TILE
-    draw.rectangle((ox, oy, ox + TILE, oy + TILE), fill=GREY)
+    draw.rectangle((ox, oy, ox + TILE - 1, oy + TILE - 1), fill=GREY)
 
 
 def draw_penta_border(draw, col, row):
-    """Slot 2 -- Border silhouette: bottom-half slab (rows 16..32 filled)."""
+    """Slot 2 -- Border silhouette: bottom-half slab (rows 16..31 filled)."""
     ox, oy = col * TILE, row * TILE
-    draw.rectangle((ox, oy + 16, ox + TILE, oy + TILE), fill=GREY)
+    draw.rectangle((ox, oy + 16, ox + TILE - 1, oy + TILE - 1), fill=GREY)
 
 
 def draw_penta_inner_corner(draw, col, row):
     """Slot 3 -- InnerCorner silhouette: L-shape (TR quadrant cut out)."""
     ox, oy = col * TILE, row * TILE
-    draw.rectangle((ox,      oy,      ox + 16, oy + TILE), fill=GREY)   # left half
-    draw.rectangle((ox + 16, oy + 16, ox + TILE, oy + TILE), fill=GREY) # BR quadrant
+    draw.rectangle((ox,      oy,      ox + 15,        oy + TILE - 1), fill=GREY)   # left half (TL+BL)
+    draw.rectangle((ox + 16, oy + 16, ox + TILE - 1,  oy + TILE - 1), fill=GREY)   # BR quadrant
 
 
 def draw_penta_opposite_corners(draw, col, row):
     """Slot 4 -- OppositeCorners silhouette: TL + BR quadrants filled (mask 9 anchor "\\")."""
     ox, oy = col * TILE, row * TILE
-    draw.rectangle((ox,      oy,      ox + 16, oy + 16),      fill=GREY)   # TL
-    draw.rectangle((ox + 16, oy + 16, ox + TILE, oy + TILE), fill=GREY)    # BR
+    draw.rectangle((ox,      oy,      ox + 15,        oy + 15),       fill=GREY)   # TL
+    draw.rectangle((ox + 16, oy + 16, ox + TILE - 1,  oy + TILE - 1), fill=GREY)   # BR
 
 
 # ---- Per-mode Penta strip generators ----
