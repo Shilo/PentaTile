@@ -53,22 +53,12 @@ func compute_mask(coord: Vector2i, sample_fn: Callable) -> int:
 # (the center column/row). This means mask 0 (all-open) → (1,1), but mask 0 returns
 # null below (isolated cell). Masks 5 (T+B) and 10 (E+W) collapse to center (1,1).
 #
-# Single-neighbor masks (1, 2, 4, 8 — exactly one cardinal closed) ALSO return null:
-# these are "background extension" cells (cells outside the painted logic region
-# whose only painted neighbor is one cardinal away). With a 9-tile atlas, single-bit
-# masks collapse onto the same atlas slots as 3-bit edge masks (e.g., mask=4 and
-# mask=14 both dispatch to atlas (1,0)). When the shared atlas tile is the
-# in-region "top edge" silhouette (full 32x32), the background cell renders fully
-# solid and visually extends the painted region by a full cell — making a 12x8
-# painted region look 14x10 with the user's actual corner-cuts trapped inside.
-# Returning null for single-bit masks treats those background cells as
-# unrendered, so the painted region stays at exactly the user-painted bounds
-# with corner cuts visible at its true outer corners.
+# Background extension is handled at the LAYER (not layout): _paint_via_layout
+# in penta_tile_map_layer.gd skips painting non-logic-painted single-grid cells,
+# so this layout doesn't need to filter single-bit masks itself — it just maps
+# every meaningful mask to the appropriate atlas slot via the open-side rule.
 func mask_to_atlas(mask: int, _strip_index: int = 0) -> PentaTileAtlasSlot:
-	# mask=0 (no neighbors): isolated cell — null. mask=1/2/4/8 (one neighbor):
-	# background extension — null. Anything with 2+ neighbors is in-region.
-	# popcount via bit-twiddling: subtract popcount > 1 check.
-	if mask == 0 or mask == 1 or mask == 2 or mask == 4 or mask == 8:
+	if mask == 0:
 		return null
 	# Open sides: bit NOT set means that neighbor is absent.
 	var open_t := (mask & 1) == 0

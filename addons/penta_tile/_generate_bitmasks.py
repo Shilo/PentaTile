@@ -76,49 +76,23 @@ def draw_corner_mask(draw: ImageDraw.ImageDraw, col: int, row: int, mask: int) -
 
 
 def draw_edge_mask(draw: ImageDraw.ImageDraw, col: int, row: int, mask: int) -> None:
-    """Per-mask silhouette: solid 32x32 minus a 16x16 outer-corner cut wherever
-    BOTH of that corner's perpendicular cardinals are missing from `mask`.
+    """Solid 32x32 silhouette per atlas slot — every edge-mask tile renders
+    as a fully opaque square. The mask is encoded by atlas POSITION only.
 
-    Bits: N=1, E=2, S=4, W=8 (Wang2Edge); Min3x3 uses the same numbering with
-    N=T, S=B. "Set bit = neighbor present" semantics on both layouts.
+    Background extension is suppressed at the LAYER (not the silhouette):
+    penta_tile_map_layer._paint_via_layout skips non-logic-painted cells
+    in single-grid layouts, so background "extension" cells (cells outside
+    the painted region whose only painted neighbor is one cardinal away)
+    don't get painted at all. That keeps painted regions exactly aligned
+    to the user's painted cells — visually matching Penta's clean
+    rectangle (Penta's perimeter display cells fill INNER quadrants that
+    fall inside the painted logic bounds, so its painted region is also
+    a clean rectangle with no outward extension).
 
-    Why this silhouette: in dual-grid layouts (Penta, DualGrid16) the
-    perimeter display cells of a painted region only render an inner 16x16
-    quadrant — that's what gives painted regions their "rounded outer
-    corner" look. Single-grid edge-mask layouts (Wang2Edge, Min3x3) need
-    to match that look without any half-tile offset, which is achieved by
-    cutting a 16x16 corner from the cell tile WHENEVER the cell is at an
-    outer corner of the painted region (i.e., both cardinals on that
-    corner are missing). Edge cells (one missing cardinal) and interior
-    cells (no missing cardinals) keep their full 32x32, so the painted
-    region renders continuously across cell seams.
-
-    mask=0 (isolated cell — no neighbors at all) renders as a fully solid
-    32x32. Cutting all 4 corners of an isolated cell would leave only a
-    16x16 center, which doesn't match the dual-grid look of an isolated
-    painted cell (a single inner 16x16 ring per dual-grid, not a center
-    blob in single-grid). Treat mask=0 as a special case: solid.
+    mask is unused; kept for callsite symmetry.
     """
     x0, y0 = col * TILE, row * TILE
-    if mask == 0:
-        draw.rectangle((x0, y0, x0 + TILE - 1, y0 + TILE - 1), fill=GREY)
-        return
-    # Solid base, then cut corner quadrants where both perpendicular cardinals
-    # are missing. Reading "cut iff !N && !W" etc. matches the corner naming.
     draw.rectangle((x0, y0, x0 + TILE - 1, y0 + TILE - 1), fill=GREY)
-    half = TILE // 2  # 16
-    # NW quadrant: cut iff N and W both missing.
-    if not (mask & 1) and not (mask & 8):
-        draw.rectangle((x0, y0, x0 + half - 1, y0 + half - 1), fill=TRANSPARENT)
-    # NE quadrant: cut iff N and E both missing.
-    if not (mask & 1) and not (mask & 2):
-        draw.rectangle((x0 + half, y0, x0 + TILE - 1, y0 + half - 1), fill=TRANSPARENT)
-    # SW quadrant: cut iff S and W both missing.
-    if not (mask & 4) and not (mask & 8):
-        draw.rectangle((x0, y0 + half, x0 + half - 1, y0 + TILE - 1), fill=TRANSPARENT)
-    # SE quadrant: cut iff S and E both missing.
-    if not (mask & 4) and not (mask & 2):
-        draw.rectangle((x0 + half, y0 + half, x0 + TILE - 1, y0 + TILE - 1), fill=TRANSPARENT)
 
 
 # ---- Penta archetype drawers (NEW in Phase 2; pixel coords spelled out above) ----
