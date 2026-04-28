@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://rfy5qklo7rhx"
-path="res://.godot/imported/penta_tile_icon.png-3c8178959ce4d3816d178faaca80da08.ctex"
+uid="uid://briuxshmssl3y"
+path="res://.godot/imported/penta_tile_icon.png-5daf2e5dca65873c47719b73311ba620.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://penta_tile_icon.png"
-dest_files=["res://.godot/imported/penta_tile_icon.png-3c8178959ce4d3816d178faaca80da08.ctex"]
+source_file="res://addons/penta_tile/brand/penta_tile_icon.png"
+dest_files=["res://.godot/imported/penta_tile_icon.png-5daf2e5dca65873c47719b73311ba620.ctex"]
 
 [params]
 
