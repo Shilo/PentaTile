@@ -56,6 +56,7 @@ try {
         "visual_render_test",
         "strict_pixel_test",
         "penta_one_mode_test",
+        "auto_strip_axis_test",
         "determinism_test"
     )
 
