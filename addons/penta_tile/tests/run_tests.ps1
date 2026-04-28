@@ -55,6 +55,7 @@ try {
         "all_layouts_test",
         "visual_render_test",
         "strict_pixel_test",
+        "penta_one_mode_test",
         "determinism_test"
     )
 
