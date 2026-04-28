@@ -160,6 +160,16 @@ static func synthesize_strip(
 		if out_slot < authored_count:
 			# Authored slot — copy image and polygons directly.
 			slot_image = _extract_tile_image(atlas_image, src_atlas_coords, tile_size)
+			# Enforce canonical archetype silhouette: zero out any pixels that
+			# fall OUTSIDE the archetype's expected opaque region. Prevents
+			# stray pixels in the cut quadrants (e.g., an artist's orange
+			# inner-corner outline drawn at col 8 of slot 3's TR quadrant)
+			# from bleeding into adjacent painted cells when the tile is
+			# rotated at dispatch time. The user's UAT screenshot showed this
+			# as orange lines inside the painted region's hole — those pixels
+			# came from the cut quadrant landing on the hole-facing side after
+			# ROTATE_90/180/270.
+			_apply_canonical_silhouette(slot_image, out_slot, tile_size)
 			slot_polygons = _extract_tile_polygons(atlas_source, src_atlas_coords, tile_size, source_tile_set)
 		else:
 			# Synthesized slot — produce from slot 0 sub-regions.
@@ -499,6 +509,53 @@ static func _copy_polygons_to_tile_data(tile_data: TileData, polygons: Dictionar
 				nav_poly.add_outline(hole)
 		nav_poly.make_polygons_from_outlines()
 		tile_data.set_navigation_polygon(layer_index, nav_poly)
+
+
+## Force an authored slot's pixels to match its canonical archetype silhouette.
+## Zeroes out the alpha of any pixel that falls OUTSIDE the archetype's expected
+## opaque region. Mutates `image` in place.
+##
+## Canonical regions (with `half = tile_size / 2`):
+##   SLOT_ISOLATED_CELL  → BL quadrant only:    (0..half-1, half..ts-1)
+##   SLOT_FILL           → full tile:           no masking
+##   SLOT_BORDER         → bottom half:         (0..ts-1, half..ts-1)
+##   SLOT_INNER_CORNER   → TL + BL + BR (full minus TR cut)
+##   SLOT_OPPOSITE_CORNERS → TL + BR diagonal (TR + BL transparent)
+##
+## Why this matters: Penta dispatches each painted cell to a slot + rotation
+## flag (TRANSPOSE | FLIP_H | FLIP_V) at render time. If an authored tile has
+## stray opaque pixels INSIDE the canonical cut quadrant, rotation maps those
+## pixels into the destination's filled-quadrant boundary — producing the
+## "orange lines bleeding into the painted region's hole" UAT artifact.
+static func _apply_canonical_silhouette(image: Image, slot: int, tile_size: Vector2i) -> void:
+	if image == null:
+		return
+	var ts := tile_size
+	var half := Vector2i(ts.x / 2, ts.y / 2)
+	for py in range(ts.y):
+		for px in range(ts.x):
+			var keep: bool = false
+			match slot:
+				SLOT_ISOLATED_CELL:
+					# BL quadrant: x in [0, half), y in [half, ts).
+					keep = px < half.x and py >= half.y
+				SLOT_FILL:
+					keep = true
+				SLOT_BORDER:
+					# Bottom half: y in [half, ts).
+					keep = py >= half.y
+				SLOT_INNER_CORNER:
+					# Full tile minus TR (x >= half AND y < half).
+					keep = not (px >= half.x and py < half.y)
+				SLOT_OPPOSITE_CORNERS:
+					# TL (px<half, py<half) OR BR (px>=half, py>=half).
+					var in_tl: bool = px < half.x and py < half.y
+					var in_br: bool = px >= half.x and py >= half.y
+					keep = in_tl or in_br
+				_:
+					keep = true
+			if not keep:
+				image.set_pixel(px, py, Color(0.0, 0.0, 0.0, 0.0))
 
 
 ## Extract the pixel sub-image for an authored slot.

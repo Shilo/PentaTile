@@ -61,6 +61,7 @@ try {
         "all_layouts_swap_pixel_test",
         "bitmask_bounds_test",
         "comprehensive_bitmask_test",
+        "penta_ground_hollow_test",
         "determinism_test"
     )
 
