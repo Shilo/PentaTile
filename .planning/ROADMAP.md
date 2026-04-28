@@ -240,5 +240,35 @@ Per PROJECT.md, the quality bar is "works in my game" — visual regression on t
 
 Architectural anti-patterns explicitly NOT introduced (per `.planning/research/layouts/MASK_UNIFICATION.md` and the TileBitTools audit): no `EditorInspectorPlugin` polish, no Godot terrain peering-bit integration, no parallel painting API, no persistent coordinate cache, no watcher / signal-fanout systems, no multi-terrain transitions, no quarter-tile compositor.
 
+### Phase 6: Editor Line/Rect/Bucket Tool Preview During Drag
+
+**Status:** Far-future / deferred — defer until after v0.2.0 ships. Tracked because the bug surfaces immediately when a layout is bound (preview invisible during line/rect/bucket drag), but it is not blocking any v0.2 success criterion and demo-scale paint usage stays acceptable.
+
+**Goal:** Restore visible preview while the user is mid-drag with the editor's line, rectangle, and bucket tools when a `layout` is assigned to `PentaTileMapLayer`. Today the preview is invisible because Godot 4.6 draws line/rect/bucket previews to the viewport overlay multiplied by `edited_layer.self_modulate`, and PentaTile zeroes `self_modulate.a` via `logic_layer_opacity = 0` to hide the parent's raw cells.
+
+**Requirements**: TBD (likely a new "editor-integration" requirement family).
+
+**Depends on:** Phase 5
+
+**Background:** Full investigation in `.planning/research/editor-line-rect-preview.md` — verified against Godot 4.6 source (`editor/scene/2d/tiles/tile_map_layer_editor.cpp` lines 875-990). Companion todo: `.planning/todos/pending/2026-04-28-re-research-editor-line-rect-tool-preview-during-drag.md`. **Re-verify the open questions in the research doc before committing to an approach** — Godot may add atlas-redirect to `_tile_data_runtime_update`, expose preview state to scripts, or add a per-layer preview hook between now and when this phase fires.
+
+**Two candidate approaches** (decision deferred to plan phase):
+
+- **(a) Ghost-material refactor (TileMapDual parity, raw preview).** Replace `self_modulate.a`-based hiding (`penta_tile_map_layer.gd:439-442`) with a `ShaderMaterial` (`COLOR = vec4(0)` in fragment) on the parent's `material` slot; keep `self_modulate.a == 1.0`; forward user-supplied `material` to `_primary_layer` via a new `display_material` export. Result: editor's 50%-alpha raw atlas preview becomes visible during drag (not autotile-dispatched). ~30 LOC. Breaking change to public `logic_layer_opacity` export (acceptable per CLAUDE.md breaking-changes policy).
+
+- **(b) Custom `EditorPlugin` with `forward_canvas_draw_over_viewport`.** Hook editor drag state, compute the cells the line/rect/bucket tool will produce, run autotile dispatch with a virtual sample fn that includes preview cells, render the dispatched output as a viewport overlay. Result: fully autotile-dispatched preview during drag. Significant work; risks conflicts with the editor's built-in preview overlay if both render simultaneously.
+
+**Success criteria (draft, refine when planning):**
+- Line, rectangle, and bucket tools all show a visible preview during drag when a `layout` is bound.
+- Null-layout fallback path stays unchanged (already works).
+- Pitfall §7 (`visible = false` cleanup leak) stays mitigated.
+- No regression to runtime (in-game) rendering behavior.
+- LOC checkpoint: this phase must not break the identity guardrail ("visibly smaller and simpler than TileMapDual").
+
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 6 to break down — but only after v0.2.0 ships)
+
 ---
 *Roadmap re-spun: 2026-04-25 after v0.2 pivot to layout library*
