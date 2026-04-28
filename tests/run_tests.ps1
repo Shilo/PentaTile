@@ -59,6 +59,7 @@ try {
         "auto_strip_axis_test",
         "layout_swap_test",
         "all_layouts_swap_pixel_test",
+        "bitmask_bounds_test",
         "determinism_test"
     )
 

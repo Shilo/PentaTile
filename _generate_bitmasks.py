@@ -76,48 +76,28 @@ def draw_corner_mask(draw: ImageDraw.ImageDraw, col: int, row: int, mask: int) -
 
 
 def draw_edge_mask(draw: ImageDraw.ImageDraw, col: int, row: int, mask: int) -> None:
-    """Solid silhouette per an edge mask, with corner cut-backs.
+    """Solid 32x32 silhouette for every edge-mask atlas slot (mask is unused).
 
-    Bits: N=1, E=2, S=4, W=8 (Wang2Edge convention; Min3x3's T/E/B/W is the
-    same numbering with N=T, S=B). "Set bit = neighbor present" semantics
-    apply to BOTH layouts at runtime, so a single drawing rule serves both.
+    For Wang2Edge and Min3x3, every tile in the bundled greybox is a fully
+    opaque 32x32 fill — the mask is encoded by atlas POSITION, not by the
+    silhouette shape. Painted regions render as continuous solid grey
+    rectangles with no transparent gaps and no corner cuts. Artists replace
+    these greyboxes with their own art (where they can choose any silhouette
+    they want — corner cuts, plus-patterns, decorative trim, etc.).
 
-    Drawing strategy: every cell is a solid 32x32 fill; cut a 16x16 corner
-    quadrant whenever BOTH of its perpendicular cardinals are MISSING. This
-    makes painted regions render as continuous shapes — interior cells solid,
-    edges flat-fronted toward the empty side, and corners only cut at the
-    region's outer corners. Adjacent cells always meet with both halves of
-    their shared edge fully opaque, so there are no visible seam gaps.
+    The `mask` parameter is retained for callsite symmetry with the per-mask
+    callers in `gen_wang_2_edge` / `gen_minimal_3x3` but does not affect the
+    drawn silhouette.
 
-    Earlier revisions used a plus-sign (center + 4 arms). That left the four
-    corners transparent on every non-isolated cell, so adjacent cells in a
-    painted region stacked into visible dark squares between cells (the
-    artifact the user reported in UAT screenshots). The solid+cuts rule
-    fixes this for masks with neighbors, while still distinguishing each
-    slot's mask via the cut pattern at boundaries.
+    Earlier revisions tried two narrative strategies — plus-arms (Phase 1
+    diagnostic preview) and solid-with-corner-cuts (interim) — both of which
+    left transparent regions inside the 32x32 slot and caused visible dark
+    squares in painted regions during UAT. Solid-everywhere is the simplest
+    spec: each slot fills its bounds completely, and the cross-cell
+    rendering is automatically continuous.
     """
     x0, y0 = col * TILE, row * TILE
-    if mask == 0:
-        # Isolated cell — no neighbors. Render solid so a single painted cell
-        # is still visible in the editor preview; nothing else to connect to.
-        draw.rectangle((x0, y0, x0 + TILE - 1, y0 + TILE - 1), fill=GREY)
-        return
-    # Solid base (covers any mask with at least one neighbor).
     draw.rectangle((x0, y0, x0 + TILE - 1, y0 + TILE - 1), fill=GREY)
-    half = TILE // 2  # 16
-    # Cut a corner quadrant when BOTH of its perpendicular cardinals are missing.
-    # NE corner (top-right): cut if N and E both missing.
-    if not (mask & 1) and not (mask & 2):
-        draw.rectangle((x0 + half, y0, x0 + TILE - 1, y0 + half - 1), fill=TRANSPARENT)
-    # SE corner (bottom-right): cut if S and E both missing.
-    if not (mask & 4) and not (mask & 2):
-        draw.rectangle((x0 + half, y0 + half, x0 + TILE - 1, y0 + TILE - 1), fill=TRANSPARENT)
-    # SW corner (bottom-left): cut if S and W both missing.
-    if not (mask & 4) and not (mask & 8):
-        draw.rectangle((x0, y0 + half, x0 + half - 1, y0 + TILE - 1), fill=TRANSPARENT)
-    # NW corner (top-left): cut if N and W both missing.
-    if not (mask & 1) and not (mask & 8):
-        draw.rectangle((x0, y0, x0 + half - 1, y0 + half - 1), fill=TRANSPARENT)
 
 
 # ---- Penta archetype drawers (NEW in Phase 2; pixel coords spelled out above) ----
