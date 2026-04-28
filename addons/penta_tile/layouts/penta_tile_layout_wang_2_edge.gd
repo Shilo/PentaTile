@@ -50,18 +50,5 @@ func _default_bitmask_template_path() -> String:
 	return "res://addons/penta_tile/layouts/penta_tile_layout_wang_2_edge.png"
 
 
-func get_fallback_tile_set() -> TileSet:
-	var tex := load("res://addons/penta_tile/layouts/penta_tile_layout_wang_2_edge.png") as Texture2D
-	if tex == null:
-		return null
-	var ts := TileSet.new()
-	var src := TileSetAtlasSource.new()
-	src.texture = tex
-	var tile_size := Vector2i(tex.get_width() / 4, tex.get_height() / 4)
-	src.texture_region_size = tile_size
-	for y in range(4):
-		for x in range(4):
-			src.create_tile(Vector2i(x, y))
-	ts.add_source(src, 0)
-	ts.tile_size = tile_size
-	return ts
+func _fallback_atlas_grid_size() -> Vector2i:
+	return Vector2i(4, 4)
