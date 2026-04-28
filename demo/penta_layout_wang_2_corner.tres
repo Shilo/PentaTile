@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="PentaTileLayoutWang2Corner" load_steps=2 format=3 uid="uid://cqq56v6nn5fmg"]
+
+[ext_resource type="Script" path="res://addons/penta_tile/layouts/penta_tile_layout_wang_2_corner.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+description = "Wang2Corner — single-grid 4×4 atlas, 16 corner-mask tiles sampling diagonal neighbors (NE/SE/SW/NW). Same atlas layout as DualGrid16, different bit semantics."

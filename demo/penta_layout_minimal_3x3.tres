@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="PentaTileLayoutMinimal3x3" load_steps=2 format=3 uid="uid://cyimhejdg5wwv"]
+
+[ext_resource type="Script" path="res://addons/penta_tile/layouts/penta_tile_layout_minimal_3x3.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+description = "Minimal3x3 — single-grid 3×3 atlas, 9 tiles via open-side collapse (T=1/E=2/B=4/W=8). Masks 5/10 and isolated diagonals collapse to the center tile."
