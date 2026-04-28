@@ -16,6 +16,10 @@ run/main_scene="res://addons/penta_tile/demo/penta_tile_demo.tscn"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="uid://briuxshmssl3y"
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/penta_tile/plugin.cfg")
+
 [input]
 
 ui_left={
