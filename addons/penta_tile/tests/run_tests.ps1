@@ -26,6 +26,17 @@ $script:ExitCode = 0
 try {
     $ErrorActionPreference = "Stop"
 
+    # Force UTF-8 console output so em-dashes / unicode in test output don't
+    # render as Windows-1252 mojibake (the default in legacy PowerShell 5.1
+    # console hosts). Set both directions for PS 5.1 robustness.
+    try {
+        [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+        $OutputEncoding = [System.Text.Encoding]::UTF8
+    } catch {
+        # Some restricted hosts disallow setting Console.OutputEncoding;
+        # ignore — the rest of the script still works, just with mojibake.
+    }
+
     # Project root = three levels up from this script (addons/penta_tile/tests/).
     $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).Path
     $testsDir    = Join-Path $projectRoot "addons\penta_tile\tests"
@@ -92,13 +103,23 @@ try {
             if ($VerbosePreference -eq "Continue") {
                 foreach ($line in $allLines) { Write-Host $line }
             } else {
-                # Surface only pass/fail-relevant lines.
+                # Patterns. Order matters — pass takes precedence so "ALL PASS"
+                # is green even though it contains "PASS" which info also looks for.
+                # FAIL regex uses \b word boundaries so "failures" / "FAILURES"
+                # in "failures: 0" / "FAILURES (N)" status lines don't trigger
+                # red — only actual failure markers (FAIL [scope], FAIL sub-test,
+                # MAIN TEST WARNING, MAIN TEST FAILED) get colored red.
+                $passRx = '\bALL PASS\b|MAIN TEST PASSED|: PASS\b'
+                $failRx = '\bFAIL\b|MAIN TEST WARNING|MAIN TEST FAILED'
+                # Info: per-test counts + sub-test results. Excludes per-run
+                # determinism hashes (would flood output with 11 'Run N' lines).
+                $infoRx = '^\s*Sub-test |painted display cells|painted: \d|^\s*failures:|cells=\d'
                 foreach ($line in $allLines) {
-                    if ($line -match "ALL PASS|MAIN TEST PASSED") {
+                    if ($line -match $passRx) {
                         Write-Host ("  " + $line) -ForegroundColor Green
-                    } elseif ($line -match "FAIL|MAIN TEST WARNING|MAIN TEST FAILED") {
+                    } elseif ($line -match $failRx) {
                         Write-Host ("  " + $line) -ForegroundColor Red
-                    } elseif ($line -match "Sub-test \(c\)") {
+                    } elseif ($line -match $infoRx) {
                         Write-Host ("  " + $line)
                     }
                 }
