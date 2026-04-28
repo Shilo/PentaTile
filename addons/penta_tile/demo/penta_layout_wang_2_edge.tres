@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="PentaTileLayoutWang2Edge" load_steps=2 format=3 uid="uid://bumeac3hg88vw"]
+
+[ext_resource type="Script" path="res://addons/penta_tile/layouts/penta_tile_layout_wang_2_edge.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+description = "Wang2Edge — single-grid 4×4 atlas, 16 edge-mask tiles (CR31 N=1/E=2/S=4/W=8). Marching squares / cellular automata 2-edge."
