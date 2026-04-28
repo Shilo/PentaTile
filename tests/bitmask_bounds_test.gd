@@ -40,12 +40,12 @@ func _initialize() -> void:
 	_check_atlas("Wang2Edge",
 		"res://addons/penta_tile/layouts/penta_tile_layout_wang_2_edge.png",
 		Vector2i(4, 4),
-		_full_solid_silhouette)
+		_wang_2_edge_silhouette)
 
 	_check_atlas("Min3x3",
 		"res://addons/penta_tile/layouts/penta_tile_layout_minimal_3x3.png",
 		Vector2i(3, 3),
-		_full_solid_silhouette)
+		_min_3x3_silhouette)
 
 	_check_atlas("DualGrid16",
 		"res://addons/penta_tile/layouts/penta_tile_layout_dual_grid_16.png",
@@ -139,10 +139,54 @@ func _check_atlas(label: String, path: String, grid: Vector2i, silhouette_fn: Ca
 	print("  %s grid=%s slots=%d bounds_fails=%d fullness_fails=%d" % [label, str(grid), grid.x * grid.y, bounds_failures, fullness_failures])
 
 
-# A single Rect2i covering the entire 32x32 slot — used for layouts where
-# every tile is supposed to be fully solid (Wang2Edge, Min3x3).
-func _full_solid_silhouette(_grid: Vector2i, _sx: int, _sy: int) -> Array:
-	return [Rect2i(0, 0, _TILE, _TILE)]
+# Edge-mask silhouette per N/E/S/W bits (N=1, E=2, S=4, W=8).
+#
+# Solid 32x32 base, MINUS a 16x16 outer-corner cut where both perpendicular
+# cardinals are missing. This is the silhouette the python generator
+# produces for Wang2Edge / Min3x3 — a corner cell of a painted region (one
+# missing N+W, etc.) cuts its outer 16x16 quadrant so the region shows
+# rounded outer corners matching dual-grid layouts (Penta / DualGrid16).
+# Edge cells (one missing cardinal) and interior cells (none missing)
+# have no cuts; isolated cells (mask=0) are fully solid.
+func _edge_mask_silhouette(mask: int) -> Array:
+	if mask == 0:
+		return [Rect2i(0, 0, _TILE, _TILE)]
+	var rects: Array = []
+	# NW quadrant: included unless N AND W both missing.
+	if (mask & 1) or (mask & 8):
+		rects.append(Rect2i(0, 0, _HALF, _HALF))
+	# NE quadrant: included unless N AND E both missing.
+	if (mask & 1) or (mask & 2):
+		rects.append(Rect2i(_HALF, 0, _HALF, _HALF))
+	# SW quadrant: included unless S AND W both missing.
+	if (mask & 4) or (mask & 8):
+		rects.append(Rect2i(0, _HALF, _HALF, _HALF))
+	# SE quadrant: included unless S AND E both missing.
+	if (mask & 4) or (mask & 2):
+		rects.append(Rect2i(_HALF, _HALF, _HALF, _HALF))
+	return rects
+
+
+# Wang2Edge silhouette: mask = sx + sy * 4 (atlas position-indexed).
+func _wang_2_edge_silhouette(_grid: Vector2i, sx: int, sy: int) -> Array:
+	return _edge_mask_silhouette(sx + sy * 4)
+
+
+# Min3x3 silhouette: mask is derived from the open-side rule used by the
+# generator (col 0 = open W, col 2 = open E, row 0 = open T, row 2 = open B).
+# "Open" means that cardinal bit is UNSET; start with mask=15 (all closed)
+# and clear bits per the open-side rule.
+func _min_3x3_silhouette(_grid: Vector2i, sx: int, sy: int) -> Array:
+	var mask: int = 15
+	if sx == 0:
+		mask &= ~8  # open W
+	elif sx == 2:
+		mask &= ~2  # open E
+	if sy == 0:
+		mask &= ~1  # open T (= N)
+	elif sy == 2:
+		mask &= ~4  # open B (= S)
+	return _edge_mask_silhouette(mask)
 
 
 # Corner-mask silhouette: the slot's mask = sx + sy * 4. Each set bit fills
