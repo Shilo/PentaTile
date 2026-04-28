@@ -4,7 +4,12 @@ extends Node2D
 @export var paint_source_id: int = 0
 @export var paint_atlas_coords: Vector2i = Vector2i(0, 0)
 
-@onready var penta_map: PentaTileMapLayer = get_node(map_path)
+@onready var penta_map: PentaTileMapLayer = (get_node_or_null(map_path) as PentaTileMapLayer) if not map_path.is_empty() else null
+
+
+func _ready() -> void:
+	if penta_map == null:
+		push_warning("DemoRuntimePainter: map_path '%s' did not resolve to a PentaTileMapLayer; runtime painting disabled. Drag a PentaTileMapLayer into the painter's map_path inspector property to enable." % map_path)
 
 var _active_button := MOUSE_BUTTON_NONE
 var _last_cell := Vector2i(1073741823, 1073741823)
@@ -37,6 +42,8 @@ func _handle_mouse_motion(mouse_event: InputEventMouseMotion) -> void:
 
 
 func _apply_at_event_position(event_position: Vector2, button: MouseButton) -> void:
+	if penta_map == null:
+		return
 	var canvas_position := get_canvas_transform().affine_inverse() * event_position
 	var cell := penta_map.local_to_map(penta_map.to_local(canvas_position))
 	if cell == _last_cell:
@@ -47,6 +54,8 @@ func _apply_at_event_position(event_position: Vector2, button: MouseButton) -> v
 
 
 func _apply_cell(cell: Vector2i, button: MouseButton) -> void:
+	if penta_map == null:
+		return
 	match button:
 		MOUSE_BUTTON_LEFT:
 			penta_map.set_cell(cell, paint_source_id, paint_atlas_coords)
