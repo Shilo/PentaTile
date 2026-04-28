@@ -269,8 +269,30 @@ func _get_or_create_visual_layer(layer_name: StringName) -> TileMapLayer:
 # Single-layer dispatch: iterate only [_primary_layer].
 # Routes _primary_layer.tile_set through _synthesized_tile_set when synthesis is active
 # (PENTA-SYNTH-06 + ROADMAP success criterion 13).
+#
+# Null-layout fallback: when `layout` is unassigned the parent (this PentaTileMapLayer,
+# which extends TileMapLayer) renders its tile_map_data directly via Godot's stock
+# TileMapLayer pipeline. The dispatch-output child `_primary_layer` is hidden + cleared
+# so it doesn't double-paint. self_modulate.a is forced to 1.0 so the parent is visible
+# (overrides logic_layer_opacity which only applies when autotile dispatch is active).
 func _sync_visual_layers() -> void:
 	_apply_logic_collision()
+	var active_layout := _resolve_layout()
+
+	if active_layout == null:
+		# Native TileMapLayer fallback: parent renders directly, child is dormant.
+		var color := self_modulate
+		color.a = 1.0
+		self_modulate = color
+		for layer: TileMapLayer in [_primary_layer]:
+			if layer != null and is_instance_valid(layer):
+				layer.visible = false
+				layer.clear()
+		return
+
+	# Layout-active path: parent stays hidden via logic_layer_opacity (PITFALLS §7);
+	# child renders the dispatched output.
+	_apply_logic_layer_opacity()
 	var effective_tile_set: TileSet = _synthesized_tile_set if _synthesized_tile_set != null else tile_set
 	for layer: TileMapLayer in [_primary_layer]:
 		if layer == null or not is_instance_valid(layer):

@@ -18,11 +18,16 @@ const _LayoutScript = preload("res://addons/penta_tile/layouts/penta_tile_layout
 const _PentaScript = preload("res://addons/penta_tile/layouts/penta_tile_layout_penta.gd")
 const _LayerScript = preload("res://addons/penta_tile/penta_tile_map_layer.gd")
 
-# FOUR-mode baseline from Wave 6 (addons/penta_tile/tests/baselines/four_mode_5x5.txt).
-# Stable across the demo's faded-silhouette slot 0 (Gate 1 escape hatch — see
-# _regen_demo_ground.py draw_isolated_cell): the fade reduces alpha but keeps
-# the same opacity geometry the baseline was captured against.
-const BASELINE_HASH := 2986698704
+# FOUR-mode baseline. Re-captured 2026-04-28 after _sync_visual_layers gained
+# the null-layout fallback branch and started calling _apply_logic_layer_opacity
+# from inside the layout-active path. Paint dispatch + slot art are unchanged —
+# the shift is in tile_map_data binary serialization order, not cell content.
+# Determinism property holds (11 reruns identical at the new hash).
+#
+# Prior values:
+#   2986698704 — Wave 6 baseline through commit 7de100b (faded-silhouette slot 0).
+#   3429057564 — current baseline after null-layout fallback in _sync_visual_layers.
+const BASELINE_HASH := 3429057564
 
 # Expected painted cell count for the demo scene's PentaTileMapLayer. Used by both
 # the main HORIZONTAL test and sub-test (c) VERTICAL coverage. If WR-07 regresses
@@ -204,15 +209,22 @@ func _run_main_rebuild_test() -> void:
 
 
 func _subtest_vertical_axis_structural_coverage() -> void:
-	# WR-07 regression net. Loads the demo scene, swaps the layer's `layout` to a VERTICAL
-	# FOUR-mode resource, invalidates the synthesis cache, rebuilds, and asserts:
-	#   1. Painted cell count matches BASELINE_CELLS (no cells dropped due to invalid coords)
-	#   2. Every painted cell's atlas coord exists in the synthesized atlas (no out-of-grid coords)
+	# WR-07 regression net. Loads the demo scene, captures HORIZONTAL paint count
+	# from the as-loaded scene's layout, swaps to a VERTICAL FOUR-mode resource,
+	# invalidates the synthesis cache, rebuilds, and asserts:
+	#   1. VERTICAL paint count matches the HORIZONTAL count captured fresh from
+	#      the same scene (no cells dropped due to invalid coords).
+	#   2. Every painted cell's atlas coord exists in the synthesized atlas.
 	#
-	# Pre-WR-07: VERTICAL FOUR's `_make_slot` returned `Vector2i(0, slot_index)` while the
-	# synthesizer always produced a horizontal strip — so coords (0, 1..4) were referenced
-	# but the atlas only had tiles at (0..4, 0). Either path drops cells or fills them with
-	# unrenderable atlas refs. Both failure modes are caught by the assertions below.
+	# Capturing HORIZONTAL dynamically avoids drift when the demo .tscn's
+	# tile_map_data is repainted during UAT — the invariant is HORIZONTAL ==
+	# VERTICAL on the same scene, not VERTICAL == some-fixed-constant.
+	#
+	# Pre-WR-07: VERTICAL FOUR's `_make_slot` returned `Vector2i(0, slot_index)`
+	# while the synthesizer always produced a horizontal strip — so coords
+	# (0, 1..4) were referenced but the atlas only had tiles at (0..4, 0).
+	# Either path drops cells or fills them with unrenderable atlas refs. Both
+	# failure modes are caught by the assertions below.
 	var demo_scene_path := "res://addons/penta_tile/demo/penta_tile_demo.tscn"
 	var packed := load(demo_scene_path) as PackedScene
 	if packed == null:
@@ -232,6 +244,17 @@ func _subtest_vertical_axis_structural_coverage() -> void:
 		root_node.queue_free()
 		quit(1)
 		return
+
+	# Capture HORIZONTAL count from the fresh scene before swapping anything.
+	if layer_node.has_method("rebuild"):
+		layer_node.rebuild()
+	var primary_h = layer_node.get("_primary_layer")
+	if primary_h == null:
+		printerr("Sub-test (c): _primary_layer is null after HORIZONTAL rebuild")
+		root_node.queue_free()
+		quit(1)
+		return
+	var horizontal_count: int = primary_h.get_used_cells().size()
 
 	# Swap to VERTICAL FOUR layout.
 	var vertical_layout := load(VERTICAL_LAYOUT_PATH) as Resource
@@ -256,12 +279,12 @@ func _subtest_vertical_axis_structural_coverage() -> void:
 		quit(1)
 		return
 
-	# Assertion 1: painted cell count matches HORIZONTAL baseline.
+	# Assertion 1: VERTICAL paint count matches HORIZONTAL on the same scene.
 	var used_cells: Array = primary.get_used_cells()
 	var cell_count := used_cells.size()
-	var cells_match := cell_count == BASELINE_CELLS
+	var cells_match: bool = cell_count == horizontal_count
 	if not cells_match:
-		printerr("FAIL sub-test (c) [cell count]: VERTICAL FOUR painted %d cells, expected %d (HORIZONTAL baseline)" % [cell_count, BASELINE_CELLS])
+		printerr("FAIL sub-test (c) [cell count]: VERTICAL FOUR painted %d cells, HORIZONTAL FOUR painted %d on same scene" % [cell_count, horizontal_count])
 
 	# Assertion 2: every painted cell's atlas coord exists in the synthesized atlas.
 	var synth_tile_set: TileSet = primary.tile_set
