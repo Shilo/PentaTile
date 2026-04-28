@@ -12,7 +12,12 @@
 class_name PentaTileLayout
 extends Resource
 
-@export var bitmask_template: Texture2D                      # PREVIEW-01 / LAYOUT-03: stock inspector preview AND fallback TileSet source pixels (single PNG, both roles)
+@export var bitmask_template: Texture2D:                     # PREVIEW-01 / LAYOUT-03: stock inspector preview AND fallback TileSet source pixels (single PNG, both roles)
+	set(value):
+		if bitmask_template == value:
+			return
+		bitmask_template = value
+		emit_changed()                                                                # propagates to PentaTileMapLayer._on_layout_changed which refreshes auto-filled tile_set fallbacks
 @export_multiline var description: String = ""               # D-22: multiline
 
 
@@ -85,25 +90,38 @@ func _pack_alternative(alt_id: int, transform_flags: int) -> int:
 	return alt_id | transform_flags
 
 
-var _cached_fallback_tile_set: TileSet = null
+# Subclasses override to declare their fallback atlas grid (cols × rows of tiles).
+# The base get_fallback_tile_set uses this + bitmask_template to build the TileSet.
+# Returns Vector2i.ZERO for layouts without a single canonical grid (caller treats
+# as "no fallback available" and renders nothing).
+func _fallback_atlas_grid_size() -> Vector2i:
+	return Vector2i.ZERO
 
-# LAYOUT-06 / PREVIEW-02: build a TileSet from `bitmask_template` at first call, cached.
-# Subclasses can override for custom logic (e.g. the Penta layout's per-mode lookup).
-# Default impl: 1 source × 1 atlas with the `bitmask_template` PNG; warns on first call
-# because the base class cannot know the correct grid size — subclasses must override.
-# Consumer (PentaTileMapLayer) calls this when tile_set == null (PREVIEW-03 wired in Phase 4).
+
+# LAYOUT-06 / PREVIEW-02: build a fresh TileSet from `bitmask_template` on each call.
+# No cache — bitmask_template can change at runtime (inspector drag, script assign)
+# and PentaTileMapLayer's auto-fill flow rebuilds the tile_set on layout.changed.
+# Tile size derived from bitmask_template dimensions / grid size.
+# Consumer (PentaTileMapLayer.layout setter + _on_layout_changed) calls this to
+# auto-fill / refresh tile_set when no user-supplied tile_set is bound.
 func get_fallback_tile_set() -> TileSet:
-	if _cached_fallback_tile_set != null:
-		return _cached_fallback_tile_set
 	if bitmask_template == null:
 		return null
+	var grid := _fallback_atlas_grid_size()
+	if grid.x <= 0 or grid.y <= 0:
+		return null
+	var tile_w: int = bitmask_template.get_width() / grid.x
+	var tile_h: int = bitmask_template.get_height() / grid.y
+	if tile_w <= 0 or tile_h <= 0:
+		return null
+	var tile_size := Vector2i(tile_w, tile_h)
 	var ts := TileSet.new()
 	var src := TileSetAtlasSource.new()
 	src.texture = bitmask_template
-	# Subclasses override texture_region_size + create_tile() loops per their grid.
-	# Base impl leaves src empty so this warning fires on first call, surfacing the
-	# override-missing condition rather than silently rendering nothing.
+	src.texture_region_size = tile_size
+	for y in range(grid.y):
+		for x in range(grid.x):
+			src.create_tile(Vector2i(x, y))
 	ts.add_source(src, 0)
-	_cached_fallback_tile_set = ts
-	push_warning("PentaTileLayout.get_fallback_tile_set called on base; subclass should override.")
-	return _cached_fallback_tile_set
+	ts.tile_size = tile_size
+	return ts

@@ -50,19 +50,8 @@ func _default_bitmask_template_path() -> String:
 	return "res://addons/penta_tile/layouts/penta_tile_layout_dual_grid_16.png"
 
 
-func get_fallback_tile_set() -> TileSet:
-	var tex := load("res://addons/penta_tile/layouts/penta_tile_layout_dual_grid_16.png") as Texture2D
-	if tex == null:
-		return null
-	var ts := TileSet.new()
-	var src := TileSetAtlasSource.new()
-	src.texture = tex
-	# 4×4 atlas; tile_size derived from texture / 4 (assumes square atlas, square tiles).
-	var tile_size := Vector2i(tex.get_width() / 4, tex.get_height() / 4)
-	src.texture_region_size = tile_size
-	for y in range(4):
-		for x in range(4):
-			src.create_tile(Vector2i(x, y))
-	ts.add_source(src, 0)
-	ts.tile_size = tile_size
-	return ts
+# Base get_fallback_tile_set reads bitmask_template + this grid to build the TileSet.
+# bitmask_template changes (inspector drag, script assign) emit `changed`, which the
+# layer uses to refresh its auto-filled tile_set fallback.
+func _fallback_atlas_grid_size() -> Vector2i:
+	return Vector2i(4, 4)

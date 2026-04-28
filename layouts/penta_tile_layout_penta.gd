@@ -443,56 +443,27 @@ func _bundled_png_path(a: Axis, m: TileCountMode) -> String:
 	return _BITMASK_TEMPLATE_LOOKUP.get(key, "")
 
 
-# Override base get_fallback_tile_set: builds a TileSet from the active axis × mode
-# PNG. Mode-aware texture_region_size derivation (no hardcoded 16×16): tile dimensions
-# are computed from the loaded texture's pixel dimensions divided by the strip's tile
-# count (mode along strip axis × strip count along the other axis = 1 strip in this
-# bundled-PNG case).
-func get_fallback_tile_set() -> TileSet:
-	# tile_count == AUTO or AUTO_STRIP needs a runtime detected mode — the layer
-	# resolves that path; here we pick a sensible default of FOUR for the
-	# inspector preview / fallback path. (Wave 6 wires runtime detection to
-	# the actual layer.)
+# Penta uses the base PentaTileLayout.get_fallback_tile_set which reads
+# `bitmask_template` (auto-filled by _refresh_preset_bitmask from the
+# axis × tile_count lookup) + this _fallback_atlas_grid_size override. When the
+# user changes axis or tile_count, _refresh_preset_bitmask updates
+# bitmask_template, the base setter emits `changed`, and the layer's
+# _on_layout_changed refreshes its auto-filled tile_set fallback automatically.
+#
+# AUTO / AUTO_STRIP resolve to FOUR for the inspector preview path (the live
+# layer resolves to a real mode at runtime via resolve_active_mode).
+func _fallback_atlas_grid_size() -> Vector2i:
 	var resolved_mode := tile_count
 	if resolved_mode == TileCountMode.AUTO or resolved_mode == TileCountMode.AUTO_STRIP:
 		resolved_mode = TileCountMode.FOUR
-	# WR-04 FIX: route the lookup through _bundled_png_path so the AUTO/AUTO_STRIP
-	# (mode <= 0) misuse class fails LOUD at the assert rather than silently returning
-	# the empty default. Vector2i(axis, mode) keys collide with axis values numerically
-	# (HORIZONTAL=0 == AUTO=0; VERTICAL=1 == ONE=1) — the typed accessor enforces the
-	# precondition that mode is always a concrete ONE..FIVE before keying.
-	var path: String = _bundled_png_path(axis, resolved_mode)
-	if path.is_empty():
-		push_warning("PentaTileLayoutPenta: no bundled PNG for axis=%s mode=%s" % [axis, resolved_mode])
-		return null
-	var tex := load(path) as Texture2D
-	if tex == null:
-		# Wave 3-5 intermediate state: PNG ships in Wave 5.
-		return null
-	# Mode-aware texture_region_size derivation (matches Wave 4 native-layout pattern).
-	# Bundled Penta PNGs are single-strip:
-	#   HORIZONTAL: mode tiles laid out along X; strip count = 1 along Y.
-	#   VERTICAL:   mode tiles laid out along Y; strip count = 1 along X.
 	var mode_count: int = int(resolved_mode)
-	var tile_w: int
-	var tile_h: int
+	if mode_count <= 0:
+		return Vector2i.ZERO
+	# Bundled Penta PNGs are single-strip:
+	#   HORIZONTAL: mode tiles along X, 1 strip along Y → (mode, 1)
+	#   VERTICAL:   mode tiles along Y, 1 strip along X → (1, mode)
 	if axis == Axis.HORIZONTAL:
-		tile_w = tex.get_width() / mode_count
-		tile_h = tex.get_height()                                                    # single strip → full image height per tile
-	else:
-		tile_w = tex.get_width()                                                     # single strip → full image width per tile
-		tile_h = tex.get_height() / mode_count
-	var ts := TileSet.new()
-	var src := TileSetAtlasSource.new()
-	src.texture = tex
-	src.texture_region_size = Vector2i(tile_w, tile_h)
-	ts.tile_size = Vector2i(tile_w, tile_h)
-	ts.add_source(src, 0)
-	# Create one tile per slot along the strip axis.
-	for slot_index in range(mode_count):
-		var atlas_coords: Vector2i = (
-			Vector2i(slot_index, 0) if axis == Axis.HORIZONTAL
-			else Vector2i(0, slot_index)
-		)
-		src.create_tile(atlas_coords)
-	return ts
+		return Vector2i(mode_count, 1)
+	return Vector2i(1, mode_count)
+
+

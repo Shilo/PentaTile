@@ -498,6 +498,17 @@ func _on_layout_changed() -> void:
 	# PENTA-SYNTH-06: invalidate synthesis cache on any layout change.
 	_synthesized_tile_set = null
 	_synthesis_signature = 0
+	# Refresh the auto-filled fallback tile_set when the layout's bitmask_template
+	# (or, for Penta, axis / tile_count which cascade through _refresh_preset_bitmask)
+	# changes. User-supplied tile_sets keep `_tile_set_is_fallback = false` and are
+	# never replaced.
+	if _tile_set_is_fallback and layout != null:
+		var fallback := layout.get_fallback_tile_set()
+		if fallback != null and fallback != tile_set:
+			_suppress_tile_set_override = true
+			tile_set = fallback
+			_suppress_tile_set_override = false
+			_tile_set_is_fallback = true                                              # _set hook would have flipped it false; restore
 	_queue_rebuild()
 	update_configuration_warnings()                                                # H-3 trigger
 
