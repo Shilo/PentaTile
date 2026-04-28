@@ -27,12 +27,15 @@ const _LayerScript = preload("res://addons/penta_tile/penta_tile_map_layer.gd")
 # Prior values:
 #   2986698704 — Wave 6 baseline through commit 7de100b (faded-silhouette slot 0).
 #   3429057564 — null-layout fallback in _sync_visual_layers.
-#   4075543519 — current: bundled FIVE-mode greybox slot 0 = BL-quadrant only
-#                (commit "feat: FIVE-mode greybox single-quadrant slot 0").
-#                Auto-fill chain rebuilds the demo's tile_set fallback on load
-#                from the current bitmask_template, so hash shifts when slot 0
-#                pixel content changes. Dispatch table + paint coords unchanged.
-const BASELINE_HASH := 4075543519
+#   4075543519 — bundled FIVE-mode greybox slot 0 = BL-quadrant only.
+#   480538583  — current: removed slot outlines from bundled greyboxes.
+#                Outlines were 1-px dark borders around each tile; under
+#                autotile rendering they stacked into visible cross-shaped
+#                seams between rotated tiles. No-op'd draw_slot_outline.
+#                Pixel content of every greybox shifted; auto-fill chain
+#                rebuilds tile_set fallback from current bitmask_template,
+#                so synthesized atlas hash drifted. Dispatch unchanged.
+const BASELINE_HASH := 480538583
 
 # Expected painted cell count for the demo scene's PentaTileMapLayer. Used by both
 # the main HORIZONTAL test and sub-test (c) VERTICAL coverage. If WR-07 regresses

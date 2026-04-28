@@ -42,10 +42,18 @@ def new_atlas(cols: int, rows: int) -> Image.Image:
 
 
 def draw_slot_outline(draw: ImageDraw.ImageDraw, col: int, row: int) -> None:
-    """1-px dark outline around a slot."""
-    x0, y0 = col * TILE, row * TILE
-    x1, y1 = x0 + TILE - 1, y0 + TILE - 1
-    draw.rectangle((x0, y0, x1, y1), outline=OUTLINE, width=1)
+    """No-op. Tile boundaries are NOT outlined in the bundled greyboxes.
+
+    Earlier revisions drew a 1-px dark perimeter around each tile to help
+    artists see tile boundaries in the inspector preview. That decoration
+    becomes visible cross-shaped gridlines when 4 rotated tiles meet at a
+    painted cell's center under autotile rendering — adjacent cells'
+    perimeter outlines stack into 2-px dark seams that break the silhouette.
+
+    Removing the outline keeps autotile output seamless. The inspector still
+    shows tile grids via Godot's stock editor overlay (TileSet edit mode);
+    we don't need to bake them into the texture."""
+    pass
 
 
 def draw_corner_mask(draw: ImageDraw.ImageDraw, col: int, row: int, mask: int) -> None:
