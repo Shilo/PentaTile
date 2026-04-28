@@ -253,6 +253,17 @@ func _paint_via_layout(display_cell: Vector2i, active_layout: PentaTileLayout, s
 	var mask := active_layout.compute_mask(display_cell, sample_fn)
 	if mask == 0:
 		return                                                                      # universal short-circuit (PITFALLS §4)
+	# SINGLE-GRID LAYOUTS: only render cells that are themselves logic-painted.
+	# _mark_affected_single_grid_cells marks the painted cell PLUS its 4
+	# cardinal neighbors, so unpainted neighbors arrive here too — they need
+	# to be re-checked when their painted neighbor changes (mask might shift),
+	# but they should NOT render their own tile, otherwise the painted region
+	# visually extends by a full cell on each side (single-grid background
+	# extension bug). Dual-grid layouts render all affected display cells
+	# (outer perimeter cells fill INNER quadrants that fall inside the painted
+	# logic region's pixel bounds — net effect is a clean rectangle).
+	if not active_layout.is_dual_grid() and not sample_fn.call(display_cell):
+		return
 
 	var atlas_sample_fn := Callable(self, "_sample_logic_atlas_coords")
 	var strip_index := active_layout.resolve_display_strip(display_cell, atlas_sample_fn)
