@@ -29,6 +29,15 @@ const _PentaTileSynthesis = preload("res://addons/penta_tile/penta_tile_synthesi
 		_abstract_base_warning_emitted = false                                     # re-arm one-shot warning on rebind
 		if layout != null:
 			layout.changed.connect(_on_layout_changed)
+			# Auto-fill tile_set from the layout's fallback when no tile_set is bound
+			# (PREVIEW-03 / PREVIEW-04 pulled forward from Phase 4 — without this the
+			# Godot TileMap pane refuses to engage and users can't draw with just a
+			# layout assigned). Only fires when tile_set is null; user-supplied
+			# tile_sets are never overwritten.
+			if tile_set == null:
+				var fallback := layout.get_fallback_tile_set()
+				if fallback != null:
+					tile_set = fallback
 		_queue_rebuild()
 		update_configuration_warnings()                                            # H-3 trigger
 
