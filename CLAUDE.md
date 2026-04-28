@@ -130,8 +130,24 @@ When implementing v0.2.0 features, watch for:
 5. **Non-rotating tileset table** — 16 runtime entries GENERATED from the rotating table at layout-load time. Never hand-write 64 entries. Mask 0 special-cased on the FIRST line of the paint function.
 6. **Top-tile assignment must be EXPLICIT per-mask on the layout** — never inferred via "tile below is filled" heuristics. Auto-detection bakes platformer assumptions into the addon. (Top tiles are v2 backlog; this guidance applies when that work lands.)
 7. **`TileMapLayer.visible = false` cleanup behavior** — already mitigated in v0.1 via `self_modulate.a` on the logic layer. Don't regress.
+8. **Single-grid layouts only render LOGIC-painted cells** — `_paint_via_layout` skips non-logic-painted cells (cardinal neighbors of painted cells get marked affected so they re-render when their neighbor changes, but they must NOT paint their own tile, otherwise the painted region visually extends by a full cell). Dual-grid renders all affected display cells (perimeter cells fill INNER quadrants that fall inside the painted logic pixel bounds).
+9. **`mask=0` is NOT "erase" for single-grid logic-painted cells** — the universal mask=0 short-circuit only applies to dual-grid. Single-grid logic-painted cells with mask=0 (isolated 1×1, 1×N lines in Wang2Corner where no diagonals exist) MUST dispatch to a default atlas slot. All 3 single-grid layouts (Wang2Edge, Wang2Corner, Min3x3) handle this in `mask_to_atlas`.
+10. **Penta authored slots need canonical-silhouette enforcement** — Penta dispatches with rotation flags (TRANSPOSE | FLIP_H | FLIP_V) at render time. Stray opaque pixels in an artist's "cut" quadrant (e.g., orange outline at col 8 of slot 3's TR cut) get rotation-mapped INTO adjacent painted cells, producing visible bleed. `PentaTileSynthesis._apply_canonical_silhouette` zeroes pixels outside each archetype's expected opaque region during authored-slot extraction (FOUR/FIVE modes). Synthesized slots (ONE/TWO/THREE modes' synth 1-4) compose from slot 0's BL quadrant and fit the silhouette by construction.
 
 Full pitfall analysis is in `.planning/research/PITFALLS.md`.
+
+## Test Methodology (Phase 2 UAT lessons)
+
+Phase 2 UAT cycled through 6+ commits chasing the same class of visual bug because tests verified my mental model of dispatch, not the user's rendered output. Lessons hard-won:
+
+1. **Compose the rendered canvas in tests, don't just check dispatch.** Source-atlas pixel checks pass while rotation-bleed bugs persist. Build a virtual canvas by blitting each painted cell's `(atlas_coord, transform)` at its world position, then assert structural invariants on the composed image (opaque-pixel bbox, hole emptiness, no out-of-bounds pixels). Canonical examples: `addons/penta_tile/tests/comprehensive_bitmask_test.gd` and `penta_ground_hollow_test.gd`.
+2. **Test pattern × layout matrix, not single-pattern.** A 12×8 rectangle exercises a forgiving subset of masks. Always loop `[1×1, 1×2, 2×1, 2×2, 3×3, 5×5, line_h_5, line_v_5, L_shape, T_shape, plus_shape, hollow_ring, 3_isolated]` × `[Penta, DualGrid16, Wang2Edge, Wang2Corner, Min3x3]`. Lines and isolated cells exposed `mask=0` regressions that the rectangle never hit.
+3. **Test the user's actual fixture, not just bundled greyboxes.** Bundled greyboxes have clean cut quadrants; artist artwork (`penta_tile_ground.tres`) has stray pixels in cut regions that only surface bugs when paired with rotation. `penta_ground_hollow_test.gd` is the template.
+4. **Save rendered output as PNG and inspect when in doubt.** UI bugs need eyeball verification — `Image.save_png("user://...")` then read via `Read` tool. The Min3x3 corner-cut and Penta orange-line bugs both became obvious only after I looked at the rendered PNG.
+5. **Verify the test catches the regression.** Stash the fix, rerun, confirm failure. A test that doesn't fail on broken code isn't measuring what we think.
+6. **Trace the full pipeline before patching.** `_paint_via_layout` → `_synthesize_slot_image` → `_extract_tile_image` → atlas blit → render-time transform. The actual bug usually lives at a stage I haven't read. Cascading regressions (each fix breaks something else) mean the mental model is wrong — stop, reread, reset.
+
+The 12 tests in `addons/penta_tile/tests/run_tests.ps1` are baseline coverage; new layouts/features should add their own pattern × fixture combinations following these rules.
 
 ## Coined-Term Discipline
 
