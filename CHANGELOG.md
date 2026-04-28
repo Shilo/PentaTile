@@ -88,6 +88,35 @@ Run via:
 Godot_v4.6.2-stable_win64_console.exe --headless --path . --script addons/penta_tile/tests/determinism_test.gd
 ```
 
+### Phase 2 UAT bug-fix sweep (2026-04-28)
+
+Closed 7 bug classes surfaced by user UAT against the demo scene with custom artist tile_set artwork. Commits `6553380` through `205fb67`.
+
+**Bugs fixed:**
+
+- **Bundled bitmask greyboxes** (`addons/penta_tile/_generate_bitmasks.py`) iterated through 4 silhouette designs before settling on the right shape per layout. **Single-grid edge-mask layouts (Wang2Edge, Min3x3) now ship solid 32×32 atlases** — partial-quadrant fills don't compose without dual-grid's half-tile offset, so single-grid uses solid silhouettes (artist's per-tile artwork carries the visual variation). **Wang2Corner gained its own solid 32×32 atlas** instead of reusing DualGrid16's partial-quadrant atlas (Wang2Corner is single-grid; DualGrid16's atlas is for dual-grid composition). **Penta dual-grid layouts keep per-archetype shapes** for slots 0–4 (slot 0 = BL quadrant only, slot 1 = full, slot 2 = bottom half, slot 3 = L-shape, slot 4 = TL+BR diagonal).
+
+- **`PentaTileMapLayer._paint_via_layout` — single-grid logic-painted gate.** Previously, marking cardinal neighbors as affected caused them to also paint their own visual tile, extending the painted region by a full cell. Single-grid layouts now skip painting non-logic-painted cells (cardinal neighbors still trigger re-renders of their painted neighbors when the mask changes, but they don't render their own tile). Dual-grid layouts unchanged — they still paint all affected display cells (perimeter cells fill INNER quadrants that fall inside the painted logic pixel bounds).
+
+- **`mask=0` short-circuit gated on `is_dual_grid()`.** Previously, the universal `mask == 0 → return` short-circuit dropped logic-painted single-grid cells whenever their mask sampler found no neighbors — isolated 1×1 paints, 1×N lines in Wang2Corner where straight lines have no diagonals. Now only dual-grid uses this short-circuit. All 3 single-grid layouts (Wang2Edge, Wang2Corner, Min3x3) drop their `mask == 0 → null` returns from `mask_to_atlas`; isolated cells dispatch to atlas (0, 0) for the Wangs and atlas (1, 1) for Min3x3 (per the open-side rule).
+
+- **`PentaTileSynthesis._apply_canonical_silhouette()` (NEW)** enforces per-archetype expected opaque region during authored-slot extraction (FOUR/FIVE modes). Penta dispatches with rotation flags (TRANSPOSE | FLIP_H | FLIP_V) at render time. Stray opaque pixels in an artist's "cut" quadrant (e.g., orange inner-corner outline drawn at col 8 of slot 3's TR cut) get rotation-mapped INTO adjacent painted cells, producing visible bleed. The new method zeros the alpha of any pixel outside each archetype's canonical opaque region during synthesis, so artist art straying outside the expected silhouette can't bleed via rotation.
+
+**Test coverage:**
+
+The test suite grew from 9 → 12 tests, with 4 new/fortified tests catching this entire class of bug:
+
+- `addons/penta_tile/tests/bitmask_bounds_test.gd` (NEW) — pixel-by-pixel verification of every bundled bitmask greybox PNG against expected per-slot silhouette. Catches generator drift.
+- `addons/penta_tile/tests/comprehensive_bitmask_test.gd` (NEW) — paints 16 patterns (1×1, 1×2_h, 1×2_v, 2×1, 2×2, 3×3, 4×4, 5×5, line_h_5, line_v_5, L_shape, T_shape, plus_shape, diag_pair, diag_anti, 3_isolated) across all 5 layouts and asserts: (a) every painted cell renders, (b) single-grid cells dispatch to 100%-opaque tiles, (c) dual-grid cells dispatch to non-zero-opacity tiles, (d) no out-of-bounds visual cells, (e) opaque pixel bbox matches user_cells × tile_size.
+- `addons/penta_tile/tests/penta_ground_hollow_test.gd` (NEW) — uses the demo's actual `penta_tile_ground.tres` source atlas (real artist artwork), paints a hollow ring (8×8 outer, 4×4 hole), asserts opaque-pixel bbox stays within painted bounds AND zero opaque pixels render inside the hole. Catches rotation-bleed bugs that don't appear with bundled greyboxes.
+- `addons/penta_tile/tests/all_layouts_swap_pixel_test.gd` (FORTIFIED) — added per-edge continuity (≥80% opacity at painted-neighbor edges), interior coverage (mask=15 ≥ 80%), bbox bounds, per-cell solidity (single-grid 100% opaque) assertions.
+
+Each fix was verified by stashing the patch, rerunning, confirming failure, applying the fix, confirming pass — the gold-standard regression-net protocol.
+
+**Methodology:**
+
+The 6-commit cycle exposed gaps in the original test methodology. Lessons codified in `CLAUDE.md` § Test Methodology, three new Critical Pitfalls (#8 single-grid logic-painted gate, #9 single-grid mask=0 dispatch, #10 Penta canonical-silhouette enforcement), and a full retrospective in `.planning/phases/02-native-layouts/02-UAT-LESSONS-LEARNED.md`. Cross-session memories `feedback_visual_testing.md` + `feedback_root_cause_discipline.md` capture the rules ("compose canvas pixel-by-pixel, not just dispatch tables", "trace full pipeline before patching symptoms").
+
 ### Migration notes for v0.1.x consumers
 
 1. Replace all references to `TetraTileMapLayer` with `PentaTileMapLayer` in your scenes and scripts.
