@@ -135,11 +135,11 @@ Plans:
 **Plans**: 6 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Wave 1 prereqs: D-86 user gate (checkpoint:decision) + 8-Moore single-grid pipeline patch + propagation regression test (D-87)
-- [ ] 03-02-PLAN.md — Wave 1 deliverable: 03-TBT-DEEP-AUDIT.md ADOPT/PARTIAL/REJECT pattern audit (D-84, no code/data lift)
+- [x] 03-01-PLAN.md — Wave 1 prereqs: D-86 user gate (checkpoint:decision) + 8-Moore single-grid pipeline patch + propagation regression test (D-87)
+- [x] 03-02-PLAN.md — Wave 1 deliverable: 03-TBT-DEEP-AUDIT.md ADOPT/PARTIAL/REJECT pattern audit (D-84, no code/data lift)
 - [x] 03-03-PLAN.md — Wave 1 doc rewrites: ROADMAP/REQUIREMENTS retitle + TBT-04/DOC-05 rewrite + README footnote (D-72, D-73; no ATTRIBUTION.md)
-- [ ] 03-04-PLAN.md — Wave 2: PentaTileLayoutBlob47Godot (BorisTheBrave 7×7 + 256→47 collapse + 47-entry dict) + collapse test + hollow test + bundled PNG (TBT-03, TEMPLATE-02 partial)
-- [ ] 03-05-PLAN.md — Wave 3 (D-86 conditional): PentaTileLayoutTilesetterWang15 + PentaTileLayoutTilesetterBlob47 + dispatch/collapse tests + bundled PNGs (TBT-01, TBT-02, TEMPLATE-02 finish)
+- [x] 03-04-PLAN.md — Wave 2: PentaTileLayoutBlob47Godot (BorisTheBrave 7×7 + 256→47 collapse + 47-entry dict) + collapse test + hollow test + bundled PNG (TBT-03, TEMPLATE-02 partial)
+- [~] 03-05-PLAN.md — SKIPPED per D-86 resolution (option b — Tilesetter layouts deferred to v0.3+; TBT-01/TBT-02/Tilesetter half of TEMPLATE-02 → v2 backlog)
 - [ ] 03-06-PLAN.md — Wave 4 closeout: comprehensive_bitmask_test + bitmask_bounds_test extended; REQUIREMENTS Traceability + ROADMAP [x] + STATE.md cumulative LOC + Phase 3 closure
 
 ### Phase 3.5: PixelLab Layouts + Variation-Seed Wiring
