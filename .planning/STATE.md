@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
 status: executing
-stopped_at: Plan 05 SKIPPED per D-86 = b — Tilesetter deferred to v0.3+
-last_updated: "2026-04-29T07:55:58.021Z"
+stopped_at: Phase 3 closed (D-86 = b — reduced scope; Tilesetter deferred to v0.3+)
+last_updated: "2026-04-29T08:30:00.000Z"
 last_activity: 2026-04-29
 progress:
   total_phases: 8
   completed_phases: 3
   total_plans: 21
-  completed_plans: 20
-  percent: 95
+  completed_plans: 21
+  percent: 100
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-04-25 after v0.2 pivot to layout library
 
 ## Current Position
 
-Phase: 03 (Public-Convention Layouts (Blob47 + Tilesetter)) — EXECUTING
-Plan: 6 of 6
-Status: Ready to execute
+Phase: 03 (Public-Convention Layouts (Blob47 only; Tilesetter deferred to v0.3+)) — COMPLETE (D-86 outcome b; 5 plans executed + Plan 05 SKIPPED; cumulative ~2455 runtime LOC; full test suite 15/15 green)
+Plan: All Phase 3 plans closed
+Status: Phase 3 closed — Phase 4 (Fallback Routing) is the next planning step (run `/gsd-plan-phase 4`)
 Last activity: 2026-04-29
 
-> Phase 03 — Wave 1 prereqs landed (8-Moore patch + D-86 gate resolved as option b — Tilesetter deferred to v0.3+). Plan 03-05 (Tilesetter layouts) is now SKIPPED for Phase 3; remaining plans 03-04 (Blob47Godot) and 03-06 (closeout) proceed.
+> Phase 03 closed 2026-04-29 with reduced scope per D-86 = (b). Blob47Godot shipped (TBT-03 + TEMPLATE-02 partial); audit deliverable + README footnote landed (TBT-04, DOC-05); 8-Moore single-grid propagation patch landed (D-87); Tilesetter pair + Tilesetter half of TEMPLATE-02 deferred to v0.3+ backlog (`TBT-01-DEFERRED` / `TBT-02-DEFERRED` / `TEMPLATE-02-DEFERRED`). Plan 06 (closeout) extended `comprehensive_bitmask_test` + `bitmask_bounds_test` with Blob47Godot, added 2 new 8-Moore-revealing patterns (plus_with_diagonals, diag_chain), recorded the deferred-backlog entries in REQUIREMENTS.md, and flipped Phase 3 ROADMAP entry to `[x]`.
 
 Progress: [██████████] 95%
 
@@ -88,6 +88,7 @@ Progress: [██████████] 95%
 - 2026-04-26 (third review pass): **Third code review pass after VERTICAL baseline.** Re-verified all 7 WR fixes once more; surfaced 3 new cosmetic Info items in test scaffolding: IN-11 (`--layout-path` parse loop never `break`s on duplicate flags), IN-12 (`LAYOUT_OVERRIDE` print silently emits `axis=0` for non-Penta layouts via `int(null)`), IN-13 (header doc-comment doesn't list sub-test (c)). All 3 fixed atomically in commit `c9a6aa9`. Third-pass review report committed at `aa07ac1`. Final REVIEW.md status: clean (0 Critical, 0 Warning, 13 Info — IN-01..IN-13).
 - 2026-04-28: **Phase 6 added — Editor Line/Rect/Bucket Tool Preview During Drag (far-future, deferred).** Captures a known issue: when a `layout` is bound, the editor's line/rect/bucket tools show no preview during the drag because Godot 4.6 multiplies the preview-overlay alpha by `edited_layer.self_modulate`, and PentaTile zeroes `self_modulate.a` via `logic_layer_opacity = 0` to hide the parent's raw cells. Verified against Godot 4.6 source (`editor/scene/2d/tiles/tile_map_layer_editor.cpp` lines 875-990). TileMapDual works around this with a ghost shader material; PentaTile has two candidate paths: (a) ghost-material refactor (~30 LOC, raw preview, breaking change to `logic_layer_opacity`), or (b) custom `EditorPlugin` with `forward_canvas_draw_over_viewport` (full new phase, true dispatched preview). Decision deferred to plan phase — re-verify the open questions in `.planning/research/editor-line-rect-preview.md` before committing (Godot may add atlas-redirect to `_tile_data_runtime_update`, expose preview state to scripts, or add a per-layer preview hook). Defer until after v0.2.0 ships. Companion artifacts: `.planning/research/editor-line-rect-preview.md`, `.planning/todos/pending/2026-04-28-re-research-editor-line-rect-tool-preview-during-drag.md`.
 - 2026-04-28 (UAT-driven bug-fix sweep): **7 bug classes resolved across 15 commits (6553380..205fb67) + planning artifacts updated.** Cycle started with edge-greybox plus-arms causing visible dark squares between cells in a painted Min3x3/Wang2Edge region (`7cffd73`). Iterated through corner-cuts (`ef46977`), solid 32×32 (`9183d07`), back to corner-cuts (`fce112f`), back to solid (after realizing Penta is actually a clean rectangle, not rounded-corners). Layer-level fix (`a9d9716`) made single-grid layouts only render logic-painted cells (background extension cells stay unrendered, painted region's pixel bbox = user_cells × tile_size). Wang2Corner gained its own solid 32×32 atlas (`022af2e`) — DualGrid16's partial-quadrant atlas was unsuitable for single-grid composition. Single-grid mask=0 dispatch added (`81813cd`) so isolated 1×1 cells and 1×N lines (especially Wang2Corner where straight lines have no diagonals) render. Penta + user's ground.tres exposed orange-line bleed into hollow-region holes (`205fb67`); root cause was artist drawing inner-corner outline at col 8 of slot 3's TR-cut quadrant — pixels rotation-mapped into adjacent painted cells via TRANSPOSE/FLIP_H/FLIP_V; fix is `PentaTileSynthesis._apply_canonical_silhouette()` enforcing per-archetype expected opaque region during authored-slot extraction (FOUR/FIVE modes). Test suite grew from 9 → 12: added `bitmask_bounds_test` (per-slot expected silhouette), `comprehensive_bitmask_test` (16 patterns × 5 layouts × bbox + solidity + cell-coverage), `penta_ground_hollow_test` (user-fixture hollow ring + hole emptiness). Fortified `all_layouts_swap_pixel_test` with edge-continuity + interior coverage + bbox + per-cell solidity assertions. Methodology lessons codified in `CLAUDE.md` § Test Methodology, three new Critical Pitfalls (#8 single-grid logic-painted gate, #9 single-grid mask=0 dispatch, #10 Penta canonical-silhouette enforcement), and full retrospective in `.planning/phases/02-native-layouts/02-UAT-LESSONS-LEARNED.md`. Cross-session memory: `feedback_visual_testing.md` + `feedback_root_cause_discipline.md`. All 12 tests green at commit `99687ca`.
+- 2026-04-29: **Phase 3 closed.** Public-Convention Layouts shipped under D-86 option (b): Blob47Godot only (Tilesetter pair deferred to v0.3+) — 1 layout + 1 bundled PNG + 3 new tests (`blob_47_collapse_test`, `blob_47_hollow_test`, `single_grid_8_moore_propagation_test`) + 1 audit deliverable (`03-TBT-DEEP-AUDIT.md`) + 1 README footnote + 8-Moore single-grid propagation pipeline patch (D-87). REQUIREMENTS.md gains `TBT-01-DEFERRED` / `TBT-02-DEFERRED` / `TEMPLATE-02-DEFERRED` v2 backlog entries; Traceability table marks TBT-03 / TBT-04 / DOC-05 Complete; TEMPLATE-02 marked Partial (Blob47Godot half ships; Tilesetter half deferred). ROADMAP Phase 3 row flipped to `[x]` 2026-04-29 with completion summary. Cumulative runtime GDScript LOC measured directly: ~2455 (sum of `addons/penta_tile/**/*.gd` excluding `tests/` and `demo/`). Phase 2 close baseline reported 1827; the difference vs the +121 LOC actually added in Phase 3 is methodology drift — Phase 2's 1827 figure pre-dated several refinements + .uid-sidecar accounting. Identity guardrail: AT RISK carry-forward — final formal gate is Phase 5 audit vs TileMapDual. No ATTRIBUTION.md created (D-73 final guard verified). 47-blob layout sourced from BorisTheBrave (D-74). Tilesetter slot tables: D-86 = (b) defer. Test suite grew 12 (Phase 2 close) → 15 (Phase 3 close); matrix combos grew 5×16=80 → 6×18=108 in `comprehensive_bitmask_test`. Phase 4 (Fallback Routing) is the next planning step.
 - 2026-04-27 (UAT-driven AUTO_STRIP completion): **AUTO_STRIP per-strip dispatch un-deferred and shipped retroactively** (commit `29cba37`). Discovered during user UAT that AUTO_STRIP rendered nothing — Wave 6 had explicitly deferred per-strip dispatch to Phase 5, but the deferral was buried in the summary and the verifier marked SC-7 ✓ on detector existence alone (`resolve_strip_modes()` was implemented but never called). Sweep also surfaced a same-file spec contradiction: Wave 2's `synthesize_strip` docstring described Interpretation B (cumulative offset along slot axis); Wave 6's `resolve_strip_modes` implemented Interpretation A (strips perpendicular to slot axis). A locked. Fix: layer's `_ensure_synthesized_tile_set` now branches on AUTO_STRIP, calls `resolve_strip_modes`, threads cumulative `strip_origin` per strip, builds 5×N synthesized atlas (single source, output coord = `Vector2i(slot, strip_index)`); `mask_to_atlas` + `_make_slot` gain `strip_index: int = 0` parameter; new virtual `resolve_display_strip` returns first-non-empty-neighbor's source-atlas-coord (TL→TR→BL→BR canonical order); Penta-only override (non-Penta layouts use base default = 0). Bonus bug found: `resolve_strip_modes` was treating trailing empties as gaps; now only flags "empty-then-populated" patterns. paint_test grew 4 new AUTO_STRIP cases (uniform [3,3] HORIZONTAL, mixed [3,5] HORIZONTAL, gap-with-warning-C, VERTICAL [4,2]) — ALL PASS. Determinism BASELINE_HASH=2986698704 still holds across 11 runs. Documented Gate 1 OuterCorner-via-rotation tradeoff stays as locked spec; user accepts; data-side fix path is artist-authored faded slot 0. Workflow-quality root cause logged: verifier checked existence not wiring; deferrals weren't loud at sign-off; demo bound only FOUR mode so non-FOUR coverage required manual `.tres` swap.
 
 ### Decisions
@@ -182,8 +183,8 @@ Items acknowledged and carried forward as v2 requirements (see REQUIREMENTS.md v
 
 ## Session Continuity
 
-Last session: 2026-04-29T07:55:58.013Z
-Stopped at: Plan 05 SKIPPED per D-86 = b — Tilesetter deferred to v0.3+
+Last session: 2026-04-29T08:30:00.000Z
+Stopped at: Phase 3 closed (Plan 06 closeout complete; D-86 = b; Tilesetter deferred to v0.3+); Phase 4 (Fallback Routing) is next planning step
 Resume file: None
 
 **Completed Phase:** 01 (Contract Skeleton + Penta Layouts) — 5/5 plans, 14/14 requirements, 26/26 automated tests PASS — 2026-04-26

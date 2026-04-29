@@ -264,6 +264,14 @@ Backlog item added 2026-04-26 from Phase 2.1 brainstorm. Goal: support multiple 
 - **DIST-01**: Godot Asset Library submission.
 - **DIST-02**: Formal automated test suite (GUT or similar).
 
+### TBT (Phase 3 deferred — Tilesetter only)
+
+Backlog entries added 2026-04-29 by Phase 3 Plan 06 closeout when D-86 resolved to option (b) — Tilesetter primary source not located in plan-phase research; user opted to defer rather than empirically fingerprint. Phase 3 shipped only `PentaTileLayoutBlob47Godot` (TBT-03 satisfied + TEMPLATE-02 partial); the Tilesetter pair carries forward.
+
+- **TBT-01-DEFERRED**: `PentaTileLayoutTilesetterWang15` (5×3 atlas + stray-fill slot) — primary source not located in 2026-04-28 plan-phase research (RESEARCH § 3); user opted to defer per D-86 option (b). Re-trigger when user has a sample Tilesetter export OR when v0.3+ planning revisits.
+- **TBT-02-DEFERRED**: `PentaTileLayoutTilesetterBlob47` (11×5 atlas with sub-block gaps) — same reason as TBT-01-DEFERRED.
+- **TEMPLATE-02-DEFERRED**: TilesetterWang15 + TilesetterBlob47 bundled bitmask PNGs (`penta_tile_layout_tilesetter_wang_15.png`, `penta_tile_layout_tilesetter_blob_47.png`) — deferred from Phase 3 to v0.3+ alongside TBT-01-DEFERRED + TBT-02-DEFERRED. Activates when D-86 Tilesetter primary source becomes available. The Blob47Godot half of TEMPLATE-02 shipped in Plan 04.
+
 ## Out of Scope
 
 Explicitly excluded for v0.2.0. Documented to prevent scope creep.
@@ -332,10 +340,10 @@ Which phases cover which requirements. Empty initially — populated by `gsd-roa
 | PENTA-SYNTH-10 | 2 | Complete (single PNG per layout serves both inspector preview and fallback source) |
 | PENTA-SYNTH-11 | 2 | Complete (demo bound to FOUR mode; ONE/FIVE `.tres` resources shipped) |
 | PENTA-SYNTH-12 | 2 | Complete (FOUR-mode determinism `BASELINE_HASH=2986698704`; 11/11 runs match) |
-| TBT-01 | 3 | Pending |
-| TBT-02 | 3 | Pending |
-| TBT-03 | 3 | Pending |
-| TBT-04 | 3 | Pending |
+| TBT-01 | 3 → v0.3+ | Deferred to v0.3+ per D-86 option (b) — Plan 05 SKIPPED 2026-04-29 (Tilesetter primary source not located in Phase 3 research). Tracked as `TBT-01-DEFERRED` in v2 Requirements. |
+| TBT-02 | 3 → v0.3+ | Deferred to v0.3+ per D-86 option (b) — Plan 05 SKIPPED 2026-04-29 (same reason as TBT-01). Tracked as `TBT-02-DEFERRED` in v2 Requirements. |
+| TBT-03 | 3 | Complete (Plan 04 / commits `63c3aa0` `fad4054` `c69f0d9`: PentaTileLayoutBlob47Godot ships with 7×7 atlas + algorithmic 256→47 collapse rule + 47-entry _MASK_TO_ATLAS dict + collapse test green; matrix integration in Plan 06 / `9d8aa3e`) |
+| TBT-04 | 3 | Complete (Plan 03 / commit `fcfb9e4`: README "External Resources" section's TileBitTools design-inspiration footnote ships; ATTRIBUTION.md NOT created per D-73) |
 | PIXLAB-01 | 3.5 | Pending |
 | PIXLAB-02 | 3.5 | Pending |
 | PIXLAB-03 | 3.5 | Pending |
@@ -345,7 +353,7 @@ Which phases cover which requirements. Empty initially — populated by `gsd-roa
 | PREVIEW-03 | 4 | Pending |
 | PREVIEW-04 | 4 | Pending |
 | TEMPLATE-01 | 2 | Complete (14 bundled PNGs at co-located paths; `templates/` folder deleted in Wave 5) |
-| TEMPLATE-02 | 3 | Pending |
+| TEMPLATE-02 | 3 + 3 → v0.3+ | Partial — Blob47Godot PNG ships (Plan 04 / commit `fad4054`); Tilesetter pair (TilesetterWang15 + TilesetterBlob47 PNGs) deferred to v0.3+ per D-86 option (b). Tracked as `TEMPLATE-02-DEFERRED` in v2 Requirements. |
 | TEMPLATE-03 | Pre-shipped | Complete (template image format established v0.1; carried forward) |
 | TEMPLATE-04 | 2 | Complete (slot 0 IsolatedCell PNG has transparent gaps; verified Wave 5 / `e17512e`) |
 | DEMO-01 | 5 | Pending |
@@ -355,7 +363,7 @@ Which phases cover which requirements. Empty initially — populated by `gsd-roa
 | DOC-02 | 5 | Pending |
 | DOC-03 | 5 | Pending |
 | DOC-04 | 5 | Pending |
-| DOC-05 | 3 | Pending |
+| DOC-05 | 3 | Complete (Plan 03 / commit `fcfb9e4`: same as TBT-04 — README footnote ships; ATTRIBUTION.md banned per D-73) |
 | REL-01 | 5 | Pending |
 | REL-02 | 5 | Pending |
 | REL-03 | 5 | Pending |
@@ -364,6 +372,7 @@ Which phases cover which requirements. Empty initially — populated by `gsd-roa
 - v1 requirements: 58 total (39 original − 5 CONTRACT (deleted) + 6 added Phase 1 discuss + 12 PENTA-SYNTH-* (5 progressive modes ONE→FIVE + AUTO/AUTO_STRIP detection + per-layout PNG conventions) + 5 LAYER-* (replace contract; LAYER-04 demo rebind, LAYER-05 Phase 1 test migration added during cleanup audit 2026-04-26) + 2 LAYOUT-06/07 (`get_fallback_tile_set()` virtual + co-located bundled PNGs) − 1 VAR-PIXEL-01 (moved to v2 backlog with VAR-01))
 - Mapped to phases: 58 (after this update)
 - Unmapped: 0
+- 2026-04-29 D-86 outcome (Plan 05 SKIPPED): TBT-01, TBT-02, and the Tilesetter half of TEMPLATE-02 were originally mapped to Phase 3. Per the user's option-(b) decision, all three deferred to v0.3+ (tracked as TBT-01-DEFERRED / TBT-02-DEFERRED / TEMPLATE-02-DEFERRED in v2 Requirements). Phase 3 still owns these IDs in the Traceability table but their Status reads "Deferred" / "Partial" rather than "Complete." Phase 3 effective coverage: TBT-03 + TBT-04 + DOC-05 + Blob47Godot half of TEMPLATE-02 (4 of 6 originally-planned Phase 3 IDs).
 - 2026-04-26 architectural pivots (locked after fourth iteration):
   - **Slot ordering**: `0=IsolatedCell, 1=Fill, 2=Border, 3=InnerCorner, 4=OppositeCorners`. OuterCorner is implicit (synthesized from slot 0's corners across all modes).
   - **Five progressive modes**: ONE → TWO → THREE → FOUR → FIVE, each adding one explicit slot. AUTO detects from atlas axis size (uniform across strips); AUTO_STRIP detects per-strip (strips can differ).
