@@ -67,7 +67,8 @@ try {
         "blob_47_hollow_test",
         "single_grid_8_moore_propagation_test",
         "pixellab_first_cell_test",
-        "pixellab_visual_regression_test"
+        "pixellab_visual_regression_test",
+        "fallback_routing_test"
     )
 
     $tests = $allTests
