@@ -65,7 +65,7 @@ New capabilities (variation, top tiles, multi-terrain, editor preview during dra
   1. Compute next version from current `plugin.cfg` per D-05-16.
   2. **Automated CI checks** (per D-05-14):
      - `godot --import --headless` — imports the project clean.
-     - Run all tests in `addons/penta_tile/tests/` (the 18 currently registered) via the existing harness adapted for Linux runner.
+     - Run all tests in `tests/` (the 18 currently registered) via the existing harness adapted for Linux runner.
      - Headless-open `penta_tile_demo.tscn` and assert no errors in stderr.
      - If any check fails → workflow exits non-zero. No commit/tag/release.
   3. Bump `addons/penta_tile/plugin.cfg` `version=` to the new version.
@@ -122,7 +122,7 @@ The wording in REQUIREMENTS.md, ROADMAP.md, and PROJECT.md drifted between earli
 - `addons/penta_tile/demo/penta_tile_ground.{png,tres}` + `_regen_demo_ground.py` + `demo_player.gd` + `demo_player.gd.uid` — retired from the demo per D-05-02 / D-05-03 (planner picks delete vs archive).
 - `addons/penta_tile/layouts/penta_tile_layout.gd:140-165` — `get_fallback_tile_set()` codegen — confirms ZERO physics layers, the constraint that drove D-05-03.
 - `addons/penta_tile/plugin.cfg` — currently `version="0.1.0"`. Workflow bumps it per D-05-15..17.
-- `addons/penta_tile/tests/run_tests.ps1` (+ underlying `--script` / `--headless` invocations) — the existing test harness; CI workflow re-uses (D-05-14, D-05-17 step 2).
+- `tests/run_tests.ps1` (+ underlying `--script` / `--headless` invocations) — the existing test harness; CI workflow re-uses (D-05-14, D-05-17 step 2).
 
 ### Documentation Anchors
 

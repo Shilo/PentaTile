@@ -35,8 +35,8 @@ key-files:
   created:
     - .planning/phases/03-tilebittools-sourced-layouts/03-06-SUMMARY.md
   modified:
-    - addons/penta_tile/tests/comprehensive_bitmask_test.gd
-    - addons/penta_tile/tests/bitmask_bounds_test.gd
+    - tests/comprehensive_bitmask_test.gd
+    - tests/bitmask_bounds_test.gd
     - .planning/REQUIREMENTS.md
     - .planning/ROADMAP.md
     - .planning/STATE.md
@@ -180,8 +180,8 @@ Each task was committed atomically:
 
 ### Modified
 
-- `addons/penta_tile/tests/comprehensive_bitmask_test.gd` (+15 LOC, -1 LOC) — preload `_Blob47GodotSc`; layouts array gains `Blob47Godot` entry; patterns array gains `plus_with_diagonals` + `diag_chain`.
-- `addons/penta_tile/tests/bitmask_bounds_test.gd` (+44 LOC, -1 LOC) — `_check_atlas` signature gains `gap_cells: Array[Vector2i] = []` parameter; per-slot inspection skips whitelisted gaps; new `_solid_silhouette` helper; Blob47Godot atlas check call appended.
+- `tests/comprehensive_bitmask_test.gd` (+15 LOC, -1 LOC) — preload `_Blob47GodotSc`; layouts array gains `Blob47Godot` entry; patterns array gains `plus_with_diagonals` + `diag_chain`.
+- `tests/bitmask_bounds_test.gd` (+44 LOC, -1 LOC) — `_check_atlas` signature gains `gap_cells: Array[Vector2i] = []` parameter; per-slot inspection skips whitelisted gaps; new `_solid_silhouette` helper; Blob47Godot atlas check call appended.
 - `.planning/REQUIREMENTS.md` — Traceability table 6 rows updated (TBT-01..04, TEMPLATE-02, DOC-05); v2 Requirements section gains "TBT (Phase 3 deferred — Tilesetter only)" subsection with 3 -DEFERRED entries; Coverage section gains D-86-outcome note.
 - `.planning/ROADMAP.md` — Phase 3 short-line `[ ]` → `[x]`; Phase 3 entry rewritten; Plans subsection 03-05 / 03-06 entries updated; Progress table Phase 3 row marked Complete with date.
 - `.planning/STATE.md` — Roadmap Evolution closure entry; Current Position + Session Continuity updated; frontmatter progress + status fields refreshed.
@@ -251,10 +251,10 @@ Verified post-write:
 - File `.planning/phases/03-tilebittools-sourced-layouts/03-06-SUMMARY.md` exists. ✓
 - Commit `9d8aa3e` (Task 1 — test extensions) in git log. ✓
 - Commit `ddafba1` (Task 2 — doc closeout) in git log. ✓
-- `addons/penta_tile/tests/comprehensive_bitmask_test.gd` contains `Blob47Godot` (3 hits via grep). ✓
-- `addons/penta_tile/tests/comprehensive_bitmask_test.gd` contains `_Blob47GodotSc` (2 hits via grep). ✓
-- `addons/penta_tile/tests/comprehensive_bitmask_test.gd` contains `plus_with_diagonals` AND `diag_chain` (4 hits via grep). ✓
-- `addons/penta_tile/tests/bitmask_bounds_test.gd` contains `penta_tile_layout_blob_47_godot.png` (1 hit via grep). ✓
+- `tests/comprehensive_bitmask_test.gd` contains `Blob47Godot` (3 hits via grep). ✓
+- `tests/comprehensive_bitmask_test.gd` contains `_Blob47GodotSc` (2 hits via grep). ✓
+- `tests/comprehensive_bitmask_test.gd` contains `plus_with_diagonals` AND `diag_chain` (4 hits via grep). ✓
+- `tests/bitmask_bounds_test.gd` contains `penta_tile_layout_blob_47_godot.png` (1 hit via grep). ✓
 - `bitmask_bounds_test.gd` does NOT pass `Callable()` to `_check_atlas` (only docstring references confirming the W-3 fix). ✓
 - `.planning/REQUIREMENTS.md` contains `TBT-01-DEFERRED`, `TBT-02-DEFERRED`, AND `TEMPLATE-02-DEFERRED` (7 total hits via grep — multiple references per ID). ✓
 - `.planning/ROADMAP.md` contains `[x] **Phase 3` (1 hit via grep). ✓

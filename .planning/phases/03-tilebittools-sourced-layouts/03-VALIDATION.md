@@ -19,9 +19,9 @@ created: 2026-04-28
 | Property | Value |
 |----------|-------|
 | **Framework** | Godot 4.6 headless (`Godot --headless --script ...`) — no GUT, project policy ("works in my game") |
-| **Config file** | None — tests are standalone `extends SceneTree` `_initialize` scripts in `addons/penta_tile/tests/` |
-| **Quick run command** | `.\addons\penta_tile\tests\run_tests.ps1 -Test <test_name>` |
-| **Full suite command** | `.\addons\penta_tile\tests\run_tests.ps1` |
+| **Config file** | None — tests are standalone `extends SceneTree` `_initialize` scripts in `tests/` |
+| **Quick run command** | `.\tests\run_tests.ps1 -Test <test_name>` |
+| **Full suite command** | `.\tests\run_tests.ps1` |
 | **Estimated runtime** | ~3-5 minutes for full suite (12 Phase 2 tests + ~6 Phase 3 additions = ~18 tests) |
 
 ---
@@ -64,21 +64,21 @@ Wave 0 covers prerequisite test infrastructure and the load-bearing pipeline pat
 - [ ] **Wave 0b — TBT-DEEP-AUDIT.md** (planner-driven, not a test): the design-audit deliverable per D-84. No tests; reviewed at phase verification.
 - [ ] **Wave 0c — Single-grid 8-Moore pipeline patch + test:**
   - [ ] `addons/penta_tile/penta_tile_map_layer.gd:234-239` — extend `_mark_affected_single_grid_cells` from 4 cardinals to 8 Moore neighbors per RESEARCH § 5 Finding 1.
-  - [ ] `addons/penta_tile/tests/single_grid_8_moore_propagation_test.gd` — verifies painting a cell re-renders all 8 Moore neighbors of an existing cell. Catches regression of the 4-cardinal short-circuit.
+  - [ ] `tests/single_grid_8_moore_propagation_test.gd` — verifies painting a cell re-renders all 8 Moore neighbors of an existing cell. Catches regression of the 4-cardinal short-circuit.
 
 Wave 4 (test additions tied to layout deliveries):
-- [ ] `addons/penta_tile/tests/blob_47_collapse_test.gd` — 256-mask enumeration; asserts every collapse hits a valid `_MASK_TO_ATLAS` entry. Covers TBT-03 + TBT-02 collapse algorithm (D-78).
-- [ ] `addons/penta_tile/tests/blob_47_hollow_test.gd` — hollow 5×5 ring rendering; catches diagonal-bleed regressions (Phase 2 lessons-learned methodology).
-- [ ] `addons/penta_tile/tests/tilesetter_wang_15_dispatch_test.gd` — 4-bit corner mask completeness; asserts `mask_to_atlas(0) == Vector2i(5, 0)` (D-79 stray-fill slot).
-- [ ] `addons/penta_tile/tests/tilesetter_blob_47_collapse_test.gd` — same shape as `blob_47_collapse_test.gd`; may be merged if collapse algorithm identical and only the dict differs.
-- [ ] Extend `addons/penta_tile/tests/comprehensive_bitmask_test.gd` — add `Blob47Godot`, `TilesetterWang15`, `TilesetterBlob47` to layouts array; add 1-3 new patterns from RESEARCH § 8 to exercise 8-Moore corner-with-both-edges configurations (e.g., 3×3 plus + diagonals, X with diagonals, ring with diagonal).
-- [ ] Extend `addons/penta_tile/tests/bitmask_bounds_test.gd` — add 3 new bundled PNG paths (`penta_tile_layout_blob_47_godot.png`, `penta_tile_layout_tilesetter_wang_15.png`, `penta_tile_layout_tilesetter_blob_47.png`).
-- [ ] Extend `addons/penta_tile/tests/run_tests.ps1` — register new test names.
+- [ ] `tests/blob_47_collapse_test.gd` — 256-mask enumeration; asserts every collapse hits a valid `_MASK_TO_ATLAS` entry. Covers TBT-03 + TBT-02 collapse algorithm (D-78).
+- [ ] `tests/blob_47_hollow_test.gd` — hollow 5×5 ring rendering; catches diagonal-bleed regressions (Phase 2 lessons-learned methodology).
+- [ ] `tests/tilesetter_wang_15_dispatch_test.gd` — 4-bit corner mask completeness; asserts `mask_to_atlas(0) == Vector2i(5, 0)` (D-79 stray-fill slot).
+- [ ] `tests/tilesetter_blob_47_collapse_test.gd` — same shape as `blob_47_collapse_test.gd`; may be merged if collapse algorithm identical and only the dict differs.
+- [ ] Extend `tests/comprehensive_bitmask_test.gd` — add `Blob47Godot`, `TilesetterWang15`, `TilesetterBlob47` to layouts array; add 1-3 new patterns from RESEARCH § 8 to exercise 8-Moore corner-with-both-edges configurations (e.g., 3×3 plus + diagonals, X with diagonals, ring with diagonal).
+- [ ] Extend `tests/bitmask_bounds_test.gd` — add 3 new bundled PNG paths (`penta_tile_layout_blob_47_godot.png`, `penta_tile_layout_tilesetter_wang_15.png`, `penta_tile_layout_tilesetter_blob_47.png`).
+- [ ] Extend `tests/run_tests.ps1` — register new test names.
 
 **Existing test infrastructure templates** (cite when implementing):
-- `addons/penta_tile/tests/comprehensive_bitmask_test.gd` — pattern × layout matrix (canonical for new layouts).
-- `addons/penta_tile/tests/penta_ground_hollow_test.gd` — fixture-based hollow test (template for `blob_47_hollow_test.gd`).
-- `addons/penta_tile/tests/bitmask_bounds_test.gd` — bundled PNG slot-position verification (template for TEMPLATE-02 visual regression).
+- `tests/comprehensive_bitmask_test.gd` — pattern × layout matrix (canonical for new layouts).
+- `tests/penta_ground_hollow_test.gd` — fixture-based hollow test (template for `blob_47_hollow_test.gd`).
+- `tests/bitmask_bounds_test.gd` — bundled PNG slot-position verification (template for TEMPLATE-02 visual regression).
 
 ---
 

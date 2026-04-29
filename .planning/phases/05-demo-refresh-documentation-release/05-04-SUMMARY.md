@@ -11,7 +11,7 @@ requires:
 provides:
   - "Single manually-triggered release pipeline (.github/workflows/release.yml) — workflow_dispatch with NO inputs"
   - "Auto-version-increment per D-05-16 (minor +1 default; major+1/minor=0 on rollover; patch always 0)"
-  - "Linux/CI test runner (addons/penta_tile/tests/run_tests.sh) mirroring run_tests.ps1's 17-test inventory"
+  - "Linux/CI test runner (tests/run_tests.sh) mirroring run_tests.ps1's 17-test inventory"
   - "Stderr-grep failure detection on '^(ERROR|SCRIPT ERROR):' for both headless import and headless demo open (Pitfall #1 mitigation)"
   - "git archive zip restricted to addons/penta_tile/ pathspec (Pitfall #11 — strips .planning/, tests/, demo/)"
   - "softprops/action-gh-release@v3 publishes the zip + CHANGELOG slice as Release body (D-05-18)"
@@ -32,7 +32,7 @@ tech-stack:
 key-files:
   created:
     - ".github/workflows/release.yml — 201 lines, 13 steps, single workflow_dispatch release pipeline"
-    - "addons/penta_tile/tests/run_tests.sh — 105 lines, 17-test inventory mirror of run_tests.ps1"
+    - "tests/run_tests.sh — 105 lines, 17-test inventory mirror of run_tests.ps1"
   modified: []
 
 key-decisions:
@@ -71,7 +71,7 @@ completed: 2026-04-29
 ## Accomplishments
 
 - `.github/workflows/release.yml` shipped — 201-line single-job, 13-step pipeline. `workflow_dispatch` with NO inputs. Auto-version-increment per D-05-16 (minor +1 default; major+1/minor=0 on rollover; patch always 0). All 6 critical pitfalls (#1, #2, #3, #5, #7, #11) explicitly mitigated and labeled inline. Steps 5-7 wire in the headless project import + 17-test suite + headless demo-open as the CI verification surface.
-- `addons/penta_tile/tests/run_tests.sh` shipped — 105-line bash mirror of `run_tests.ps1`'s exact 17-test inventory, with the keep-in-sync anchor comment pointing to `run_tests.ps1:53-71`. Failure detection per Pitfall #1: exit code OR stderr regex match (`^(ERROR|FAIL)\b|MAIN TEST FAILED|MAIN TEST WARNING`). Aggregate exit code = count of failed tests.
+- `tests/run_tests.sh` shipped — 105-line bash mirror of `run_tests.ps1`'s exact 17-test inventory, with the keep-in-sync anchor comment pointing to `run_tests.ps1:53-71`. Failure detection per Pitfall #1: exit code OR stderr regex match (`^(ERROR|FAIL)\b|MAIN TEST FAILED|MAIN TEST WARNING`). Aggregate exit code = count of failed tests.
 - D-05-13 honored end-to-end: zero CI steps reference `05-LOC-AUDIT.md`, zero LOC counters in YAML, zero gates on the manual identity audit. The audit stays a developer-judgment prerequisite, not a CI gate.
 - Coined-Term Discipline honored: workflow file is `release.yml`, job is generic `release`; zero `PentaCI` / `PentaWorkflow` / `PentaRelease` coined.
 
@@ -79,13 +79,13 @@ completed: 2026-04-29
 
 Each task was committed atomically:
 
-1. **Task 1: Create addons/penta_tile/tests/run_tests.sh** — `3d0ced3` (feat)
+1. **Task 1: Create tests/run_tests.sh** — `3d0ced3` (feat)
 2. **Task 2: Create .github/workflows/release.yml** — `f8e4200` (feat)
 
 ## Files Created
 
 - `.github/workflows/release.yml` (201 lines / 8871 bytes) — Single manually-triggered release pipeline. 13 steps in order: (1) Checkout v6 with full history, (2) Configure git identity (github-actions[bot]), (3) Compute next version per D-05-16, (4) Download Godot 4.6.2-stable Linux, (5) Headless project import with stderr grep, (6) Run 17-test suite via run_tests.sh, (7) Headless demo open with stderr grep, (8) Bump plugin.cfg version (sed preserves quotes), (9) Rewrite CHANGELOG header [Unreleased] -> [<NEW_VERSION>] — <DATE>, (10) Commit + tag + push (`HEAD:main` + tag ref, NOT `--force`), (11) Build release zip via `git archive --prefix=penta_tile-v<ver>/ -- addons/penta_tile/`, (12) Extract CHANGELOG slice via awk into `release-notes-body.md`, (13) Publish GitHub Release via `softprops/action-gh-release@v3`.
-- `addons/penta_tile/tests/run_tests.sh` (105 lines / 3306 bytes) — Linux/CI mirror of run_tests.ps1. 17-test inventory matches `run_tests.ps1:53-71` exactly: paint_test, all_layouts_test, visual_render_test, strict_pixel_test, penta_one_mode_test, auto_strip_axis_test, layout_swap_test, all_layouts_swap_pixel_test, bitmask_bounds_test, comprehensive_bitmask_test, determinism_test, blob_47_collapse_test, blob_47_hollow_test, single_grid_8_moore_propagation_test, pixellab_first_cell_test, pixellab_visual_regression_test, fallback_routing_test. Per-test invocation: `"$GODOT" --headless --path "$PROJECT_ROOT" --script "addons/penta_tile/tests/${t}.gd"`. GODOT env override (defaults to `godot` on PATH).
+- `tests/run_tests.sh` (105 lines / 3306 bytes) — Linux/CI mirror of run_tests.ps1. 17-test inventory matches `run_tests.ps1:53-71` exactly: paint_test, all_layouts_test, visual_render_test, strict_pixel_test, penta_one_mode_test, auto_strip_axis_test, layout_swap_test, all_layouts_swap_pixel_test, bitmask_bounds_test, comprehensive_bitmask_test, determinism_test, blob_47_collapse_test, blob_47_hollow_test, single_grid_8_moore_propagation_test, pixellab_first_cell_test, pixellab_visual_regression_test, fallback_routing_test. Per-test invocation: `"$GODOT" --headless --path "$PROJECT_ROOT" --script "tests/${t}.gd"`. GODOT env override (defaults to `godot` on PATH).
 
 ## Pitfall Mitigation Map
 
@@ -93,7 +93,7 @@ Each task was committed atomically:
 |---------|------|-----------------|------------|
 | #1 | Godot --headless exit codes unreliable | stderr grep on `^(ERROR\|SCRIPT ERROR):` for import step | `.github/workflows/release.yml:99-108` (Headless project import) |
 | #1 | Godot --headless exit codes unreliable | stderr grep on `^(ERROR\|SCRIPT ERROR):` for demo-open step | `.github/workflows/release.yml:117-126` (Headless-open demo scene) |
-| #1 | Godot --headless exit codes unreliable | stderr grep on `^(ERROR\|FAIL)\b\|MAIN TEST FAILED\|MAIN TEST WARNING` per test | `addons/penta_tile/tests/run_tests.sh:73-83` |
+| #1 | Godot --headless exit codes unreliable | stderr grep on `^(ERROR\|FAIL)\b\|MAIN TEST FAILED\|MAIN TEST WARNING` per test | `tests/run_tests.sh:73-83` |
 | #2 | git push needs job-level (not workflow-level) `contents: write` | `permissions: contents: write` directly under `jobs.release:` | `.github/workflows/release.yml:30-31` |
 | #3 | actions/checkout@v6 persist-credentials defaults to true (don't override) | Explicit `persist-credentials: true` for clarity; `fetch-depth: 0` for git archive | `.github/workflows/release.yml:39-44` |
 | #5 | softprops/action-gh-release@v3 needs Node 24 (ubuntu-latest = 24.04) | `runs-on: ubuntu-latest` (NOT `ubuntu-22.04`); `softprops/action-gh-release@v3` is the publish step | `.github/workflows/release.yml:29` + `185-194` |
@@ -159,8 +159,8 @@ Workflow file is `release.yml`. Job is generic `release`. The CHANGELOG entry "P
 - **Found during:** Task 1 (run_tests.sh creation)
 - **Issue:** The plan's `<action>` block, RESEARCH.md, and the workflow step name in the plan all reference an "18-test suite" — but `run_tests.ps1:53-71` actually contains 17 entries (`penta_ground_hollow_test` was retired in Plan 01 along with the demo's authored ground.tres). The plan's `<verify>` block also includes `penta_ground_hollow_test` in its grep regex, which would have caused the verification to fail OR forced run_tests.sh to embed a phantom test entry that always SKIPs at runtime. The prompt's `critical_constraints` block explicitly overrides this: "the new `run_tests.sh` MUST mirror exactly the same 17-test inventory."
 - **Fix:** run_tests.sh ships with the actual 17-test inventory (matches run_tests.ps1:53-71 verbatim). The workflow step name is `Run 17-test suite` (not `Run 18-test suite`). The keep-in-sync comment-anchor in run_tests.sh points to `run_tests.ps1:53-71` (not `:53-72`) and explicitly notes the retirement of `penta_ground_hollow_test` in Plan 01.
-- **Files modified:** `addons/penta_tile/tests/run_tests.sh` (Task 1), `.github/workflows/release.yml` (Task 2)
-- **Verification:** `grep -cE '^\s+(<17 test names>)$' addons/penta_tile/tests/run_tests.sh` returns 17 (not 18); `bash -n addons/penta_tile/tests/run_tests.sh` parses cleanly; the stub-pattern grep for `penta_ground_hollow_test` returns no hits.
+- **Files modified:** `tests/run_tests.sh` (Task 1), `.github/workflows/release.yml` (Task 2)
+- **Verification:** `grep -cE '^\s+(<17 test names>)$' tests/run_tests.sh` returns 17 (not 18); `bash -n tests/run_tests.sh` parses cleanly; the stub-pattern grep for `penta_ground_hollow_test` returns no hits.
 - **Committed in:** `3d0ced3` (Task 1) + `f8e4200` (Task 2 step name)
 
 ---
@@ -185,7 +185,7 @@ None — no external service configuration required. The workflow uses only `sec
 - **Pre-flight checks the developer should run before clicking Run workflow:**
   - All Phase 5 plans (01 demo refresh + 02 documentation + 03 identity audit) have shipped and merged to `main`.
   - `CHANGELOG.md` `[Unreleased]` block has the v0.2.0 deltas accumulated (Plan 02 owns this).
-  - The 17-test suite passes locally on Windows (`pwsh -File addons/penta_tile/tests/run_tests.ps1 -NoPause`) — gives a heads-up before consuming Actions minutes.
+  - The 17-test suite passes locally on Windows (`pwsh -File tests/run_tests.ps1 -NoPause`) — gives a heads-up before consuming Actions minutes.
 - **What the workflow will produce:** a `chore(release): v0.2.0` commit on `main`, a `v0.2.0` annotated tag, a published GitHub Release titled "PentaTile v0.2.0" with `penta_tile-v0.2.0.zip` attached and the CHANGELOG `[0.2.0]` slice as the body.
 - **No blockers identified.** The 17-test suite is green at HEAD; the demo scene path the workflow targets is what Plan 01 produces; the CHANGELOG `[Unreleased]` heading shape (`## [Unreleased] — v0.2 in progress`) matches the workflow's sed regex.
 
@@ -193,7 +193,7 @@ None — no external service configuration required. The workflow uses only `sec
 
 Verified post-write:
 
-- `addons/penta_tile/tests/run_tests.sh` — FOUND (105 lines, 3306 bytes, parses via `bash -n`, 17 tests in inventory, stderr regex present)
+- `tests/run_tests.sh` — FOUND (105 lines, 3306 bytes, parses via `bash -n`, 17 tests in inventory, stderr regex present)
 - `.github/workflows/release.yml` — FOUND (201 lines, 8871 bytes, valid YAML, 13 steps, all 6 critical pitfalls mitigated, 0 workflow_dispatch.inputs, 0 LOC-AUDIT references, 0 PentaCI/PentaWorkflow/PentaRelease coinages)
 - Commit `3d0ced3` — FOUND in `git log --oneline -5`
 - Commit `f8e4200` — FOUND in `git log --oneline -5`

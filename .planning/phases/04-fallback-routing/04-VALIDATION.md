@@ -18,9 +18,9 @@ created: 2026-04-29
 | Property | Value |
 |----------|-------|
 | **Framework** | Godot 4.6 native — `godot --headless --script <test>.gd` (no GUT, per "works in my game" quality bar) |
-| **Config file** | `addons/penta_tile/tests/run_tests.ps1` (registry of all test scripts) |
-| **Quick run command** | `& "C:\Programming_Files\Godot\Godot_v4.6.2-stable_win64.exe" --headless --path . --script addons/penta_tile/tests/fallback_routing_test.gd` |
-| **Full suite command** | `pwsh addons/penta_tile/tests/run_tests.ps1` |
+| **Config file** | `tests/run_tests.ps1` (registry of all test scripts) |
+| **Quick run command** | `& "C:\Programming_Files\Godot\Godot_v4.6.2-stable_win64.exe" --headless --path . --script tests/fallback_routing_test.gd` |
+| **Full suite command** | `pwsh tests/run_tests.ps1` |
 | **Estimated runtime** | ~6–10 seconds for full suite (17 tests today, 18 after Phase 4) |
 
 ---
@@ -43,12 +43,12 @@ created: 2026-04-29
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
 | 01-0 | 01 | 1 | PREVIEW-03 / PREVIEW-04 (B4 anchor support) | T-04-01-05 | Anchor SHA recorded immutably for downstream commit-count gates | unit | `test -f .planning/phases/04-fallback-routing/04-PRE-PHASE-ANCHOR.txt && grep -cE '^[a-f0-9]{40}$' .planning/phases/04-fallback-routing/04-PRE-PHASE-ANCHOR.txt` | ✅ W0 | ⬜ pending |
-| 01-1 | 01 | 1 | PREVIEW-03 / PREVIEW-04 / SC-4 | T-04-01-01..04 | N/A (test infrastructure; failures land in stderr per `_record`) | unit | `& "C:\Programming_Files\Godot\Godot_v4.6.2-stable_win64.exe" --headless --path . --script addons/penta_tile/tests/fallback_routing_test.gd` | ✅ W0 | ⬜ pending |
-| 01-2 | 01 | 1 | PREVIEW-03 / PREVIEW-04 (registry wiring) | — | N/A | unit | `pwsh -File addons/penta_tile/tests/run_tests.ps1 -Test fallback_routing_test -NoPause` | ✅ W0 | ⬜ pending |
+| 01-1 | 01 | 1 | PREVIEW-03 / PREVIEW-04 / SC-4 | T-04-01-01..04 | N/A (test infrastructure; failures land in stderr per `_record`) | unit | `& "C:\Programming_Files\Godot\Godot_v4.6.2-stable_win64.exe" --headless --path . --script tests/fallback_routing_test.gd` | ✅ W0 | ⬜ pending |
+| 01-2 | 01 | 1 | PREVIEW-03 / PREVIEW-04 (registry wiring) | — | N/A | unit | `pwsh -File tests/run_tests.ps1 -Test fallback_routing_test -NoPause` | ✅ W0 | ⬜ pending |
 | 01-3 | 01 | 1 | PREVIEW-03 / PREVIEW-04 (UAT skeleton) | — | N/A (skeleton has 9 `Signed-off: pending` lines awaiting Plan 03 sign-off; B2 fix grep gate) | unit | `test -f .planning/phases/04-fallback-routing/04-FALLBACK-UAT.md && grep -c '^### [1-9]\. ' .planning/phases/04-fallback-routing/04-FALLBACK-UAT.md` | ✅ W0 | ⬜ pending |
-| 02-1 | 02 | 1 | DOC (sweep on 3 core scripts) | T-04-02-01..04 | N/A (annotation-only; logic-equivalence verified by test suite) | unit | `pwsh -File addons/penta_tile/tests/run_tests.ps1 -NoPause` | ✅ W0 | ⬜ pending |
-| 02-2 | 02 | 1 | DOC (sweep on PentaTileLayout base + 5 native + Penta layouts) | T-04-02-01..04 | N/A | unit | `pwsh -File addons/penta_tile/tests/run_tests.ps1 -NoPause` | ✅ W0 | ⬜ pending |
-| 02-3 | 02 | 1 | DOC (sweep on Blob47 + 2 PixelLab layouts) | T-04-02-01..04 | N/A | unit | `pwsh -File addons/penta_tile/tests/run_tests.ps1 -NoPause` | ✅ W0 | ⬜ pending |
+| 02-1 | 02 | 1 | DOC (sweep on 3 core scripts) | T-04-02-01..04 | N/A (annotation-only; logic-equivalence verified by test suite) | unit | `pwsh -File tests/run_tests.ps1 -NoPause` | ✅ W0 | ⬜ pending |
+| 02-2 | 02 | 1 | DOC (sweep on PentaTileLayout base + 5 native + Penta layouts) | T-04-02-01..04 | N/A | unit | `pwsh -File tests/run_tests.ps1 -NoPause` | ✅ W0 | ⬜ pending |
+| 02-3 | 02 | 1 | DOC (sweep on Blob47 + 2 PixelLab layouts) | T-04-02-01..04 | N/A | unit | `pwsh -File tests/run_tests.ps1 -NoPause` | ✅ W0 | ⬜ pending |
 | 03-1 | 03 | 2 | PREVIEW-03 / PREVIEW-04 (manual UAT eyeball pass) | T-04-03-04 (UAT trust signal) | N/A (humans verify visual correctness; sign-off lines pin gate per B2 fix) | manual | `test -f .planning/phases/04-fallback-routing/04-FALLBACK-UAT.md && grep -c '^Signed-off:' .planning/phases/04-fallback-routing/04-FALLBACK-UAT.md returns ≥ 9 AND grep -c '^Signed-off: pending$' returns 0` | ✅ W0 | ⬜ pending |
 | 03-2 | 03 | 2 | DOC (12-row coverage table summary) | T-04-02-03 | N/A | unit | `test -f .planning/phases/04-fallback-routing/04-DOC-SWEEP.md && grep '^status: complete$' .planning/phases/04-fallback-routing/04-DOC-SWEEP.md` | ✅ W0 | ⬜ pending |
 | 03-3 | 03 | 2 | REVIEW (Gemini prompt + raw findings) | T-04-03-01..05, T-04-03-07 | Prompt embeds 7 content-aware disqualification triggers + Coined-Term + identity guardrails verbatim (W5 fix) | unit | `test -s .planning/phases/04-fallback-routing/04-GEMINI-PROMPT.md && grep -c '^reviewer: gemini$' .planning/phases/04-fallback-routing/04-GEMINI-REVIEW.md` | ✅ W0 | ⬜ pending |
@@ -56,7 +56,7 @@ created: 2026-04-29
 | 04-1 | 04 | 3 | REVIEW (Codex prompt with 7a guard) | T-04-04-01, T-04-04-04, T-04-04-07 | Prompt embeds 7 content-aware disqualification triggers + 7a Gemini-already-dispositioned guard verbatim (W5 + W6 fixes) | unit | `wc -l .planning/phases/04-fallback-routing/04-CODEX-PROMPT.md returns ≥ 80 AND grep -ci 'already.dispositioned\|7a\|do NOT re-file\|do not re.file' returns ≥ 1` | ✅ W0 | ⬜ pending |
 | 04-2 | 04 | 3 | REVIEW (Codex raw findings) | T-04-04-01, T-04-04-02, T-04-04-05 | N/A (post-Gemini-fix codebase per D-04-10 strict order) | unit | `test -s .planning/phases/04-fallback-routing/04-CODEX-REVIEW.md && grep -c 'reviewer: codex' .planning/phases/04-fallback-routing/04-CODEX-REVIEW.md` | ✅ W0 | ⬜ pending |
 | 04-3 | 04 | 3 | REVIEW (Codex fix-loop disposition log) | T-04-04-01..03, T-04-04-06 | Anchor-bounded commit count matches `applied` count (B4 fix); sequential-apply on conflicts with Gemini fixes; no 7a-violations applied | process | `ANCHOR=$(cat .planning/phases/04-fallback-routing/04-PRE-PHASE-ANCHOR.txt) && git log --oneline ${ANCHOR}..HEAD \| grep -c 'fix(04): CODEX-' returns ≥ {applied count from 04-CODEX-REVIEW-FIX.md frontmatter}` | ✅ W0 | ⬜ pending |
-| 05-1 | 05 | 4 | PREVIEW-03 / PREVIEW-04 (phase close) | T-04-05-01..05 | Pre-flight gate verifies all 4 closeout artifacts; close-out commit modifies only REQUIREMENTS.md / ROADMAP.md / STATE.md | unit | `grep -E '^\- \[x\] \*\*Phase 4:' .planning/ROADMAP.md && grep -cE '^\| PREVIEW-0[34] \| 4 \| Complete' .planning/REQUIREMENTS.md && pwsh -File addons/penta_tile/tests/run_tests.ps1 -NoPause` | ✅ W0 | ⬜ pending |
+| 05-1 | 05 | 4 | PREVIEW-03 / PREVIEW-04 (phase close) | T-04-05-01..05 | Pre-flight gate verifies all 4 closeout artifacts; close-out commit modifies only REQUIREMENTS.md / ROADMAP.md / STATE.md | unit | `grep -E '^\- \[x\] \*\*Phase 4:' .planning/ROADMAP.md && grep -cE '^\| PREVIEW-0[34] \| 4 \| Complete' .planning/REQUIREMENTS.md && pwsh -File tests/run_tests.ps1 -NoPause` | ✅ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -65,8 +65,8 @@ created: 2026-04-29
 ## Wave 0 Requirements
 
 - [x] `.planning/phases/04-fallback-routing/04-PRE-PHASE-ANCHOR.txt` — pre-Phase-4 commit anchor SHA captured by Plan 01 Task 0 (B4 fix; anchor for Plans 03+04 commit-count grep ranges)
-- [x] `addons/penta_tile/tests/fallback_routing_test.gd` — composed-canvas test exercising all 8 actually-shipped layouts via `tile_set = null` (5 Phase 2 + Blob47Godot + 2 PixelLab; Tilesetter pair excluded per D-86 b); now includes SC-4 user-tileset-preserved sub-test (B3 fix)
-- [x] `addons/penta_tile/tests/run_tests.ps1` — register `fallback_routing_test.gd` so the full-suite command picks it up
+- [x] `tests/fallback_routing_test.gd` — composed-canvas test exercising all 8 actually-shipped layouts via `tile_set = null` (5 Phase 2 + Blob47Godot + 2 PixelLab; Tilesetter pair excluded per D-86 b); now includes SC-4 user-tileset-preserved sub-test (B3 fix)
+- [x] `tests/run_tests.ps1` — register `fallback_routing_test.gd` so the full-suite command picks it up
 
 *Existing infrastructure (composed-canvas helpers in `comprehensive_bitmask_test.gd` and `penta_ground_hollow_test.gd`) is reused; no new framework install required.*
 

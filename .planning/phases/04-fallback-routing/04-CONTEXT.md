@@ -52,7 +52,7 @@ New capabilities (variation, top tiles, multi-terrain, additional layouts, demo 
 - **D-04-05:** Phase 4 visual UAT covers **all 8 actually-shipped layouts**: 5 Phase 2 (Penta, DualGrid16, Wang2Edge, Wang2Corner, Min3x3) + 1 Phase 3 (Blob47Godot) + 2 Phase 3.5 (PixelLabTopDown, PixelLabSideScroller). Tilesetter pair (TBT-01-DEFERRED / TBT-02-DEFERRED) stays out of scope per D-86 (b).
 
 - **D-04-06:** Verification is **belt + suspenders**:
-  - **Programmatic:** new `addons/penta_tile/tests/fallback_routing_test.gd` — for each of 8 layouts, instantiate `PentaTileMapLayer` with `tile_set = null`, paint a fixed pattern, blit rendered cells into a virtual canvas, assert non-empty bbox + per-cell solidity. Follows CLAUDE.md Test Methodology #1 (compose canvas + structural invariants).
+  - **Programmatic:** new `tests/fallback_routing_test.gd` — for each of 8 layouts, instantiate `PentaTileMapLayer` with `tile_set = null`, paint a fixed pattern, blit rendered cells into a virtual canvas, assert non-empty bbox + per-cell solidity. Follows CLAUDE.md Test Methodology #1 (compose canvas + structural invariants).
   - **Manual:** user runs the demo scene with each layout swapped in (no manual `tile_set` assigned), eyeball each one, sign off in `04-FALLBACK-UAT.md`.
   - Plus regression coverage: confirm assigning `tile_set` directly overrides the fallback (PREVIEW-04 contract); confirm clearing `tile_set` re-routes to fallback.
 
@@ -137,8 +137,8 @@ Doc sweep → UAT → Gemini review → fix → Codex review → fix. Doc sweep 
 ### Test Methodology
 
 - `CLAUDE.md` § Test Methodology (Phase 2 UAT lessons) — compose canvas + structural invariants; pattern × layout matrix; use the user's actual fixture; save PNG and inspect when in doubt; verify the test catches the regression; trace the full pipeline before patching.
-- `addons/penta_tile/tests/comprehensive_bitmask_test.gd` — canonical pattern × layout matrix template.
-- `addons/penta_tile/tests/penta_ground_hollow_test.gd` — canonical user-fixture composed-canvas test template.
+- `tests/comprehensive_bitmask_test.gd` — canonical pattern × layout matrix template.
+- `tests/penta_ground_hollow_test.gd` — canonical user-fixture composed-canvas test template.
 
 ### Cross-AI Review Pattern (precedent)
 

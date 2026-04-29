@@ -219,7 +219,7 @@ Plans:
 - [x] 05-01-PLAN.md — Demo refresh: 8-instance spatial-grid scene + hover-target painter + retired demo_player + authored ground + 4 legacy .tres orphans (DEMO-01..03)
 - [x] 05-02-PLAN.md — Documentation + spec corrections: 4 new README sections + accumulated CHANGELOG + 15 spec corrections (DOC-01..04 + SC-A..D + 1 follow-up at ROADMAP.md:303)
 - [x] 05-03-PLAN.md — Identity audit: TileMapDual v5.0.2 comparison (3-axis: LOC + public surface + hot-path) + D-05-11 ship/extract decision (outcome SHIP) + README Identity & Footprint summary (manual prerequisite per D-05-13)
-- [x] 05-04-PLAN.md — Release infrastructure: .github/workflows/release.yml (workflow_dispatch, no inputs, auto-version-increment) + addons/penta_tile/tests/run_tests.sh Linux mirror (REL-01..03 enabled)
+- [x] 05-04-PLAN.md — Release infrastructure: .github/workflows/release.yml (workflow_dispatch, no inputs, auto-version-increment) + tests/run_tests.sh Linux mirror (REL-01..03 enabled)
 - [x] 05-05-PLAN.md — Closeout: workflow run 25131034672 via GitHub UI + Traceability flips + ROADMAP / STATE updates (REL-01..03 satisfied via workflow side-effects)
 
 ## Progress
@@ -237,7 +237,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 3.5 → 4 → 5 → 6 → 7 �
 | 4. Fallback Routing + Doc Sweep + Cross-AI Review | 5/5 | **Complete.** All 4 closeout artifacts committed (FALLBACK-UAT.md + DOC-SWEEP.md + GEMINI-REVIEW-FIX.md + CODEX-REVIEW-FIX.md); 18 automated tests green; Gemini cross-AI pass returned `status: clean` (0 findings); Codex pass DEFERRED at closeout due to a hard external CLI quota wall (RESEARCH § 8 Pitfall #14; user elected to skip per `AskUserQuestion`). PREVIEW-03/04 closed per D-04-07. | 2026-04-29 |
 | 5. Demo Refresh + Documentation + Release | 5/5 | **Complete.** v0.2.0 shipped end-to-end via the release workflow on 2026-04-29. 8-instance demo grid + 4 README sections + accumulated CHANGELOG + 15 spec corrections (SC-A..D + 1 follow-up) + identity audit (per D-05-11 — SHIP outcome: clean hot path + 16/16 anti-patterns absent). 17 automated tests green; release workflow run 25131034672 (44s) published `penta_tile-v0.2.0.zip` (208024 bytes) to https://github.com/Shilo/PentaTile/releases/tag/v0.2.0. | 2026-04-29 |
 | 6. Editor Line/Rect/Bucket Tool Preview During Drag | 0/0 | Deferred / not planned. Known editor-preview UX issue captured for later. | — |
-| 7. Repo Restructure: Extract Tests + MkDocs Site + LLM-Friendly Docs Pipeline | 0/0 | Ready to plan. v0.2.0 follow-up docs/repo hygiene phase. | — |
+| 7. Repo Restructure: Extract Tests + MkDocs Site + LLM-Friendly Docs Pipeline | 1/1 | **Complete.** Tests extracted to root `tests/`; release workflow retargeted and still archives only `addons/penta_tile/`; MkDocs Material site added with dark-first manual toggle; LLM docs decision recommends direct source docs over generated flat artifact for now. | 2026-04-29 |
 | 8. Research Triage + v0.3 Scope Selection | 0/0 | Added from supplied research. Includes focused multi-terrain research accepting Godot `TileData` metadata as input while rejecting Godot terrain-solver delegation. Ready to plan after Phase 7 by roadmap order; independent of Phase 6 implementation. | — |
 
 ## Coverage
@@ -252,8 +252,9 @@ All 58 v1 requirements mapped to exactly one phase. No orphans, no duplicates.
 | 3.5. PixelLab Layouts | PIXLAB-01..04 (4) |
 | 4. Fallback Routing | PREVIEW-03, PREVIEW-04 (2) |
 | 5. Demo Refresh + Documentation + Release | DEMO-01..03, DOC-01..04, REL-01..03 (10) |
+| 7. Repo Restructure + MkDocs + LLM Docs | REPO-01..03, DOCS-06..08 (6 post-release follow-up reqs) |
 | **(Pre-shipped flat templates) → restructured in Phase 2 (TEMPLATE-01)** | (existing PNGs migrated to co-located bundles next to layout `.gd` files) |
-| **Total** | **58 / 58** |
+| **Total** | **58 / 58 v1 + 6 / 6 Phase 7 follow-up** |
 
 > **2026-04-26 architectural pivots** (locked after fourth iteration of design refinement):
 > - `PentaTileAtlasContract` deleted (CONTRACT-01..05 retired); `layout: PentaTileLayout` directly on `PentaTileMapLayer` (LAYER-01..03)
@@ -320,14 +321,14 @@ Plans:
 
 3. **LLM-friendly documentation pipeline.** Research whether an LLM agent reads this addon better via (a) the mkdocs source + GDScript `##` doc-comments directly, or (b) an auto-generated flat text artifact. If (b) wins, design a GitHub Actions workflow that regenerates the artifact on every mkdocs/GDScript-doc change. The research-and-decide is the deliverable — don't presuppose the answer.
 
-**Requirements**: TBD — likely a new `DOCS-*` / `REPO-*` family during plan-phase. TOOL-04 (MkDocs documentation site) promoted from v2 backlog into Phase 7 scope.
+**Requirements**: REPO-01..03, DOCS-06..08. TOOL-04 (MkDocs documentation site) promoted from v2 backlog into Phase 7 scope and satisfied as DOCS-06/07.
 
 **Depends on:** Phase 5 (consumes the shipped v0.2.0 surface). Independent of Phase 6 (deferred editor-preview work).
 
-**Plans:** 0 plans
+**Plans:** 1 plan (1/1 complete)
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 7 to break down)
+- [x] 07-PLAN.md — Repo restructure, MkDocs site, LLM docs decision, verification, closeout
 
 ### Phase 8: Research Triage + v0.3 Scope Selection
 

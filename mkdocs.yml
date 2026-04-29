@@ -1,0 +1,53 @@
+site_name: PentaTile
+site_description: Lightweight dual-grid autotiling addon for Godot 4.6
+site_url: https://shilo.github.io/PentaTile/
+repo_url: https://github.com/Shilo/PentaTile
+repo_name: Shilo/PentaTile
+
+theme:
+  name: material
+  language: en
+  palette:
+    - scheme: slate
+      primary: teal
+      accent: amber
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+    - scheme: default
+      primary: teal
+      accent: amber
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - toc:
+      permalink: true
+
+nav:
+  - Quickstart: index.md
+  - Installation: installation.md
+  - Layouts:
+      - Overview: layouts/index.md
+      - Penta: layouts/penta.md
+      - DualGrid 16: layouts/dual-grid-16.md
+      - Wang 2-Edge: layouts/wang-2-edge.md
+      - Wang 2-Corner: layouts/wang-2-corner.md
+      - Minimal 3x3: layouts/minimal-3x3.md
+      - Blob 47 Godot: layouts/blob-47-godot.md
+      - PixelLab Top-Down: layouts/pixellab-top-down.md
+      - PixelLab Side-Scroller: layouts/pixellab-side-scroller.md
+  - What is a Penta tileset?: penta-tileset.md
+  - Authoring Custom Layouts: custom-layouts.md
+  - LLM Docs: llm-docs.md

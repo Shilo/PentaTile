@@ -674,9 +674,9 @@ Phase 2's `comprehensive_bitmask_test.gd` exercises 16 patterns. For 47-blob cov
 | Property | Value |
 |----------|-------|
 | Framework | Godot 4.6 headless (`Godot --headless --script ...`) — no GUT, project policy |
-| Config file | None — tests are standalone `extends SceneTree` `_initialize` scripts in `addons/penta_tile/tests/` |
-| Quick run command | `.\addons\penta_tile\tests\run_tests.ps1 -Test <test_name>` |
-| Full suite command | `.\addons\penta_tile\tests\run_tests.ps1` (12 tests + Wave 0+ additions) |
+| Config file | None — tests are standalone `extends SceneTree` `_initialize` scripts in `tests/` |
+| Quick run command | `.\tests\run_tests.ps1 -Test <test_name>` |
+| Full suite command | `.\tests\run_tests.ps1` (12 tests + Wave 0+ additions) |
 
 ### Phase Requirements → Test Map
 
@@ -702,17 +702,17 @@ Phase 2's `comprehensive_bitmask_test.gd` exercises 16 patterns. For 47-blob cov
 
 ### Wave 0 / Wave 4 Gaps (test files missing)
 
-- [ ] `addons/penta_tile/tests/blob_47_collapse_test.gd` — covers TBT-03 + TBT-02 collapse rule (D-78)
-- [ ] `addons/penta_tile/tests/blob_47_hollow_test.gd` — covers TBT-03 hollow rendering (Phase 2 lessons)
-- [ ] `addons/penta_tile/tests/tilesetter_wang_15_dispatch_test.gd` — covers TBT-01 dict completeness + stray-fill dispatch (D-79)
-- [ ] `addons/penta_tile/tests/single_grid_8_moore_propagation_test.gd` — covers D-87 / Finding 1 of §5 — verifies the affected-cell loop fix
-- [ ] Extend `addons/penta_tile/tests/comprehensive_bitmask_test.gd` `layouts` array with `Blob47Godot`, `TilesetterWang15`, `TilesetterBlob47` (3 entries; +5 new patterns from §8.1 if planner adopts them = 21 patterns × 8 layouts = 168 combos)
-- [ ] Extend `addons/penta_tile/tests/bitmask_bounds_test.gd` with the 3 new bundled PNG paths
+- [ ] `tests/blob_47_collapse_test.gd` — covers TBT-03 + TBT-02 collapse rule (D-78)
+- [ ] `tests/blob_47_hollow_test.gd` — covers TBT-03 hollow rendering (Phase 2 lessons)
+- [ ] `tests/tilesetter_wang_15_dispatch_test.gd` — covers TBT-01 dict completeness + stray-fill dispatch (D-79)
+- [ ] `tests/single_grid_8_moore_propagation_test.gd` — covers D-87 / Finding 1 of §5 — verifies the affected-cell loop fix
+- [ ] Extend `tests/comprehensive_bitmask_test.gd` `layouts` array with `Blob47Godot`, `TilesetterWang15`, `TilesetterBlob47` (3 entries; +5 new patterns from §8.1 if planner adopts them = 21 patterns × 8 layouts = 168 combos)
+- [ ] Extend `tests/bitmask_bounds_test.gd` with the 3 new bundled PNG paths
 
 **Existing test infrastructure templates** (cite when implementing):
-- `addons/penta_tile/tests/comprehensive_bitmask_test.gd` — pattern × layout matrix (the canonical for new layouts)
-- `addons/penta_tile/tests/penta_ground_hollow_test.gd` — fixture-based hollow test (template for `blob_47_hollow_test.gd`)
-- `addons/penta_tile/tests/bitmask_bounds_test.gd` — bundled PNG slot-position verification (template for TEMPLATE-02 visual regression)
+- `tests/comprehensive_bitmask_test.gd` — pattern × layout matrix (the canonical for new layouts)
+- `tests/penta_ground_hollow_test.gd` — fixture-based hollow test (template for `blob_47_hollow_test.gd`)
+- `tests/bitmask_bounds_test.gd` — bundled PNG slot-position verification (template for TEMPLATE-02 visual regression)
 
 ---
 
@@ -1076,8 +1076,8 @@ func _fallback_atlas_grid_size() -> Vector2i:
 - **`addons/penta_tile/layouts/penta_tile_layout_wang_2_edge.gd`** (read 2026-04-28) — edge-mask precedent
 - **`addons/penta_tile/_generate_bitmasks.py`** (read 2026-04-28, full file 1-283) — extension target for D-85
 - **`addons/penta_tile/penta_tile_atlas_slot.gd`** (read 2026-04-28) — return type for `mask_to_atlas`
-- **`addons/penta_tile/tests/comprehensive_bitmask_test.gd`** (read 2026-04-28) — pattern × layout matrix template
-- **`addons/penta_tile/tests/run_tests.ps1`** (read 2026-04-28, lines 1-60) — test runner conventions
+- **`tests/comprehensive_bitmask_test.gd`** (read 2026-04-28) — pattern × layout matrix template
+- **`tests/run_tests.ps1`** (read 2026-04-28, lines 1-60) — test runner conventions
 - **`C:\Programming_Files\Godot\tile_bit_tools-main\addons\tile_bit_tools\templates\tilesetter_wang.tres`** (read 2026-04-28, full file) — confirmation that TBT's `.tres` data exists; D-73 forbids lifting (but reading is allowed for the audit)
 - **TBT file inventory** via `find ... | wc -l` (run 2026-04-28) — verified 30 GD files + 12 templates + LOC counts
 - **`.planning/research/PITFALLS.md`** (read 2026-04-28) — Phase 1 pitfall research, confirms PITFALLS.md numbering ≠ CLAUDE.md "Critical Pitfalls" numbering

@@ -76,16 +76,16 @@ Four hand-authored layouts ship in this milestone:
 
 ### Added — Phase 2: Determinism Test Harness
 
-- **`addons/penta_tile/tests/determinism_test.gd`** — headless Godot regression script with 4 sub-tests:
+- **`tests/determinism_test.gd`** — headless Godot regression script with 4 sub-tests:
   - Sub-test (a): `transform_vertex` worked example (all 8 flag combinations against locked Gate 2 truth table).
   - Sub-test (b): `clip_polygon_to_subrect` hash determinism (10 invocations).
   - Main test: 11 `rebuild()` runs; asserts all hashes identical AND match `BASELINE_HASH=2986698704`.
   - Sub-test (c): VERTICAL-axis structural coverage (WR-07 regression net) — asserts cell count matches `BASELINE_CELLS=46` from HORIZONTAL AND every painted atlas coord resolves in the synthesized atlas via `source.has_tile()`.
-- **`addons/penta_tile/tests/_capture_baseline.gd`** — baseline capture utility with optional `--layout-path=<res_path>` CLI flag for capturing baselines against alternative layouts (e.g., `penta_layout_four_vertical.tres`).
+- **`tests/_capture_baseline.gd`** — baseline capture utility with optional `--layout-path=<res_path>` CLI flag for capturing baselines against alternative layouts (e.g., `penta_layout_four_vertical.tres`).
 
 Run via:
 ```
-Godot_v4.6.2-stable_win64_console.exe --headless --path . --script addons/penta_tile/tests/determinism_test.gd
+Godot_v4.6.2-stable_win64_console.exe --headless --path . --script tests/determinism_test.gd
 ```
 
 ### Phase 2 UAT bug-fix sweep (2026-04-28)
@@ -106,10 +106,10 @@ Closed 7 bug classes surfaced by user UAT against the demo scene with custom art
 
 The test suite grew from 9 → 12 tests, with 4 new/fortified tests catching this entire class of bug:
 
-- `addons/penta_tile/tests/bitmask_bounds_test.gd` (NEW) — pixel-by-pixel verification of every bundled bitmask greybox PNG against expected per-slot silhouette. Catches generator drift.
-- `addons/penta_tile/tests/comprehensive_bitmask_test.gd` (NEW) — paints 16 patterns (1×1, 1×2_h, 1×2_v, 2×1, 2×2, 3×3, 4×4, 5×5, line_h_5, line_v_5, L_shape, T_shape, plus_shape, diag_pair, diag_anti, 3_isolated) across all 5 layouts and asserts: (a) every painted cell renders, (b) single-grid cells dispatch to 100%-opaque tiles, (c) dual-grid cells dispatch to non-zero-opacity tiles, (d) no out-of-bounds visual cells, (e) opaque pixel bbox matches user_cells × tile_size.
-- `addons/penta_tile/tests/penta_ground_hollow_test.gd` (NEW) — uses the demo's actual `penta_tile_ground.tres` source atlas (real artist artwork), paints a hollow ring (8×8 outer, 4×4 hole), asserts opaque-pixel bbox stays within painted bounds AND zero opaque pixels render inside the hole. Catches rotation-bleed bugs that don't appear with bundled greyboxes.
-- `addons/penta_tile/tests/all_layouts_swap_pixel_test.gd` (FORTIFIED) — added per-edge continuity (≥80% opacity at painted-neighbor edges), interior coverage (mask=15 ≥ 80%), bbox bounds, per-cell solidity (single-grid 100% opaque) assertions.
+- `tests/bitmask_bounds_test.gd` (NEW) — pixel-by-pixel verification of every bundled bitmask greybox PNG against expected per-slot silhouette. Catches generator drift.
+- `tests/comprehensive_bitmask_test.gd` (NEW) — paints 16 patterns (1×1, 1×2_h, 1×2_v, 2×1, 2×2, 3×3, 4×4, 5×5, line_h_5, line_v_5, L_shape, T_shape, plus_shape, diag_pair, diag_anti, 3_isolated) across all 5 layouts and asserts: (a) every painted cell renders, (b) single-grid cells dispatch to 100%-opaque tiles, (c) dual-grid cells dispatch to non-zero-opacity tiles, (d) no out-of-bounds visual cells, (e) opaque pixel bbox matches user_cells × tile_size.
+- `tests/penta_ground_hollow_test.gd` (NEW) — uses the demo's actual `penta_tile_ground.tres` source atlas (real artist artwork), paints a hollow ring (8×8 outer, 4×4 hole), asserts opaque-pixel bbox stays within painted bounds AND zero opaque pixels render inside the hole. Catches rotation-bleed bugs that don't appear with bundled greyboxes.
+- `tests/all_layouts_swap_pixel_test.gd` (FORTIFIED) — added per-edge continuity (≥80% opacity at painted-neighbor edges), interior coverage (mask=15 ≥ 80%), bbox bounds, per-cell solidity (single-grid 100% opaque) assertions.
 
 Each fix was verified by stashing the patch, rerunning, confirming failure, applying the fix, confirming pass — the gold-standard regression-net protocol.
 
@@ -176,7 +176,7 @@ Replaced by:
 ### Added — Phase 5: Release automation
 
 - **`.github/workflows/release.yml`** — single `workflow_dispatch`-triggered GitHub Actions workflow handles the entire release: auto-version-increment from `plugin.cfg` (D-05-16: minor +1, rolls to major when minor ≥ 9, no patch bumps), CI checks (headless project import + 18-test suite + headless demo open via stderr-grep failure detector — Pitfall #1 mitigated), commit / tag / push, `git archive` zip build, CHANGELOG slice extraction via `awk`, GitHub Release publish via `softprops/action-gh-release@v3`.
-- **`addons/penta_tile/tests/run_tests.sh`** — Linux mirror of `run_tests.ps1` (the existing PowerShell runner stays for Windows local dev). Identical 18-test inventory.
+- **`tests/run_tests.sh`** — Linux mirror of `run_tests.ps1` (the existing PowerShell runner stays for Windows local dev). Identical 18-test inventory.
 - Workflow is the SOLE release path — no sibling `build_release.sh` script at repo root, no `workflow_dispatch.inputs` for explicit version override (per D-05-15 hard rule "if it cannot be automatic, remove it").
 
 ### Migration notes for v0.1.x consumers (additional)

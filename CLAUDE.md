@@ -36,13 +36,12 @@ addons/penta_tile/
     penta_tile_layout_wang_2_corner.gd
     penta_tile_layout_minimal_3x3.gd
     penta_tile_layout_penta/       # Penta variants' bundled PNGs (5 modes × 2 axes)
-  tests/                           # determinism harness + baselines
   demo/
     penta_tile_demo.tscn           # main demo scene (entry point)
-    demo_player.gd                 # CharacterBody2D platformer player
     demo_runtime_painter.gd        # left-click paint, right-click erase, drag-paint
-    penta_tile_ground.png/.tres    # demo TileSet with collision polygons
-    penta_layout_*.tres            # demo Penta layout resources (one/four/five horizontal + four vertical)
+    penta_layout_*.tres            # demo layout resources
+tests/                             # determinism harness + visual regression tests
+docs/                              # MkDocs source site
 .planning/                         # GSD planning artifacts (committed to git)
   PROJECT.md                       # what we're building, why, constraints
   REQUIREMENTS.md                  # v1 REQ-IDs + v2 deferred + Out of Scope
@@ -140,14 +139,14 @@ Full pitfall analysis is in `.planning/research/PITFALLS.md`.
 
 Phase 2 UAT cycled through 6+ commits chasing the same class of visual bug because tests verified my mental model of dispatch, not the user's rendered output. Lessons hard-won:
 
-1. **Compose the rendered canvas in tests, don't just check dispatch.** Source-atlas pixel checks pass while rotation-bleed bugs persist. Build a virtual canvas by blitting each painted cell's `(atlas_coord, transform)` at its world position, then assert structural invariants on the composed image (opaque-pixel bbox, hole emptiness, no out-of-bounds pixels). Canonical examples: `addons/penta_tile/tests/comprehensive_bitmask_test.gd` and `penta_ground_hollow_test.gd`.
+1. **Compose the rendered canvas in tests, don't just check dispatch.** Source-atlas pixel checks pass while rotation-bleed bugs persist. Build a virtual canvas by blitting each painted cell's `(atlas_coord, transform)` at its world position, then assert structural invariants on the composed image (opaque-pixel bbox, hole emptiness, no out-of-bounds pixels). Canonical examples: `tests/comprehensive_bitmask_test.gd` and `penta_ground_hollow_test.gd`.
 2. **Test pattern × layout matrix, not single-pattern.** A 12×8 rectangle exercises a forgiving subset of masks. Always loop `[1×1, 1×2, 2×1, 2×2, 3×3, 5×5, line_h_5, line_v_5, L_shape, T_shape, plus_shape, hollow_ring, 3_isolated]` × `[Penta, DualGrid16, Wang2Edge, Wang2Corner, Min3x3]`. Lines and isolated cells exposed `mask=0` regressions that the rectangle never hit.
 3. **Test the user's actual fixture, not just bundled greyboxes.** Bundled greyboxes have clean cut quadrants; artist artwork (`penta_tile_ground.tres`) has stray pixels in cut regions that only surface bugs when paired with rotation. `penta_ground_hollow_test.gd` is the template.
 4. **Save rendered output as PNG and inspect when in doubt.** UI bugs need eyeball verification — `Image.save_png("user://...")` then read via `Read` tool. The Min3x3 corner-cut and Penta orange-line bugs both became obvious only after I looked at the rendered PNG.
 5. **Verify the test catches the regression.** Stash the fix, rerun, confirm failure. A test that doesn't fail on broken code isn't measuring what we think.
 6. **Trace the full pipeline before patching.** `_paint_via_layout` → `_synthesize_slot_image` → `_extract_tile_image` → atlas blit → render-time transform. The actual bug usually lives at a stage I haven't read. Cascading regressions (each fix breaks something else) mean the mental model is wrong — stop, reread, reset.
 
-The 12 tests in `addons/penta_tile/tests/run_tests.ps1` are baseline coverage; new layouts/features should add their own pattern × fixture combinations following these rules.
+The 17 tests in `tests/run_tests.ps1` are baseline coverage; new layouts/features should add their own pattern × fixture combinations following these rules.
 
 ## Coined-Term Discipline
 

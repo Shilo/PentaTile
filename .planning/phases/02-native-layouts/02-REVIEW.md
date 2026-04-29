@@ -14,8 +14,8 @@ files_reviewed_list:
   - addons/penta_tile/layouts/penta_tile_layout_wang_2_corner.gd
   - addons/penta_tile/layouts/penta_tile_layout_minimal_3x3.gd
   - addons/penta_tile/_generate_bitmasks.py
-  - addons/penta_tile/tests/determinism_test.gd
-  - addons/penta_tile/tests/_capture_baseline.gd
+  - tests/determinism_test.gd
+  - tests/_capture_baseline.gd
   - addons/penta_tile/demo/penta_tile_demo.tscn
   - addons/penta_tile/demo/penta_layout_four_horizontal.tres
   - addons/penta_tile/demo/penta_layout_four_vertical.tres
@@ -127,19 +127,19 @@ The re-review's headline is unchanged: **fixes are correct, tests are correct, n
 
 ### IN-11: `--layout-path` arg parsing silently picks the last value on duplicates
 
-**File:** `addons/penta_tile/tests/_capture_baseline.gd:24-27`
+**File:** `tests/_capture_baseline.gd:24-27`
 **Issue:** The CLI loop iterates every cmdline user arg matching `--layout-path=` but never `break`s. If a developer accidentally passes the flag twice (e.g., `--layout-path=A --layout-path=B`), B silently wins with no warning. For a dev tool this is usually fine, but the silent-overwrite behavior is the kind of thing that wastes minutes of debug time when a CI invocation accidentally double-passes the arg.
 **Fix:** Add `break` after the assignment, or print a `printerr("...duplicate --layout-path; using last value")` when a second match overrides the first. One-line change either way; not blocking.
 
 ### IN-12: `_capture_baseline.gd` LAYOUT_OVERRIDE print silently emits 0/0 for non-Penta layouts
 
-**File:** `addons/penta_tile/tests/_capture_baseline.gd:67-71`
+**File:** `tests/_capture_baseline.gd:67-71`
 **Issue:** The post-swap diagnostic prints `LAYOUT_OVERRIDE=%s axis=%d tile_count=%d` using `int(override_layout.get("axis"))` and `int(override_layout.get("tile_count"))`. `Resource.get(prop)` returns `null` if the property doesn't exist, and `int(null)` evaluates to `0` in GDScript without warning. So passing a non-Penta layout (e.g., `penta_tile_layout_dual_grid_16.tres` once Wave 5 ships those .tres files) prints `axis=0 tile_count=0` — visually identical to "HORIZONTAL AUTO Penta layout" output, which would mislead a reader scanning the log to confirm the swap. Phase 2's only baseline-eligible layouts are Penta-axis × Penta-mode, so this is a latent risk for Phase 3+ when more layout types ship.
 **Fix:** Either (a) gate the print on `override_layout is PentaTileLayoutPenta` and emit a generic `"LAYOUT_OVERRIDE=%s class=%s" % [path, override_layout.get_class()]` for non-Penta layouts, or (b) print `null` explicitly when `get()` returns null (use `var ax = override_layout.get("axis"); var ax_str = str(ax) if ax != null else "(n/a)"`). Either keeps the diagnostic informative across all layout types.
 
 ### IN-13: `determinism_test.gd` top-of-file doc comment doesn't list sub-test (c)
 
-**File:** `addons/penta_tile/tests/determinism_test.gd:1-10`
+**File:** `tests/determinism_test.gd:1-10`
 **Issue:** The header doc-comment enumerates `Sub-test (a)`, `Sub-test (b)`, and `Main test`, but the third-pass-added `Sub-test (c) — VERTICAL-axis structural coverage` is absent from the list. The body of `_initialize()` correctly invokes all four; only the header is stale. A reader skimming the file header to understand test coverage would underestimate by one.
 **Fix:** Add a fourth bullet to the header doc-comment block:
 ```gdscript

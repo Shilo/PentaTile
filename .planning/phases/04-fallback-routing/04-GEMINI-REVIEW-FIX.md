@@ -49,7 +49,7 @@ Gemini's review (`04-GEMINI-REVIEW.md`) returned `status: clean` with **0 findin
 
 ## Sanity Checks
 
-- Test suite: `pwsh -File addons/penta_tile/tests/run_tests.ps1 -NoPause` → ALL GREEN (18 tests).
+- Test suite: `pwsh -File tests/run_tests.ps1 -NoPause` → ALL GREEN (18 tests).
 - Anchor-bounded commit count (B4 fix):
   ```
   ANCHOR=$(cat .planning/phases/04-fallback-routing/04-PRE-PHASE-ANCHOR.txt)

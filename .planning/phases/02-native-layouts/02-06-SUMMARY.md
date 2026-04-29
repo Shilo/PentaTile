@@ -42,7 +42,7 @@ key-files:
     - addons/penta_tile/demo/penta_layout_four_horizontal.tres
     - addons/penta_tile/demo/penta_layout_one_horizontal.tres
     - addons/penta_tile/demo/penta_layout_five_horizontal.tres
-    - addons/penta_tile/tests/baselines/four_mode_5x5.txt
+    - tests/baselines/four_mode_5x5.txt
   modified:
     - addons/penta_tile/layouts/penta_tile_layout_penta.gd (+115 LOC)
     - addons/penta_tile/penta_tile_map_layer.gd (+39 LOC net)

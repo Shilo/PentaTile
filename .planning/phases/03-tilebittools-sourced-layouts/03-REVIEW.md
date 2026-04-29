@@ -11,15 +11,15 @@ files_reviewed_list:
   - addons/penta_tile/layouts/penta_tile_layout_blob_47_godot.png
   - addons/penta_tile/layouts/penta_tile_layout_blob_47_godot.png.import
   - addons/penta_tile/penta_tile_map_layer.gd
-  - addons/penta_tile/tests/bitmask_bounds_test.gd
-  - addons/penta_tile/tests/blob_47_collapse_test.gd
-  - addons/penta_tile/tests/blob_47_collapse_test.gd.uid
-  - addons/penta_tile/tests/blob_47_hollow_test.gd
-  - addons/penta_tile/tests/blob_47_hollow_test.gd.uid
-  - addons/penta_tile/tests/comprehensive_bitmask_test.gd
-  - addons/penta_tile/tests/run_tests.ps1
-  - addons/penta_tile/tests/single_grid_8_moore_propagation_test.gd
-  - addons/penta_tile/tests/single_grid_8_moore_propagation_test.gd.uid
+  - tests/bitmask_bounds_test.gd
+  - tests/blob_47_collapse_test.gd
+  - tests/blob_47_collapse_test.gd.uid
+  - tests/blob_47_hollow_test.gd
+  - tests/blob_47_hollow_test.gd.uid
+  - tests/comprehensive_bitmask_test.gd
+  - tests/run_tests.ps1
+  - tests/single_grid_8_moore_propagation_test.gd
+  - tests/single_grid_8_moore_propagation_test.gd.uid
 findings:
   critical: 0
   warning: 0
@@ -65,7 +65,7 @@ The 8-Moore propagation in `_mark_affected_single_grid_cells` is correctly minim
 
 ### IN-01: Inconsistent `min()` / `max()` vs `mini()` / `maxi()` in extended test
 
-**File:** `addons/penta_tile/tests/comprehensive_bitmask_test.gd:204-207, 228-231, 239-242, 268-271`
+**File:** `tests/comprehensive_bitmask_test.gd:204-207, 228-231, 239-242, 268-271`
 **Severity:** Info
 **Category:** Style
 
@@ -82,7 +82,7 @@ max_painted.y = maxi(max_painted.y, c.y)
 
 ### IN-02: Dead-code dual-grid offset branch inside single-grid-only assertion
 
-**File:** `addons/penta_tile/tests/comprehensive_bitmask_test.gd:254-257`
+**File:** `tests/comprehensive_bitmask_test.gd:254-257`
 **Severity:** Info
 **Category:** Maintainability
 
@@ -123,11 +123,11 @@ slot.atlas_coords = _MASK_TO_ATLAS.get(collapsed, Vector2i(0, 0))
 
 The 5 focused test runs from the prior pass remain green for this codebase state:
 
-- `./addons/penta_tile/tests/run_tests.ps1 -NoPause -Test blob_47_collapse_test` — PASS
-- `./addons/penta_tile/tests/run_tests.ps1 -NoPause -Test single_grid_8_moore_propagation_test` — PASS
-- `./addons/penta_tile/tests/run_tests.ps1 -NoPause -Test blob_47_hollow_test` — PASS
-- `./addons/penta_tile/tests/run_tests.ps1 -NoPause -Test bitmask_bounds_test` — PASS
-- `./addons/penta_tile/tests/run_tests.ps1 -NoPause -Test comprehensive_bitmask_test` — PASS
+- `./tests/run_tests.ps1 -NoPause -Test blob_47_collapse_test` — PASS
+- `./tests/run_tests.ps1 -NoPause -Test single_grid_8_moore_propagation_test` — PASS
+- `./tests/run_tests.ps1 -NoPause -Test blob_47_hollow_test` — PASS
+- `./tests/run_tests.ps1 -NoPause -Test bitmask_bounds_test` — PASS
+- `./tests/run_tests.ps1 -NoPause -Test comprehensive_bitmask_test` — PASS
 
 (Test results carried forward from the 2026-04-29T08:30:42Z review pass — the 3 Info findings above are style/maintainability issues that don't affect test outcomes.)
 

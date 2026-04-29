@@ -123,7 +123,7 @@ Five tasks executed in sequence:
 
 ## Pre-flight Self-Test Result
 
-`pwsh -File addons/penta_tile/tests/run_tests.ps1 -NoPause -Test all` returned `ALL GREEN (17 tests)` against the local repo at `a3223b9` (after pulling the workflow's auto-commit). All 17 tests:
+`pwsh -File tests/run_tests.ps1 -NoPause -Test all` returned `ALL GREEN (17 tests)` against the local repo at `a3223b9` (after pulling the workflow's auto-commit). All 17 tests:
 
 - paint_test, all_layouts_test, visual_render_test, strict_pixel_test
 - penta_one_mode_test, auto_strip_axis_test, layout_swap_test, all_layouts_swap_pixel_test

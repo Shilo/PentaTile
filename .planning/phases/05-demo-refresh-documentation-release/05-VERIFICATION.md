@@ -30,7 +30,7 @@ All 10 v1 requirement IDs satisfied. v0.2.0 milestone shipped to GitHub Releases
 | 15 spec corrections applied across REQUIREMENTS/ROADMAP/PROJECT/CLAUDE | commit `42523ee` (14 planned + 1 follow-up at ROADMAP.md:303) | ✓ |
 | Identity audit produced with 3 axes + ship/extract decision | `.planning/phases/05-demo-refresh-documentation-release/05-LOC-AUDIT.md`; decision: **SHIP** (clean hot path + 16/16 anti-patterns absent) | ✓ |
 | `.github/workflows/release.yml` exists and ran successfully | run 25131034672, 30s wall-clock, all 13 steps green | ✓ |
-| `addons/penta_tile/tests/run_tests.sh` Linux mirror exists | `git show 3d0ced3 -- addons/penta_tile/tests/run_tests.sh`; 105 lines, 17-test inventory | ✓ |
+| `tests/run_tests.sh` Linux mirror exists | `git show 3d0ced3 -- tests/run_tests.sh`; 105 lines, 17-test inventory | ✓ |
 | All 12 phase-specific pitfalls mitigated in workflow YAML | Plan 04 SUMMARY enumerates each mitigation; CI checks proved Pitfall #1 fix works (import + demo-open exit cleanly) | ✓ |
 | v0.2.0 published to GitHub Releases with zip artifact | https://github.com/Shilo/PentaTile/releases/tag/v0.2.0 — `penta_tile-v0.2.0.zip` (208024 bytes), digest `sha256:5bf1f0579e60...` | ✓ |
 

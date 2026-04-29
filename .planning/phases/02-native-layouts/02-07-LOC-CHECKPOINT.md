@@ -21,7 +21,7 @@
 | addons/penta_tile/layouts/penta_tile_layout_minimal_3x3.gd | 96 | NEW (higher than ~60 estimate: mask collapse logic + open-side rule) |
 | addons/penta_tile/demo/demo_player.gd | 17 | unchanged from Phase 1 |
 | addons/penta_tile/demo/demo_runtime_painter.gd | 54 | unchanged from Phase 1 |
-| addons/penta_tile/tests/_capture_baseline.gd | 63 | test utility (NOT runtime addon code; committed for headless regression) |
+| tests/_capture_baseline.gd | 63 | test utility (NOT runtime addon code; committed for headless regression) |
 | **Total (all .gd files)** | **1961** | |
 
 **Runtime-only subtotal** (excluding demo + tests): 1961 - 17 - 54 - 63 = **1827 LOC**

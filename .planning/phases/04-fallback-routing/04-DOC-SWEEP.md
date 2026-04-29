@@ -43,7 +43,7 @@ status: complete
 
 ## Verification
 
-- [x] `pwsh -File addons/penta_tile/tests/run_tests.ps1 -NoPause` passed with `ALL GREEN (18 tests)`.
+- [x] `pwsh -File tests/run_tests.ps1 -NoPause` passed with `ALL GREEN (18 tests)`.
 - [x] Every public method matched by `^(static )?func [a-z]` has a nearby `##` doc-comment.
 - [x] Every `@export` property has an immediate `##` doc-comment.
 - [x] `## @experimental` appears exactly once and only in `addons/penta_tile/layouts/penta_tile_layout.gd`.

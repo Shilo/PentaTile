@@ -12,7 +12,7 @@ This phase has three braided deliverables. Pattern assignments are grouped by de
 
 | New / Modified | File | Role | Data Flow | Closest Analog | Match Quality |
 |----------------|------|------|-----------|----------------|---------------|
-| NEW | `addons/penta_tile/tests/fallback_routing_test.gd` | test (composed-canvas SceneTree script) | event-driven (process_frame await) + transform (canvas blit + invariant assert) | `addons/penta_tile/tests/comprehensive_bitmask_test.gd` (matrix template) + `addons/penta_tile/tests/penta_ground_hollow_test.gd` (canvas-blit + bbox + transform helper) | exact (composite of two analogs) |
+| NEW | `tests/fallback_routing_test.gd` | test (composed-canvas SceneTree script) | event-driven (process_frame await) + transform (canvas blit + invariant assert) | `tests/comprehensive_bitmask_test.gd` (matrix template) + `tests/penta_ground_hollow_test.gd` (canvas-blit + bbox + transform helper) | exact (composite of two analogs) |
 | NEW | `.planning/phases/04-fallback-routing/04-FALLBACK-UAT.md` | planning artifact (UAT sign-off) | request-response (test → result → notes) | `.planning/phases/02-native-layouts/02-HUMAN-UAT.md` | exact |
 | NEW | `.planning/phases/04-fallback-routing/04-DOC-SWEEP.md` | planning artifact (sweep summary) | batch (per-file before/after) | none (no prior doc-sweep artifact) — closest secondary structure: `02-07-SUMMARY.md` LOC-checkpoint section + `04-RESEARCH.md` § 1 sweep checklist | novel structure proposed |
 | NEW | `.planning/phases/04-fallback-routing/04-GEMINI-REVIEW.md` | planning artifact (raw findings) | batch (per-finding records) | `.planning/phases/02-native-layouts/02-REVIEW.md` (severity-classified findings + frontmatter counts) | exact |
@@ -31,7 +31,7 @@ This phase has three braided deliverables. Pattern assignments are grouped by de
 | MODIFY | `addons/penta_tile/layouts/penta_tile_layout_blob_47_godot.gd` | addon source (layout subclass) | transform | itself (1-22 has rich class-level block citing D-numbers + research provenance — sweep extends to public method coverage) | exact (self-template) |
 | MODIFY | `addons/penta_tile/layouts/penta_tile_layout_pixel_lab_top_down.gd` | addon source (layout subclass) | transform | itself (1-25 has rich block citing D-89/D-93/D-94/D-104) | exact (self-template) |
 | MODIFY | `addons/penta_tile/layouts/penta_tile_layout_pixel_lab_side_scroller.gd` | addon source (layout subclass) | transform | `penta_tile_layout_pixel_lab_top_down.gd:1-25` (sister-class style) | role-match |
-| MODIFY | `addons/penta_tile/tests/run_tests.ps1` | test registry (PowerShell) | config (declarative array) | itself, lines 53–71 (existing `$allTests` array — sweep adds 1 entry mirroring existing 17) | exact (self-template) |
+| MODIFY | `tests/run_tests.ps1` | test registry (PowerShell) | config (declarative array) | itself, lines 53–71 (existing `$allTests` array — sweep adds 1 entry mirroring existing 17) | exact (self-template) |
 
 ---
 
@@ -39,10 +39,10 @@ This phase has three braided deliverables. Pattern assignments are grouped by de
 
 ### Deliverable 1: Fallback Routing Verification
 
-#### File: `addons/penta_tile/tests/fallback_routing_test.gd` (NEW — test, composed-canvas)
+#### File: `tests/fallback_routing_test.gd` (NEW — test, composed-canvas)
 
-**Primary analog:** `addons/penta_tile/tests/comprehensive_bitmask_test.gd` (pattern × layout matrix template)
-**Secondary analog:** `addons/penta_tile/tests/penta_ground_hollow_test.gd` (canvas-compose + bbox + `_apply_transform` helper)
+**Primary analog:** `tests/comprehensive_bitmask_test.gd` (pattern × layout matrix template)
+**Secondary analog:** `tests/penta_ground_hollow_test.gd` (canvas-compose + bbox + `_apply_transform` helper)
 
 **Header pattern** (copy verbatim shape from `comprehensive_bitmask_test.gd:1-32`):
 
@@ -59,7 +59,7 @@ This phase has three braided deliverables. Pattern assignments are grouped by de
 ## deferred per D-86 (b).)
 ##
 ## Run headless:
-##   Godot --headless --path . --script addons/penta_tile/tests/fallback_routing_test.gd
+##   Godot --headless --path . --script tests/fallback_routing_test.gd
 extends SceneTree
 ```
 
@@ -168,7 +168,7 @@ func _test_preview_04_override() -> void:
 
 ---
 
-#### File: `addons/penta_tile/tests/run_tests.ps1` (MODIFY — registry append)
+#### File: `tests/run_tests.ps1` (MODIFY — registry append)
 
 **Self-template** — lines 53–71. Single-line append inside the existing `$allTests` array:
 
@@ -621,9 +621,9 @@ fix(04): {FINDING-ID} — {one-line description}
 
 ### Composed-Canvas Test Pipeline (cross-cutting — fallback UAT)
 
-**Source:** `addons/penta_tile/tests/comprehensive_bitmask_test.gd` (matrix) + `addons/penta_tile/tests/penta_ground_hollow_test.gd` (canvas-blit + transform helper).
+**Source:** `tests/comprehensive_bitmask_test.gd` (matrix) + `tests/penta_ground_hollow_test.gd` (canvas-blit + transform helper).
 
-**Apply to:** `addons/penta_tile/tests/fallback_routing_test.gd` (single file in Phase 4).
+**Apply to:** `tests/fallback_routing_test.gd` (single file in Phase 4).
 
 **5-step recipe** (`04-RESEARCH.md` § 2):
 1. Construct layer; assign `layout`; do NOT assign `tile_set`. Auto-fill kicks in via `penta_tile_map_layer.gd:54-70`.
@@ -672,9 +672,9 @@ fix(04): {FINDING-ID} — {one-line description}
 ## Metadata
 
 **Analog search scope:**
-- `addons/penta_tile/tests/` (16 existing test scripts examined — `comprehensive_bitmask_test.gd` and `penta_ground_hollow_test.gd` selected as primary).
+- `tests/` (16 existing test scripts examined — `comprehensive_bitmask_test.gd` and `penta_ground_hollow_test.gd` selected as primary).
 - `addons/penta_tile/` (12 sweep-target scripts examined — three already-exemplary class blocks at `penta_tile_synthesis.gd:1-19`, `penta_tile_atlas_slot.gd:1-9`, `layouts/penta_tile_layout.gd:1-12` selected as style template).
-- `addons/penta_tile/tests/run_tests.ps1:53-71` (registry self-template).
+- `tests/run_tests.ps1:53-71` (registry self-template).
 - `.planning/phases/02-native-layouts/02-HUMAN-UAT.md` (UAT artifact analog).
 - `.planning/phases/02-native-layouts/02-REVIEW.md` + `02-REVIEW-FIX.md` (cross-AI review precedent).
 - `.planning/phases/02-native-layouts/02-07-SUMMARY.md` (per-file table + audit-decision pattern for novel doc-sweep summary).

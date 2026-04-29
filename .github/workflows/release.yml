@@ -107,8 +107,8 @@ jobs:
       - name: Run 17-test suite
         run: |
           set -e
-          chmod +x addons/penta_tile/tests/run_tests.sh
-          GODOT="$(pwd)/godot" bash addons/penta_tile/tests/run_tests.sh
+          chmod +x tests/run_tests.sh
+          GODOT="$(pwd)/godot" bash tests/run_tests.sh
 
       - name: Headless-open demo scene (Pitfall #1 mitigated)
         run: |

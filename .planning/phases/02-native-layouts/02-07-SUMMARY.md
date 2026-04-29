@@ -13,8 +13,8 @@ dependency_graph:
   provides:
     - ".planning/phases/02-native-layouts/02-07-LOC-CHECKPOINT.md (end-of-Phase-2 LOC audit)"
     - ".planning/phases/02-native-layouts/02-07-DETERMINISM-TEST.md (determinism verdict PASS)"
-    - "addons/penta_tile/tests/determinism_test.gd (headless regression script)"
-    - "addons/penta_tile/tests/_capture_baseline.gd (baseline capture utility)"
+    - "tests/determinism_test.gd (headless regression script)"
+    - "tests/_capture_baseline.gd (baseline capture utility)"
   affects:
     - Phase 5 (LOC audit inputs for final identity guardrail comparison)
     - Phase 3 (next phase; planning unblocked by design-review outcome)
@@ -29,8 +29,8 @@ key-files:
   created:
     - .planning/phases/02-native-layouts/02-07-LOC-CHECKPOINT.md
     - .planning/phases/02-native-layouts/02-07-DETERMINISM-TEST.md
-    - addons/penta_tile/tests/determinism_test.gd
-    - addons/penta_tile/tests/_capture_baseline.gd
+    - tests/determinism_test.gd
+    - tests/_capture_baseline.gd
   modified: []
 
 decisions:
@@ -94,7 +94,7 @@ Measured cumulative GDScript LOC across `addons/penta_tile/`:
 
 ### Task 7.2: Determinism Test
 
-Ran `addons/penta_tile/tests/determinism_test.gd` headlessly via Godot 4.6.2 (`--headless --path . --script`).
+Ran `tests/determinism_test.gd` headlessly via Godot 4.6.2 (`--headless --path . --script`).
 
 **Composite verdict: PASS**
 
@@ -163,8 +163,8 @@ None. Internal planning artifacts + headless test script; no network/auth/file/e
 
 - `02-07-LOC-CHECKPOINT.md` exists: CONFIRMED
 - `02-07-DETERMINISM-TEST.md` exists: CONFIRMED
-- `addons/penta_tile/tests/determinism_test.gd` exists: CONFIRMED
-- `addons/penta_tile/tests/_capture_baseline.gd` exists: CONFIRMED
+- `tests/determinism_test.gd` exists: CONFIRMED
+- `tests/_capture_baseline.gd` exists: CONFIRMED
 - Commit `da0eb38` exists: CONFIRMED
 - ROADMAP.md Phase 2 remains `[ ]` (hard gate honored): CONFIRMED
 - LOC checkpoint contains "Audit Decision" + "Identity Guardrail Check" sections: CONFIRMED

@@ -67,7 +67,7 @@ Phase 4 has three braided deliverables, all on locked rails. (1) **Doc sweep** i
 |------------|-------------|----------------|-----------|
 | Fallback wiring (`tile_set == null` → `layout.get_fallback_tile_set()`) | `PentaTileMapLayer` (the `layout` setter, `_init`, `_set` hook) | `PentaTileLayout` (each subclass's `get_fallback_tile_set()` codegen) | Layer owns the routing; layout owns the codegen. Already shipped in Phase 2 — Phase 4 verifies, doesn't author. |
 | Doc-comment authoring | Each of the 12 addon scripts | — | Per-file authoring; no cross-file machinery. |
-| UAT composed-canvas verification | `addons/penta_tile/tests/fallback_routing_test.gd` | `addons/penta_tile/tests/run_tests.ps1` (registry) | New test file + registry append (17 → 18 tests). |
+| UAT composed-canvas verification | `tests/fallback_routing_test.gd` | `tests/run_tests.ps1` (registry) | New test file + registry append (17 → 18 tests). |
 | Cross-AI review surface | External CLIs (gemini, codex) | `04-{TOOL}-REVIEW.md` (raw findings) + `04-{TOOL}-REVIEW-FIX.md` (disposition log) | Reviewers run outside Claude Code; outputs land as artifacts in the phase dir. |
 | Fix-application dispatch | Implementer (Claude / user) | Atomic-per-finding commits + REVIEW-FIX.md disposition column | Severity tier drives auto / gated / logged paths (D-04-13). |
 
@@ -196,7 +196,7 @@ This is the pattern the existing PentaTile `@export_storage var _tile_set_is_fal
 
 ### Composed-Canvas Pipeline
 
-[VERIFIED: `addons/penta_tile/tests/comprehensive_bitmask_test.gd:1-100`, `addons/penta_tile/tests/penta_ground_hollow_test.gd:1-130`, `addons/penta_tile/tests/pixellab_visual_regression_test.gd`]
+[VERIFIED: `tests/comprehensive_bitmask_test.gd:1-100`, `tests/penta_ground_hollow_test.gd:1-130`, `tests/pixellab_visual_regression_test.gd`]
 
 The pipeline is a 5-step recipe established in Phase 2's UAT bug-fix sweep and refined in Phase 3.5:
 
@@ -238,7 +238,7 @@ This satisfies CLAUDE.md Test Methodology #5: "Verify the test catches the regre
 
 ### `run_tests.ps1` Wiring
 
-Append `"fallback_routing_test"` to the `$allTests` array at line 53-71 of `addons/penta_tile/tests/run_tests.ps1`. Test count goes 17 → 18. No other changes needed; the runner discovers `addons/penta_tile/tests/<name>.gd` automatically.
+Append `"fallback_routing_test"` to the `$allTests` array at line 53-71 of `tests/run_tests.ps1`. Test count goes 17 → 18. No other changes needed; the runner discovers `tests/<name>.gd` automatically.
 
 ### Two-Tier Verification (D-04-06)
 
@@ -333,7 +333,7 @@ The full review surface for Phase 4 is approximately:
 | Surface | Files | Size estimate |
 |---------|-------|---------------|
 | Addon code (12 scripts) | `addons/penta_tile/*.gd` + `addons/penta_tile/layouts/*.gd` | ~2660 LOC × ~50 chars/line ≈ 130 KB |
-| Tests (supporting evidence per D-04-11) | 17 test scripts under `addons/penta_tile/tests/` | ~3-4 KB each ≈ 60 KB |
+| Tests (supporting evidence per D-04-11) | 17 test scripts under `tests/` | ~3-4 KB each ≈ 60 KB |
 | `CLAUDE.md` | 1 file | ~20 KB |
 | `.planning/PROJECT.md` | 1 file | ~10 KB |
 | `.planning/ROADMAP.md` | 1 file | ~20 KB |
@@ -660,29 +660,29 @@ The reviewer prompt template in § 4 enforces this schema. Findings missing requ
 
 | Property | Value |
 |----------|-------|
-| Framework | Custom GDScript test harness via `SceneTree`-based scripts under `addons/penta_tile/tests/` (no GUT — per CLAUDE.md "no third-party deps"). |
-| Config file | `addons/penta_tile/tests/run_tests.ps1` (PowerShell registry / runner). |
-| Quick run command | `pwsh -File addons/penta_tile/tests/run_tests.ps1 -Test fallback_routing_test -NoPause` |
-| Full suite command | `pwsh -File addons/penta_tile/tests/run_tests.ps1 -NoPause` (currently 17 tests; Phase 4 adds 1 → 18) |
+| Framework | Custom GDScript test harness via `SceneTree`-based scripts under `tests/` (no GUT — per CLAUDE.md "no third-party deps"). |
+| Config file | `tests/run_tests.ps1` (PowerShell registry / runner). |
+| Quick run command | `pwsh -File tests/run_tests.ps1 -Test fallback_routing_test -NoPause` |
+| Full suite command | `pwsh -File tests/run_tests.ps1 -NoPause` (currently 17 tests; Phase 4 adds 1 → 18) |
 
 ### Phase Requirements → Test Map
 
 | Req ID | Behavior | Test Type | Automated Command | File Exists? |
 |--------|----------|-----------|-------------------|-------------|
-| **PREVIEW-03** | `tile_set == null` + `layout != null` → layer renders via `layout.get_fallback_tile_set()`. Visible output for all 8 layouts. | unit (composed-canvas) | `pwsh -File addons/penta_tile/tests/run_tests.ps1 -Test fallback_routing_test -NoPause` | ❌ Wave 0 — must be created. |
+| **PREVIEW-03** | `tile_set == null` + `layout != null` → layer renders via `layout.get_fallback_tile_set()`. Visible output for all 8 layouts. | unit (composed-canvas) | `pwsh -File tests/run_tests.ps1 -Test fallback_routing_test -NoPause` | ❌ Wave 0 — must be created. |
 | **PREVIEW-04** | Assigning `tile_set` directly overrides fallback (no warnings, no errors). Clearing → re-routes to fallback. | unit (state-flag assertion) | Same command — assertions live in same test file. | ❌ Wave 0. |
 | **(D-04-06 manual)** | Demo eyeball pass on all 8 layouts. | manual-only | `04-FALLBACK-UAT.md` artifact + screenshots. | ❌ Wave 0. |
 
 ### Sampling Rate
 
-- **Per task commit:** `pwsh -File addons/penta_tile/tests/run_tests.ps1 -Test fallback_routing_test -NoPause` (the new test alone, ~1 second wall-clock).
-- **Per wave merge:** `pwsh -File addons/penta_tile/tests/run_tests.ps1 -NoPause` (full 18-test suite, ~30 seconds wall-clock).
+- **Per task commit:** `pwsh -File tests/run_tests.ps1 -Test fallback_routing_test -NoPause` (the new test alone, ~1 second wall-clock).
+- **Per wave merge:** `pwsh -File tests/run_tests.ps1 -NoPause` (full 18-test suite, ~30 seconds wall-clock).
 - **Phase gate:** Full suite green BEFORE the 4 close-out artifacts commit AND ROADMAP `[x]` flips. Per D-04-16, ALL FOUR artifacts (`04-FALLBACK-UAT.md`, `04-DOC-SWEEP.md`, `04-GEMINI-REVIEW-FIX.md`, `04-CODEX-REVIEW-FIX.md`) must exist + be committed.
 
 ### Wave 0 Gaps
 
-- [ ] `addons/penta_tile/tests/fallback_routing_test.gd` — covers PREVIEW-03 + PREVIEW-04. New file; uses the composed-canvas pipeline from § 2; pattern matrix is 8 layouts × 1 (or 2) simple patterns.
-- [ ] `addons/penta_tile/tests/run_tests.ps1` — registry append (line 53-71): add `"fallback_routing_test"` to `$allTests` array.
+- [ ] `tests/fallback_routing_test.gd` — covers PREVIEW-03 + PREVIEW-04. New file; uses the composed-canvas pipeline from § 2; pattern matrix is 8 layouts × 1 (or 2) simple patterns.
+- [ ] `tests/run_tests.ps1` — registry append (line 53-71): add `"fallback_routing_test"` to `$allTests` array.
 - [ ] `04-FALLBACK-UAT.md` — manual UAT sign-off artifact. New file in `.planning/phases/04-fallback-routing/`.
 
 *(No framework install needed — `SceneTree`-based testing is native Godot 4.6.)*
@@ -840,7 +840,7 @@ func compute_mask(coord: Vector2i, sample_fn: Callable) -> int:
 ## output for every painted cell. Verifies PREVIEW-03 + PREVIEW-04.
 ##
 ## Run headless:
-##   Godot --headless --path . --script addons/penta_tile/tests/fallback_routing_test.gd
+##   Godot --headless --path . --script tests/fallback_routing_test.gd
 extends SceneTree
 
 const _LayerScript = preload("res://addons/penta_tile/penta_tile_map_layer.gd")
@@ -1060,9 +1060,9 @@ Begin review.
 - **`addons/penta_tile/penta_tile_atlas_slot.gd:1-9`** — exemplary field-by-field `##` block.
 - **`addons/penta_tile/layouts/penta_tile_layout.gd:1-12`** — exemplary class-level block with `See:` paragraph linking to research docs.
 - **`addons/penta_tile/penta_tile_map_layer.gd:35-96, 134-160`** — PREVIEW-03/04 wiring already in place (the `layout` setter, `_set` user-override hook, `_init` mirror).
-- **`addons/penta_tile/tests/comprehensive_bitmask_test.gd:1-100`** — pattern × layout matrix template.
-- **`addons/penta_tile/tests/penta_ground_hollow_test.gd:1-130`** — user-fixture composed-canvas template.
-- **`addons/penta_tile/tests/run_tests.ps1:53-71`** — current test registry inventory.
+- **`tests/comprehensive_bitmask_test.gd:1-100`** — pattern × layout matrix template.
+- **`tests/penta_ground_hollow_test.gd:1-130`** — user-fixture composed-canvas template.
+- **`tests/run_tests.ps1:53-71`** — current test registry inventory.
 - **`.planning/phases/02-native-layouts/02-REVIEW.md`** — severity-tiered + atomic-commit-per-fix precedent (7 WR commits referenced verbatim).
 - **`.planning/phases/03.5-pixellab-layouts-variation-seed-wiring/03.5-REVIEWS.md`** — Codex retrospective review precedent + PIXLAB-04 finding pattern.
 - **`.planning/research/PITFALLS.md`** — canonical anti-pattern register cited in § 8.

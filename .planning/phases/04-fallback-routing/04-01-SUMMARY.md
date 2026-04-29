@@ -22,10 +22,10 @@ tech-stack:
 key-files:
   created:
     - .planning/phases/04-fallback-routing/04-PRE-PHASE-ANCHOR.txt
-    - addons/penta_tile/tests/fallback_routing_test.gd
+    - tests/fallback_routing_test.gd
     - .planning/phases/04-fallback-routing/04-FALLBACK-UAT.md
   modified:
-    - addons/penta_tile/tests/run_tests.ps1
+    - tests/run_tests.ps1
 key-decisions:
   - "Fallback test composes from the visual layer's effective TileSet so synthesized Penta output is verified as actually rendered."
 patterns-established:
@@ -51,8 +51,8 @@ completed: 2026-04-29
 ## Artifacts Created
 
 - `.planning/phases/04-fallback-routing/04-PRE-PHASE-ANCHOR.txt` - Captures pre-Phase-4 HEAD for Plans 03/04 commit-range checks.
-- `addons/penta_tile/tests/fallback_routing_test.gd` - Exercises fallback auto-fill for Penta, DualGrid16, Wang2Edge, Wang2Corner, Min3x3, Blob47Godot, PixelLabTopDown, and PixelLabSideScroller.
-- `addons/penta_tile/tests/run_tests.ps1` - Registers `fallback_routing_test` as the 18th suite test.
+- `tests/fallback_routing_test.gd` - Exercises fallback auto-fill for Penta, DualGrid16, Wang2Edge, Wang2Corner, Min3x3, Blob47Godot, PixelLabTopDown, and PixelLabSideScroller.
+- `tests/run_tests.ps1` - Registers `fallback_routing_test` as the 18th suite test.
 - `.planning/phases/04-fallback-routing/04-FALLBACK-UAT.md` - Pending 9-row manual UAT sign-off skeleton.
 
 ## Task Commits
@@ -64,9 +64,9 @@ completed: 2026-04-29
 
 ## Verification
 
-- Headless direct test: `Godot_v4.6.2-stable_win64.exe --headless --path . --script addons/penta_tile/tests/fallback_routing_test.gd` exited 0 and printed `ALL PASS`.
-- Selective runner: `pwsh -File addons/penta_tile/tests/run_tests.ps1 -Test fallback_routing_test -NoPause` exited 0 and printed `ALL GREEN (1 tests)`.
-- Full runner: `pwsh -File addons/penta_tile/tests/run_tests.ps1 -NoPause` exited 0 and printed `ALL GREEN (18 tests)`.
+- Headless direct test: `Godot_v4.6.2-stable_win64.exe --headless --path . --script tests/fallback_routing_test.gd` exited 0 and printed `ALL PASS`.
+- Selective runner: `pwsh -File tests/run_tests.ps1 -Test fallback_routing_test -NoPause` exited 0 and printed `ALL GREEN (1 tests)`.
+- Full runner: `pwsh -File tests/run_tests.ps1 -NoPause` exited 0 and printed `ALL GREEN (18 tests)`.
 - Verify-the-regression cycle confirmed: temporarily changing the layout setter branch from `if tile_set == null or _tile_set_is_fallback:` to `if false:` produced `FAIL (17)` in `fallback_routing_test.gd`; restoring the branch returned to `ALL PASS`.
 - SC-4 user TileSet preservation passed through `_test_preview_04_user_tileset_preserved`.
 
@@ -106,7 +106,7 @@ Anchor path for Plans 03/04 commit-count checks: `.planning/phases/04-fallback-r
 - **Found during:** Task 1
 - **Issue:** The plan text said to read pixels from `layer.tile_set`, but Penta rendering may synthesize into the visual layer's effective `TileSet`; checking the parent fallback source would not always replay the rendered output.
 - **Fix:** The test asserts `layer.tile_set` fallback routing first, then composes from `primary.tile_set`, matching the established rendered-canvas analogs.
-- **Files modified:** `addons/penta_tile/tests/fallback_routing_test.gd`
+- **Files modified:** `tests/fallback_routing_test.gd`
 - **Verification:** Direct headless test, selective runner, and full runner all passed.
 - **Committed in:** `8c6a05e`
 

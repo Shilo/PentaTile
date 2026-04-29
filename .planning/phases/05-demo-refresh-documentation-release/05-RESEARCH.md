@@ -12,7 +12,7 @@ The single largest research finding: **TileMapDual now has 10 tags, latest stabl
 
 Three CI pitfalls are load-bearing for the release workflow design: (a) `godot --import --headless --quit` sometimes returns non-zero on success and zero on failure (must use `--quit-after 2` and parse stderr for `ERROR:` lines), (b) `git push origin main --tags` from inside a workflow that committed during the same run requires `permissions: contents: write` AT THE JOB LEVEL plus the default `actions/checkout@v6` `persist-credentials: true` (default) — but commits to `main` from a workflow that was triggered from `main` need a clean push from HEAD, not an explicit ref, (c) auto-version-increment regex must handle `version="0.1.0"` (quoted in plugin.cfg, which is the actual format here).
 
-**Primary recommendation:** Plan Phase 5 as four parallel-ish work threads — (1) demo refresh + retire `demo_player.gd`/`penta_tile_ground.{png,tres}`/`_regen_demo_ground.py`, (2) README extensions + CHANGELOG accumulation, (3) `.github/workflows/release.yml` + sibling `addons/penta_tile/tests/run_tests.sh` Linux test runner, (4) manual identity audit producing `05-LOC-AUDIT.md` and the README "Identity & Footprint" anchor — then a closeout plan that runs the workflow once, verifies the published v0.2.0 release, flips ROADMAP / STATE / REQUIREMENTS Traceability.
+**Primary recommendation:** Plan Phase 5 as four parallel-ish work threads — (1) demo refresh + retire `demo_player.gd`/`penta_tile_ground.{png,tres}`/`_regen_demo_ground.py`, (2) README extensions + CHANGELOG accumulation, (3) `.github/workflows/release.yml` + sibling `tests/run_tests.sh` Linux test runner, (4) manual identity audit producing `05-LOC-AUDIT.md` and the README "Identity & Footprint" anchor — then a closeout plan that runs the workflow once, verifies the published v0.2.0 release, flips ROADMAP / STATE / REQUIREMENTS Traceability.
 
 ## Architectural Responsibility Map
 
@@ -22,7 +22,7 @@ Three CI pitfalls are load-bearing for the release workflow design: (a) `godot -
 | Hover-to-target drag-paint | Demo runtime painter (GDScript) | — | Existing painter resolves target via NodePath; new logic resolves target via cursor-cell intersection — single GDScript file |
 | 8 layout instances binding to bundled fallback | Layout Resources (`.tres`) + `PentaTileLayout.get_fallback_tile_set()` | Scene `[ext_resource]` references | Reuses existing Phase 4 fallback contract; no new runtime code |
 | Documentation extensions | README.md + CHANGELOG.md (markdown) | — | Pure docs; no code generation |
-| Release workflow | GitHub Actions YAML (`.github/workflows/release.yml`) | bash inside workflow steps + `addons/penta_tile/tests/run_tests.sh` (NEW) | CI tier owns version bump, commit, tag, push, archive, release publish |
+| Release workflow | GitHub Actions YAML (`.github/workflows/release.yml`) | bash inside workflow steps + `tests/run_tests.sh` (NEW) | CI tier owns version bump, commit, tag, push, archive, release publish |
 | Test runner on Linux | bash sibling to `run_tests.ps1` | Godot 4.6 binary on Ubuntu runner | Existing PowerShell runner is Windows-only; CI needs a Linux equivalent that loops over `*.gd` test files identically |
 | Identity audit (LOC + surface + hot-path) | Phase artifact (`05-LOC-AUDIT.md`) + README anchor | Manual git/grep work, NOT CI | Per D-05-13 — explicitly NOT a CI gate; lives outside the workflow |
 | Headless demo-loads-cleanly check | CI step inside workflow | Godot 4.6 Linux binary + parsed stderr | Verifies the new spatial-grid scene loads with no `ERROR:` lines via stderr grep (because Godot exit codes are unreliable — Pitfall #1) |
@@ -348,7 +348,7 @@ The codegen lives at [`addons/penta_tile/layouts/penta_tile_layout.gd:140-165`](
 | GitHub Release publishing | `curl https://api.github.com/repos/.../releases` | `softprops/action-gh-release@v3` | Asset upload, body_path, retry logic, error reporting all batteries-included [VERIFIED: Context7 benchmark 93.25] |
 | Zip building | Manual `find / xargs zip` | `git archive --format=zip --prefix=...` | Auto-excludes untracked/ignored; matches what's in the tag exactly; output is reproducible |
 | CHANGELOG slice extract | Hand-rolled while-loop in bash | `awk` Pattern 4 above | Edge case "first heading after `# Changelog`" + "last heading in file" both handled by the in_section flag |
-| Godot CI test loop | Inline `for f in tests/*.gd` in YAML | `addons/penta_tile/tests/run_tests.sh` sibling to `run_tests.ps1` | Maintainability — local dev can run `bash run_tests.sh` for a Linux-style check; CI invokes the same script; single source of truth for the 18-test inventory |
+| Godot CI test loop | Inline `for f in tests/*.gd` in YAML | `tests/run_tests.sh` sibling to `run_tests.ps1` | Maintainability — local dev can run `bash run_tests.sh` for a Linux-style check; CI invokes the same script; single source of truth for the 18-test inventory |
 | Godot Linux CI runtime | `barichello/godot-ci` Docker container | Direct binary download from github.com/godotengine/godot/releases | Pins exact 4.6.2 vs container's 4.3 default; one fewer abstraction layer |
 
 **Key insight:** This is a release/automation phase, not a runtime phase. Most "don't hand-roll" wins come from using the official GitHub Actions ecosystem (`actions/checkout@v6`, `softprops/action-gh-release@v3`, `gh` CLI) and the engine's primary distribution channel (direct download from godotengine/godot releases) — not from inventing CI machinery.
@@ -431,7 +431,7 @@ Answer: only the project's `.godot/` directory + `.uid` sidecars on the next God
 
 ### Pitfall 6: The new demo scene breaks `_capture_baseline.gd` (manual, not CI)
 
-**What goes wrong:** `addons/penta_tile/tests/_capture_baseline.gd:46` does `find_child("PentaTileMapLayer", true, false)`. After the demo refresh, the scene has 8 layer instances with different names — this `find_child` matches the FIRST one in tree-order, which may or may not be the FOUR-mode Penta the script expects.
+**What goes wrong:** `tests/_capture_baseline.gd:46` does `find_child("PentaTileMapLayer", true, false)`. After the demo refresh, the scene has 8 layer instances with different names — this `find_child` matches the FIRST one in tree-order, which may or may not be the FOUR-mode Penta the script expects.
 
 **Why it doesn't break CI:** `_capture_baseline.gd` is a UTILITY script (manually invoked when re-capturing the determinism baseline), NOT a test in `run_tests.ps1`. The 18-test suite's `determinism_test.gd` is fully self-contained — builds its own layer with the bundled FOUR-mode greybox. Confirmed by reading both files.
 
@@ -455,7 +455,7 @@ Recommend (a) for minimal surface change; document choice in the plan.
 
 **What goes wrong:** No bash equivalent of `run_tests.ps1` exists. CI cannot reuse the local dev runner.
 
-**How to avoid:** Plan-phase creates `addons/penta_tile/tests/run_tests.sh` with the same 18-test inventory. Pattern:
+**How to avoid:** Plan-phase creates `tests/run_tests.sh` with the same 18-test inventory. Pattern:
 
 ```bash
 #!/usr/bin/env bash
@@ -476,7 +476,7 @@ TESTS=(
 failures=0
 for t in "${TESTS[@]}"; do
   echo "=== $t ==="
-  "$GODOT" --headless --path "$PROJECT_ROOT" --script "addons/penta_tile/tests/${t}.gd" 2> "/tmp/${t}.stderr"
+  "$GODOT" --headless --path "$PROJECT_ROOT" --script "tests/${t}.gd" 2> "/tmp/${t}.stderr"
   rc=$?
   if [ $rc -ne 0 ] || grep -qE '^(ERROR|FAIL)\b|MAIN TEST FAILED' "/tmp/${t}.stderr"; then
     echo "FAIL: $t (rc=$rc)"
@@ -492,7 +492,7 @@ done
 
 The two test inventories MUST be kept in sync; that's a gardening task but acceptable for "single source of truth" — if drift is a concern, generate both from a `.txt` file. Not necessary at this phase scale.
 
-[VERIFIED: read of `addons/penta_tile/tests/run_tests.ps1` lines 53-72 for 18-test inventory]
+[VERIFIED: read of `tests/run_tests.ps1` lines 53-72 for 18-test inventory]
 
 ### Pitfall 9: TileMapDual identity audit — pinned tag is `v5.0.2` (2026-01-03)
 
@@ -584,8 +584,8 @@ jobs:
 
       - name: Run 18-test suite
         run: |
-          chmod +x addons/penta_tile/tests/run_tests.sh
-          GODOT=$(pwd)/godot bash addons/penta_tile/tests/run_tests.sh
+          chmod +x tests/run_tests.sh
+          GODOT=$(pwd)/godot bash tests/run_tests.sh
 
       - name: Headless-open demo scene
         run: |
@@ -830,9 +830,9 @@ This is the load-bearing finding for the planner: **the spec corrections are six
 | Property | Value |
 |----------|-------|
 | Framework | Bespoke headless Godot script harness — each test is a `.gd` file with `extends SceneTree` + `_initialize`; runs via `godot --headless --script <path>`; PASS = exit 0; FAIL = non-zero. No GUT, no other framework. |
-| Config file | `addons/penta_tile/tests/run_tests.ps1` (PowerShell, Windows local dev) — registers the 18-test inventory |
-| Quick run command (local Windows) | `.\addons\penta_tile\tests\run_tests.ps1 -NoPause -Test fallback_routing_test` (single test) or `... -Test all -NoPause` (all 18) |
-| Full suite command (CI Linux) | `bash addons/penta_tile/tests/run_tests.sh` (NEW — Plan D Wave 1 creates this) |
+| Config file | `tests/run_tests.ps1` (PowerShell, Windows local dev) — registers the 18-test inventory |
+| Quick run command (local Windows) | `.\tests\run_tests.ps1 -NoPause -Test fallback_routing_test` (single test) or `... -Test all -NoPause` (all 18) |
+| Full suite command (CI Linux) | `bash tests/run_tests.sh` (NEW — Plan D Wave 1 creates this) |
 
 ### Phase Requirements → Test Map
 
@@ -841,7 +841,7 @@ This phase produces no NEW test code. The validation surface is the EXISTING 18-
 | Req ID | Behavior | Test Type | Automated Command | File Exists? |
 |--------|----------|-----------|-------------------|-------------|
 | DEMO-01 | New `.tscn` shows all 8 layouts | manual visual | `godot res://addons/penta_tile/demo/penta_tile_demo.tscn` | ❌ scene refresh in Plan A creates it |
-| DEMO-02 | Each of 8 instances uses bundled fallback (`tile_set = null`) | composed-canvas test | `bash addons/penta_tile/tests/run_tests.sh` (covered by `fallback_routing_test`) | ✓ shipped Phase 4 |
+| DEMO-02 | Each of 8 instances uses bundled fallback (`tile_set = null`) | composed-canvas test | `bash tests/run_tests.sh` (covered by `fallback_routing_test`) | ✓ shipped Phase 4 |
 | DEMO-03 | Drag-paint works across grid | manual visual | demo eyeball | ❌ manual UAT step in Plan A |
 | DOC-01..04 | README + CHANGELOG sections | manual review | none — docs verified visually | ❌ produced in Plan B |
 | REL-01 | plugin.cfg version bumped | workflow side-effect | release workflow step 7 commits the bump | — workflow run |
@@ -857,8 +857,8 @@ This phase produces no NEW test code. The validation surface is the EXISTING 18-
 
 ### Wave 0 Gaps
 
-- [x] `addons/penta_tile/tests/run_tests.sh` — Linux mirror of the PowerShell runner. NOT optional. Exists? **NO** — Plan D Wave 1 creates it.
-- [ ] `addons/penta_tile/tests/run_tests.ps1` — Windows local-dev runner. **EXISTS.** Used as reference for `run_tests.sh`.
+- [x] `tests/run_tests.sh` — Linux mirror of the PowerShell runner. NOT optional. Exists? **NO** — Plan D Wave 1 creates it.
+- [ ] `tests/run_tests.ps1` — Windows local-dev runner. **EXISTS.** Used as reference for `run_tests.sh`.
 - [ ] Determinism baseline `BASELINE_HASH=2561003017` (the actual current value, NOT the 2986698704 quoted in the context — this changed in Phase 2 closeout). Self-contained per Pitfall #6; no Phase 5 work needed.
 - [ ] Framework install: `wget` Godot 4.6.2-stable Linux binary — done in workflow step 3.
 

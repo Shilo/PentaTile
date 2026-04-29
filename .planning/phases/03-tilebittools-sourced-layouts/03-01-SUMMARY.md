@@ -24,11 +24,11 @@ tech-stack:
 
 key-files:
   created:
-    - addons/penta_tile/tests/single_grid_8_moore_propagation_test.gd
+    - tests/single_grid_8_moore_propagation_test.gd
     - .planning/phases/03-tilebittools-sourced-layouts/03-01-SUMMARY.md
   modified:
     - addons/penta_tile/penta_tile_map_layer.gd
-    - addons/penta_tile/tests/run_tests.ps1
+    - tests/run_tests.ps1
     - .planning/STATE.md
 
 key-decisions:
@@ -78,8 +78,8 @@ completed: 2026-04-29
 ## Files Created/Modified
 
 - `addons/penta_tile/penta_tile_map_layer.gd` — `_mark_affected_single_grid_cells` extended from 4 cardinals to 8 Moore neighbors. Doc-comment retitled to reference D-87 and explain the 4-cardinal-layout no-op via the line-262 short-circuit.
-- `addons/penta_tile/tests/single_grid_8_moore_propagation_test.gd` — NEW. ~95 LOC. Wang2Corner-probe regression test with documented strategy + bonus assertion that the post-paint atlas hits the mask=8 dispatch coord (0, 2), not just any non-(0,0) coord.
-- `addons/penta_tile/tests/run_tests.ps1` — appended `single_grid_8_moore_propagation_test` as the 13th entry in `$allTests`.
+- `tests/single_grid_8_moore_propagation_test.gd` — NEW. ~95 LOC. Wang2Corner-probe regression test with documented strategy + bonus assertion that the post-paint atlas hits the mask=8 dispatch coord (0, 2), not just any non-(0,0) coord.
+- `tests/run_tests.ps1` — appended `single_grid_8_moore_propagation_test` as the 13th entry in `$allTests`.
 - `.planning/STATE.md` — Decisions section gained the `2026-04-29 (Phase 3 D-86 gate resolution)` bullet + `TILESETTER_DECISION: b` sentinel line; Current Position section gained a Wave 1 prereq note.
 
 ## Decisions Made
@@ -96,7 +96,7 @@ completed: 2026-04-29
 - **Found during:** Task 2 test authoring
 - **Issue:** Plan-supplied test draft (lines 219, 232 of 03-01-PLAN.md) used `layer.get_node("_primary_layer")` to reach the internal visual layer. The actual node name is `_PentaTileVisual` (constant `_PRIMARY_LAYER_NAME`), and the layer is added with `Node.INTERNAL_MODE_FRONT` so `get_node` cannot see it. All 12 prior tests use `layer.get("_primary_layer")` — Object property access by the script-local variable name, which works for INTERNAL_MODE_FRONT children.
 - **Fix:** Used `layer.get("_primary_layer")` in the new test (matches `comprehensive_bitmask_test.gd:114`, `paint_test.gd:232`, etc.).
-- **Files modified:** `addons/penta_tile/tests/single_grid_8_moore_propagation_test.gd`
+- **Files modified:** `tests/single_grid_8_moore_propagation_test.gd`
 - **Verification:** Test PASSES on patched code (`primary` is non-null); test FAILS on un-patched code with the exact message the plan specified — both the "did NOT re-render" branch was reached (which can only happen if `primary` was successfully resolved). Cycle confirmed.
 - **Committed in:** `76de69f`
 
@@ -152,8 +152,8 @@ exit=0
 ## Self-Check: PASSED
 
 - File `addons/penta_tile/penta_tile_map_layer.gd`: FOUND (contains `Vector2i(1, -1)`, `Vector2i(1, 1)`, `Vector2i(-1, 1)`, `Vector2i(-1, -1)`, and `D-87` comment).
-- File `addons/penta_tile/tests/single_grid_8_moore_propagation_test.gd`: FOUND (starts with `extends SceneTree`, contains `8-Moore propagation broken (D-87)`).
-- File `addons/penta_tile/tests/run_tests.ps1`: FOUND (contains `"single_grid_8_moore_propagation_test"`).
+- File `tests/single_grid_8_moore_propagation_test.gd`: FOUND (starts with `extends SceneTree`, contains `8-Moore propagation broken (D-87)`).
+- File `tests/run_tests.ps1`: FOUND (contains `"single_grid_8_moore_propagation_test"`).
 - File `.planning/STATE.md`: FOUND (contains `TILESETTER_DECISION: b`, `Phase 3 D-86 gate resolution`, `option b)`, `Phase 03` + `D-86` references in Current Position).
 - Commit `76de69f`: FOUND in `git log` (`git log --oneline | grep 76de69f` succeeds; commit body contains `option (b)` AND `TILESETTER_DECISION: b` AND `8-Moore` per the plan's I-1 cross-check).
 - Full test suite: 13/13 PASS.

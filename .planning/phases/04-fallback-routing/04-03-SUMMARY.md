@@ -94,4 +94,4 @@ Plan 03 commits since anchor:
 2. **Same prompt template structure** — Codex prompt should reuse the hard-constraint blocks and 7-trigger disqualification list from `04-GEMINI-PROMPT.md` verbatim, retargeted to the Codex CLI invocation.
 3. **Same anchor SHA file** (`04-PRE-PHASE-ANCHOR.txt`) bounds the `fix(04): CODEX-` commit count gate per B4 fix.
 4. **Same severity-tiered + disqualification workflow** — Critical/High auto-apply, Medium/Low/Info checkpoint to user; reviewer hallucinations rejected as `rejected-other`.
-5. **Sanity check before invoking Codex:** `pwsh -File addons/penta_tile/tests/run_tests.ps1 -NoPause` should still report `ALL GREEN (18 tests)`.
+5. **Sanity check before invoking Codex:** `pwsh -File tests/run_tests.ps1 -NoPause` should still report `ALL GREEN (18 tests)`.

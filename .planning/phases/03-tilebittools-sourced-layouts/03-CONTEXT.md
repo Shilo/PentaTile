@@ -145,7 +145,7 @@ None — `gsd-sdk query todo.match-phase 3` returned 0 matches.
 
 - `CLAUDE.md` § "Breaking Changes Policy (HARD RULE)" — no compat shims in either direction.
 - `CLAUDE.md` § "Critical Pitfalls" — pitfall #8 (single-grid logic-painted gate) and pitfall #9 (mask=0 default dispatch) both apply per-layout in Phase 3.
-- `CLAUDE.md` § "Test Methodology" — composed-canvas tests + pattern × layout matrix; new layouts get fresh test entries following the pattern in `addons/penta_tile/tests/comprehensive_bitmask_test.gd`.
+- `CLAUDE.md` § "Test Methodology" — composed-canvas tests + pattern × layout matrix; new layouts get fresh test entries following the pattern in `tests/comprehensive_bitmask_test.gd`.
 - `CLAUDE.md` § "Coined-Term Discipline" — "Penta" reserved for the 5-archetype tileset format. Phase 3 layouts have nothing to do with Penta; never coin Penta-prefixed names for blob/wang concepts.
 - `.planning/PROJECT.md` § Constraints — "smaller and simpler than TileMapDual" identity guardrail. End-of-Phase 3 LOC checkpoint informational; formal gate at Phase 4.
 - `.planning/REQUIREMENTS.md` TBT-01..04, DOC-05, TEMPLATE-02 — Phase 3's owned reqs. **TBT-04 + DOC-05 must be rewritten or deleted** per D-72/D-73 (no ATTRIBUTION.md).
@@ -157,7 +157,7 @@ None — `gsd-sdk query todo.match-phase 3` returned 0 matches.
 - `addons/penta_tile/layouts/penta_tile_layout.gd` — base class. Phase 3 layouts extend this and override the same virtuals as Phase 2 (`compute_mask`, `mask_to_atlas`, `is_dual_grid`, `_default_bitmask_template_path`, `_fallback_atlas_grid_size`).
 - `addons/penta_tile/layouts/penta_tile_layout_wang_2_corner.gd` — closest precedent for Phase 3 patterns (single-grid + corner mask + mask=0 dispatch + bundled PNG codegen). Phase 3 layouts mirror this structure.
 - `addons/penta_tile/_generate_bitmasks.py` — extend with 3 new generator functions per D-85.
-- `addons/penta_tile/tests/comprehensive_bitmask_test.gd` — pattern × layout matrix test. Phase 3 layouts get added to the matrix; new patterns added if 8-Moore reveals masks the existing 16-pattern set doesn't exercise.
+- `tests/comprehensive_bitmask_test.gd` — pattern × layout matrix test. Phase 3 layouts get added to the matrix; new patterns added if 8-Moore reveals masks the existing 16-pattern set doesn't exercise.
 
 ### Background research
 
@@ -192,7 +192,7 @@ None — `gsd-sdk query todo.match-phase 3` returned 0 matches.
 
 - **`PentaTileMapLayer.layout: PentaTileLayout`** @export property accepts any `PentaTileLayout` subclass — Phase 3 layouts plug in without changes to the layer.
 - **`get_fallback_tile_set()`** flows through automatically once each layout overrides `_default_bitmask_template_path` + `_fallback_atlas_grid_size`. Phase 4 wires the consumer side; Phase 3 just exposes the shapes.
-- **`addons/penta_tile/tests/comprehensive_bitmask_test.gd`** — Phase 3 layouts added to the layout list; pattern matrix covers them. New 47-blob-specific patterns added if existing 16 don't exercise 8-Moore mask edges (e.g. a 3×3 plus + diagonals to hit a corner-with-both-edges configuration).
+- **`tests/comprehensive_bitmask_test.gd`** — Phase 3 layouts added to the layout list; pattern matrix covers them. New 47-blob-specific patterns added if existing 16 don't exercise 8-Moore mask edges (e.g. a 3×3 plus + diagonals to hit a corner-with-both-edges configuration).
 - **No `.tres` files** ship for the new layouts in Phase 3 — fallback is codegen via `get_fallback_tile_set()` at runtime; demo-binding `.tres` files are Phase 5 territory if needed.
 
 </code_context>

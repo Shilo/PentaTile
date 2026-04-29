@@ -67,7 +67,7 @@ note: Manual demo eyeball approved; `fallback_routing_test.gd` composed the fall
 ### 9. PREVIEW-04 user-override regression (per D-04-06 belt+suspenders)
 expected: Assigning a custom `tile_set` directly flips `_tile_set_is_fallback`
 to false; clearing back to null + re-assigning `layout` re-routes to fallback.
-Verified via inspector and by `addons/penta_tile/tests/fallback_routing_test.gd`
+Verified via inspector and by `tests/fallback_routing_test.gd`
 sub-tests `_test_preview_04_override` + `_test_preview_04_reroute` +
 `_test_preview_04_user_tileset_preserved` (SC-4 regression).
 result: pass

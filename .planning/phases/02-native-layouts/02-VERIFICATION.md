@@ -62,8 +62,8 @@ Note: SC-6 is partially verified (code logic confirmed) but detection against a 
 | `addons/penta_tile/layouts/penta_tile_layout_wang_2_corner.png` | Wang2Corner bitmask template | ✓ VERIFIED | File exists |
 | `addons/penta_tile/layouts/penta_tile_layout_minimal_3x3.png` | Min3x3 bitmask template | ✓ VERIFIED | File exists |
 | `addons/penta_tile/demo/penta_layout_four_horizontal.tres` | Demo layout resource | ✓ VERIFIED | File exists; wired in demo.tscn |
-| `addons/penta_tile/tests/determinism_test.gd` | Headless determinism regression script | ✓ VERIFIED | File exists; PASS confirmed by Wave 7 run |
-| `addons/penta_tile/tests/_capture_baseline.gd` | Baseline capture utility | ✓ VERIFIED | File exists; committed at commit da0eb38 |
+| `tests/determinism_test.gd` | Headless determinism regression script | ✓ VERIFIED | File exists; PASS confirmed by Wave 7 run |
+| `tests/_capture_baseline.gd` | Baseline capture utility | ✓ VERIFIED | File exists; committed at commit da0eb38 |
 | `.planning/phases/02-native-layouts/02-07-LOC-CHECKPOINT.md` | Phase 2 LOC audit artifact | ✓ VERIFIED | File exists; 1961 total / 1827 runtime |
 | `.planning/phases/02-native-layouts/02-07-DETERMINISM-TEST.md` | Determinism test results | ✓ VERIFIED | File exists; composite verdict PASS |
 | **DELETED**: `addons/penta_tile/penta_tile_atlas_contract.gd` | Must not exist | ✓ VERIFIED | File absent |

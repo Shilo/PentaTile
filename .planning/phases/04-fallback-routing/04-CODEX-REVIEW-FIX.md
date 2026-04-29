@@ -46,7 +46,7 @@ This artifact is technically `all_dispositioned` (0 findings ÷ 0 = no work to d
 
 ## Sanity Checks
 
-- Test suite: `pwsh -File addons/penta_tile/tests/run_tests.ps1 -NoPause` → ALL GREEN (18 tests).
+- Test suite: `pwsh -File tests/run_tests.ps1 -NoPause` → ALL GREEN (18 tests).
 - Anchor-bounded commit count (B4 fix):
   ```
   ANCHOR=$(cat .planning/phases/04-fallback-routing/04-PRE-PHASE-ANCHOR.txt)

@@ -18,17 +18,17 @@
 | **NEW** `addons/penta_tile/layouts/penta_tile_layout_tilesetter_wang_15.png` | bundled asset / fallback PNG | data | `penta_tile_layout_wang_2_corner.png` | role-match |
 | **NEW** `addons/penta_tile/layouts/penta_tile_layout_tilesetter_blob_47.gd` | Resource subclass / layout | request-response | same as `blob_47_godot.gd` (sibling 47-blob) | exact |
 | **NEW** `addons/penta_tile/layouts/penta_tile_layout_tilesetter_blob_47.png` | bundled asset / fallback PNG | data | `penta_tile_layout_wang_2_corner.png` | role-match |
-| **NEW** `addons/penta_tile/tests/blob_47_collapse_test.gd` | unit test (algorithmic) | batch (256 masks → assert dict coverage) | `bitmask_bounds_test.gd` (per-slot enumeration) | role-match (new flavor: pure-math collapse, no rendering) |
-| **NEW** `addons/penta_tile/tests/blob_47_hollow_test.gd` | integration test (composed canvas) | batch (paint pattern → composed canvas → bbox assertions) | `penta_ground_hollow_test.gd` | exact |
-| **NEW** `addons/penta_tile/tests/tilesetter_wang_15_dispatch_test.gd` | unit test (dispatch) | batch | `bitmask_bounds_test.gd` | role-match |
-| **NEW** `addons/penta_tile/tests/tilesetter_blob_47_collapse_test.gd` | unit test (algorithmic) | batch | `bitmask_bounds_test.gd` (per-slot enumeration) | role-match |
-| **NEW** `addons/penta_tile/tests/single_grid_8_moore_propagation_test.gd` | integration test (pipeline) | event-driven (set_cell → re-render verification) | `comprehensive_bitmask_test.gd` `_test_combo` (paint + assert visual) | role-match |
+| **NEW** `tests/blob_47_collapse_test.gd` | unit test (algorithmic) | batch (256 masks → assert dict coverage) | `bitmask_bounds_test.gd` (per-slot enumeration) | role-match (new flavor: pure-math collapse, no rendering) |
+| **NEW** `tests/blob_47_hollow_test.gd` | integration test (composed canvas) | batch (paint pattern → composed canvas → bbox assertions) | `penta_ground_hollow_test.gd` | exact |
+| **NEW** `tests/tilesetter_wang_15_dispatch_test.gd` | unit test (dispatch) | batch | `bitmask_bounds_test.gd` | role-match |
+| **NEW** `tests/tilesetter_blob_47_collapse_test.gd` | unit test (algorithmic) | batch | `bitmask_bounds_test.gd` (per-slot enumeration) | role-match |
+| **NEW** `tests/single_grid_8_moore_propagation_test.gd` | integration test (pipeline) | event-driven (set_cell → re-render verification) | `comprehensive_bitmask_test.gd` `_test_combo` (paint + assert visual) | role-match |
 | **NEW** `.planning/phases/03-tilebittools-sourced-layouts/03-TBT-DEEP-AUDIT.md` | research deliverable | document | `.planning/research/layouts/TILEBITTOOLS.md` | role-match (extends prior audit with ADOPT/PARTIAL/REJECT verdicts) |
 | **MOD** `addons/penta_tile/penta_tile_map_layer.gd` (lines 234-239) | core layer / dispatch helper | event-driven (paint → mark affected cells) | self (`_mark_affected_display_cells` lines 222-227 has 4 corner offsets pattern) | exact (mechanical extension: 4-cardinal → 8-Moore) |
 | **MOD** `addons/penta_tile/_generate_bitmasks.py` | build script (Pillow image gen) | batch | self (`gen_wang_2_corner`, `gen_minimal_3x3`, `draw_corner_mask`, `draw_edge_mask`) | exact |
-| **MOD** `addons/penta_tile/tests/comprehensive_bitmask_test.gd` | extend layout matrix | batch | self (lines 66-72 layouts array) | exact |
-| **MOD** `addons/penta_tile/tests/bitmask_bounds_test.gd` | extend PNG bounds checks | batch | self (lines 40-58 _check_atlas calls) | exact |
-| **MOD** `addons/penta_tile/tests/run_tests.ps1` | extend test inventory | batch | self (lines 53-66 `$allTests` array) | exact |
+| **MOD** `tests/comprehensive_bitmask_test.gd` | extend layout matrix | batch | self (lines 66-72 layouts array) | exact |
+| **MOD** `tests/bitmask_bounds_test.gd` | extend PNG bounds checks | batch | self (lines 40-58 _check_atlas calls) | exact |
+| **MOD** `tests/run_tests.ps1` | extend test inventory | batch | self (lines 53-66 `$allTests` array) | exact |
 | **MOD** `README.md` | docs (project root) | document | self (existing footnote conventions) | role-match |
 | **MOD** `.planning/REQUIREMENTS.md`, `ROADMAP.md`, `STATE.md` | docs (planning) | document | self | exact |
 
@@ -293,9 +293,9 @@ gen_tilesetter_blob_47().save(OUT_LAYOUTS / "penta_tile_layout_tilesetter_blob_4
 
 ---
 
-### `addons/penta_tile/tests/blob_47_collapse_test.gd` (unit test, batch)
+### `tests/blob_47_collapse_test.gd` (unit test, batch)
 
-**Analog:** `addons/penta_tile/tests/bitmask_bounds_test.gd` (per-slot enumeration pattern); structure also borrows from `extends SceneTree` + `_failures` + `quit(0/1)` from `comprehensive_bitmask_test.gd` lines 32-86.
+**Analog:** `tests/bitmask_bounds_test.gd` (per-slot enumeration pattern); structure also borrows from `extends SceneTree` + `_failures` + `quit(0/1)` from `comprehensive_bitmask_test.gd` lines 32-86.
 
 **Header pattern** (copy `bitmask_bounds_test.gd` lines 1-39 framework):
 ```gdscript
@@ -305,7 +305,7 @@ gen_tilesetter_blob_47().save(OUT_LAYOUTS / "penta_tile_layout_tilesetter_blob_4
 ## (Pitfall A from 03-RESEARCH.md).
 ##
 ## Run headless:
-##   Godot --headless --path . --script addons/penta_tile/tests/blob_47_collapse_test.gd
+##   Godot --headless --path . --script tests/blob_47_collapse_test.gd
 extends SceneTree
 
 const _Blob47GodotSc = preload("res://addons/penta_tile/layouts/penta_tile_layout_blob_47_godot.gd")
@@ -338,9 +338,9 @@ func _initialize() -> void:
 
 ---
 
-### `addons/penta_tile/tests/blob_47_hollow_test.gd` (integration test, composed canvas)
+### `tests/blob_47_hollow_test.gd` (integration test, composed canvas)
 
-**Analog:** `addons/penta_tile/tests/penta_ground_hollow_test.gd` (paint hollow ring → compose canvas → assert opaque-pixel bbox + hole emptiness). This is the ONE-FOR-ONE template per CLAUDE.md "Test Methodology" #1 + #2.
+**Analog:** `tests/penta_ground_hollow_test.gd` (paint hollow ring → compose canvas → assert opaque-pixel bbox + hole emptiness). This is the ONE-FOR-ONE template per CLAUDE.md "Test Methodology" #1 + #2.
 
 **Header pattern** (penta_ground_hollow_test.gd lines 36-90 — copy structure, swap layout):
 ```gdscript
@@ -380,7 +380,7 @@ func _initialize() -> void:
 
 ---
 
-### `addons/penta_tile/tests/single_grid_8_moore_propagation_test.gd` (integration test, event-driven)
+### `tests/single_grid_8_moore_propagation_test.gd` (integration test, event-driven)
 
 **Analog:** `comprehensive_bitmask_test.gd` `_test_combo` (lines 97-263 — paint cells, assert visual rendering).
 
@@ -431,7 +431,7 @@ func _initialize() -> void:
 
 ---
 
-### `addons/penta_tile/tests/comprehensive_bitmask_test.gd` — extend layouts array (modify, batch)
+### `tests/comprehensive_bitmask_test.gd` — extend layouts array (modify, batch)
 
 **Analog:** self — lines 34-39 (preloads), lines 66-72 (`layouts` array).
 
@@ -458,7 +458,7 @@ const _TilesetterBlob47Sc = preload("res://addons/penta_tile/layouts/penta_tile_
 
 ---
 
-### `addons/penta_tile/tests/bitmask_bounds_test.gd` — extend with 3 PNG paths (modify, batch)
+### `tests/bitmask_bounds_test.gd` — extend with 3 PNG paths (modify, batch)
 
 **Analog:** self — lines 40-58 (`_check_atlas` calls per layout).
 
@@ -484,7 +484,7 @@ _check_atlas("TilesetterBlob47",
 
 ---
 
-### `addons/penta_tile/tests/run_tests.ps1` — extend `$allTests` (modify, batch)
+### `tests/run_tests.ps1` — extend `$allTests` (modify, batch)
 
 **Analog:** self — lines 53-66 `$allTests` array.
 
@@ -513,7 +513,7 @@ $allTests = @(
 
 ---
 
-### `addons/penta_tile/tests/tilesetter_wang_15_dispatch_test.gd` (D-86 conditional)
+### `tests/tilesetter_wang_15_dispatch_test.gd` (D-86 conditional)
 
 **Analog:** mirrors `blob_47_collapse_test.gd` shape but enumerates 16 corner masks instead of 256:
 - `for mask in range(16)`: assert `mask_to_atlas(mask).atlas_coords` is in valid grid bounds (`Vector2i(0, 0)..(5, 2)`).
@@ -523,7 +523,7 @@ $allTests = @(
 
 ---
 
-### `addons/penta_tile/tests/tilesetter_blob_47_collapse_test.gd` (D-86 conditional)
+### `tests/tilesetter_blob_47_collapse_test.gd` (D-86 conditional)
 
 **Analog:** copy of `blob_47_collapse_test.gd` with class swapped to `PentaTileLayoutTilesetterBlob47`. Same 256-mask enumeration, same dict-coverage assertion, dict size check (47).
 
@@ -632,7 +632,7 @@ func mask_to_atlas(mask: int, _strip_index: int = 0) -> PentaTileAtlasSlot:
 
 ### Test file `extends SceneTree` framework
 
-**Source:** `addons/penta_tile/tests/comprehensive_bitmask_test.gd` lines 32-86 + `bitmask_bounds_test.gd` lines 29-80.
+**Source:** `tests/comprehensive_bitmask_test.gd` lines 32-86 + `bitmask_bounds_test.gd` lines 29-80.
 **Apply to:** all 5 NEW test files.
 
 **Boilerplate:**
@@ -640,7 +640,7 @@ func mask_to_atlas(mask: int, _strip_index: int = 0) -> PentaTileAtlasSlot:
 ## <test description>
 ##
 ## Run headless:
-##   Godot --headless --path . --script addons/penta_tile/tests/<name>.gd
+##   Godot --headless --path . --script tests/<name>.gd
 extends SceneTree
 
 const _<DepName> = preload("<path>")
@@ -703,11 +703,11 @@ func _record(label: String, msg: String) -> void:
 
 **Analog search scope:**
 - `addons/penta_tile/layouts/*.gd` (6 layouts read)
-- `addons/penta_tile/tests/*.gd` (3 representative tests read: `comprehensive_bitmask_test.gd`, `bitmask_bounds_test.gd`, `penta_ground_hollow_test.gd`)
+- `tests/*.gd` (3 representative tests read: `comprehensive_bitmask_test.gd`, `bitmask_bounds_test.gd`, `penta_ground_hollow_test.gd`)
 - `addons/penta_tile/penta_tile_map_layer.gd` (lines 175-300 — paint dispatch + affected-cell helpers)
 - `addons/penta_tile/_generate_bitmasks.py` (full file)
 - `addons/penta_tile/penta_tile_atlas_slot.gd` (full file)
-- `addons/penta_tile/tests/run_tests.ps1` (full file)
+- `tests/run_tests.ps1` (full file)
 - `README.md` (header + supported-layouts section)
 - `.planning/phases/03-tilebittools-sourced-layouts/03-CONTEXT.md` (full)
 - `.planning/phases/03-tilebittools-sourced-layouts/03-RESEARCH.md` (file structure section + Code Examples)

@@ -38,7 +38,7 @@ const _NW := Vector2i(-1, -1)
 # → (4,6)). Cells (5,6) and (6,6) are unused and stay transparent.
 #
 # The 47-mask list is exactly the set of values reachable via _collapse_8bit_moore
-# on raw input range [0, 256). Verified by addons/penta_tile/tests/blob_47_collapse_test.gd.
+# on raw input range [0, 256). Verified by tests/blob_47_collapse_test.gd.
 const _MASK_TO_ATLAS: Dictionary = {
 	  0: Vector2i(0, 0),    1: Vector2i(1, 0),    2: Vector2i(2, 0),    3: Vector2i(3, 0),
 	  4: Vector2i(4, 0),    5: Vector2i(5, 0),    6: Vector2i(6, 0),

@@ -13,15 +13,16 @@
 5. [Layouts](#-layouts)
 6. [Comparison: PentaTile vs. TileMapDual](#-pentatile-vs-tilemapdual-api)
 7. [Choosing the Right Tool](#-choosing-the-right-tool)
-8. [Addon Layout](#-addon-layout)
-9. [Current API](#-current-api)
-10. [Demo](#-demo)
-11. [Authoring a Custom Layout](#-authoring-a-custom-layout)
-12. [Upgrading from 0.1.x](#-upgrading-from-01x)
-13. [Identity & Footprint](#-identity--footprint)
-14. [Implementation Notes](#-implementation-notes)
-15. [Roadmap](#-roadmap)
-16. [External Resources](#-external-resources)
+8. [Docs Site](#-docs-site)
+9. [Addon Layout](#-addon-layout)
+10. [Current API](#-current-api)
+11. [Demo](#-demo)
+12. [Authoring a Custom Layout](#-authoring-a-custom-layout)
+13. [Upgrading from 0.1.x](#-upgrading-from-01x)
+14. [Identity & Footprint](#-identity--footprint)
+15. [Implementation Notes](#-implementation-notes)
+16. [Roadmap](#-roadmap)
+17. [External Resources](#-external-resources)
 
 ## 🚀 Why PentaTile?
 
@@ -104,6 +105,18 @@ Tilesetter (Wang 15 + Blob 47 in Tilesetter's atlas conventions) is on the v0.3+
 
 Custom layouts are supported via subclassing — see [Authoring a Custom Layout](#-authoring-a-custom-layout) (experimental).
 
+## 📚 Docs Site
+
+The MkDocs source lives in `docs/`, with configuration in `mkdocs.yml`.
+
+```bash
+python -m pip install -r requirements-docs.txt
+mkdocs serve
+```
+
+The GitHub release zip intentionally packages only `addons/penta_tile/`; docs,
+tests, and planning artifacts stay in the repository.
+
 ## ⚔️ PentaTile vs. TileMapDual API
 
 <a href="https://github.com/pablogila/TileMapDual" target="_blank" rel="noopener">TileMapDual ↗︎</a> is an established solution for Dual Grid systems in Godot. **PentaTile** takes a narrower scope, focusing on standard orthogonal grids with a minimal authoring surface.
@@ -152,20 +165,23 @@ addons/penta_tile/
     penta_tile_layout_wang_2_corner.gd     # Wang 2-corner
     penta_tile_layout_minimal_3x3.gd       # Minimal 3x3
     penta_tile_layout_penta/               # bundled per-mode PNGs (one_horizontal.png … five_vertical.png)
-  tests/
-    determinism_test.gd                    # PENTA-SYNTH-06 baseline check
-    _capture_baseline.gd                   # baseline regeneration utility
-    baselines/                             # captured hash + tile-map data
   demo/
     penta_tile_demo.tscn
-    demo_player.gd
     demo_runtime_painter.gd
-    penta_tile_ground.png
-    penta_tile_ground.tres
-    penta_layout_*_horizontal.tres         # demo Penta layout resources
+    penta_layout_*.tres                    # demo layout resources
+tests/
+  run_tests.ps1                            # Windows local test runner
+  run_tests.sh                             # Linux / CI test runner
+  determinism_test.gd                      # PENTA-SYNTH-06 baseline check
+  baselines/                               # captured hash + tile-map data
+docs/
+  index.md                                 # MkDocs source
 ```
 
-`demo/penta_tile_ground.png` and `demo/penta_tile_ground.tres` are the demo atlas/TileSet. The `layouts/penta_tile_layout_penta/` PNG bundle ships the canonical Penta templates for each axis × mode combination.
+The release zip archives only `addons/penta_tile/`, so the root `tests/` and
+`docs/` directories are repository tooling and do not ship inside the addon
+package. The `layouts/penta_tile_layout_penta/` PNG bundle ships the canonical
+Penta templates for each axis × mode combination.
 
 ## 🔌 Current API
 

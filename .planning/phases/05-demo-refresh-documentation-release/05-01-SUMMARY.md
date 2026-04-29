@@ -27,7 +27,7 @@ provides:
   - "Hover-target drag-paint across N PentaTileMapLayer children"
   - "Pitfall #6 mitigation — index-0 Penta FOUR node retains literal name PentaTileMapLayer"
 affects:
-  - addons/penta_tile/tests/run_tests.ps1 (test inventory: 18 → 17)
+  - tests/run_tests.ps1 (test inventory: 18 → 17)
 tech-stack:
   added: []
   patterns:
@@ -38,7 +38,7 @@ key-files:
   modified:
     - addons/penta_tile/demo/penta_tile_demo.tscn
     - addons/penta_tile/demo/demo_runtime_painter.gd
-    - addons/penta_tile/tests/run_tests.ps1
+    - tests/run_tests.ps1
   deleted:
     - addons/penta_tile/demo/demo_player.gd
     - addons/penta_tile/demo/demo_player.gd.uid
@@ -50,10 +50,10 @@ key-files:
     - addons/penta_tile/demo/penta_tile_minimal_3x3.tres
     - addons/penta_tile/demo/penta_tile_wang_2_corner.tres
     - addons/penta_tile/demo/penta_tile_wang_2_edge.tres
-    - addons/penta_tile/tests/penta_ground_hollow_test.gd
-    - addons/penta_tile/tests/penta_ground_hollow_test.gd.uid
-    - addons/penta_tile/tests/_populate_bitmask_demo.gd
-    - addons/penta_tile/tests/_populate_bitmask_demo.gd.uid
+    - tests/penta_ground_hollow_test.gd
+    - tests/penta_ground_hollow_test.gd.uid
+    - tests/_populate_bitmask_demo.gd
+    - tests/_populate_bitmask_demo.gd.uid
 decisions:
   - "Auto-load bitmask_template explicitly in each layout SubResource (rather than relying on PentaTileLayout._init's path-based auto-load): saves a load() at scene-instantiation and makes the binding visible in the .tscn."
   - "Camera position (1120, 384) zoom (0.4, 0.4): fits the 2240px x 832px world bounds (4 cols x 576 + 2 rows x 448) without panning."
@@ -90,8 +90,8 @@ Deleted 10 demo-directory files plus 4 newly-orphaned tests-directory files (Rul
 | `addons/penta_tile/demo/penta_tile_minimal_3x3.tres` | Pitfall #12: orphan |
 | `addons/penta_tile/demo/penta_tile_wang_2_corner.tres` | Pitfall #12: orphan |
 | `addons/penta_tile/demo/penta_tile_wang_2_edge.tres` | Pitfall #12: orphan |
-| `addons/penta_tile/tests/penta_ground_hollow_test.gd` (+ `.uid`) | Hardcoded `_GROUND_TS_PATH := "res://addons/penta_tile/demo/penta_tile_ground.tres"` |
-| `addons/penta_tile/tests/_populate_bitmask_demo.gd` (+ `.uid`) | Hardcoded `_GROUND_TRES`; utility script not in test inventory |
+| `tests/penta_ground_hollow_test.gd` (+ `.uid`) | Hardcoded `_GROUND_TS_PATH := "res://addons/penta_tile/demo/penta_tile_ground.tres"` |
+| `tests/_populate_bitmask_demo.gd` (+ `.uid`) | Hardcoded `_GROUND_TRES`; utility script not in test inventory |
 
 Test inventory in `run_tests.ps1` updated 18 → 17 (`penta_ground_hollow_test` removed).
 
@@ -162,7 +162,7 @@ Each TileMapLayer node has `_tile_set_is_fallback = true` and no explicit `tile_
 ## Verification
 
 - **Headless scene-open** (`godot --headless --quit-after 3 res://addons/penta_tile/demo/penta_tile_demo.tscn`): exit=0, **zero bytes** in stderr, zero `ERROR:` / `SCRIPT ERROR:` lines.
-- **17-test suite** (`pwsh -File addons/penta_tile/tests/run_tests.ps1 -NoPause -Test all`): **ALL GREEN** — paint_test, all_layouts_test, visual_render_test, strict_pixel_test, penta_one_mode_test, auto_strip_axis_test, layout_swap_test, all_layouts_swap_pixel_test, bitmask_bounds_test, comprehensive_bitmask_test, determinism_test, blob_47_collapse_test, blob_47_hollow_test, single_grid_8_moore_propagation_test, pixellab_first_cell_test, pixellab_visual_regression_test, fallback_routing_test (17/17 PASS).
+- **17-test suite** (`pwsh -File tests/run_tests.ps1 -NoPause -Test all`): **ALL GREEN** — paint_test, all_layouts_test, visual_render_test, strict_pixel_test, penta_one_mode_test, auto_strip_axis_test, layout_swap_test, all_layouts_swap_pixel_test, bitmask_bounds_test, comprehensive_bitmask_test, determinism_test, blob_47_collapse_test, blob_47_hollow_test, single_grid_8_moore_propagation_test, pixellab_first_cell_test, pixellab_visual_regression_test, fallback_routing_test (17/17 PASS).
 - **Pitfall #6 mitigation**: `find_child("PentaTileMapLayer", true, false)` in `_capture_baseline.gd:46` still resolves — verified by running the capture utility against the new scene with `--layout-path=res://addons/penta_tile/demo/penta_layout_four_horizontal.tres`; it printed `LAYOUT_OVERRIDE=...class=Resource axis=0 tile_count=4` followed by `BASELINE_HASH=4100093049` cleanly. (The hash is naturally different from Phase 2's `2986698704` because the new scene starts with no painted cells; `BASELINE_CELLS=0` reflects the empty state. The `determinism_test.gd` self-contained baseline (`2561003017`, painted cell count `46`) is independent of the demo scene per its 2026-04-28 refactor and stays green.)
 
 ## Deviations from Plan
@@ -173,15 +173,15 @@ Each TileMapLayer node has `_tile_set_is_fallback = true` and no explicit `tile_
 
 **Issue:** The plan's `<read_first>` for Task 1 stated "verify [`_capture_baseline.gd`] does NOT reference any of the 4 unused legacy .tres OR penta_tile_ground.tres", which is true. But the planner also asserted "no other files reference any of the 10 deletes" — a wider claim that is **false**:
 
-- `addons/penta_tile/tests/penta_ground_hollow_test.gd` line 41 hardcodes `const _GROUND_TS_PATH := "res://addons/penta_tile/demo/penta_tile_ground.tres"`. This test IS in the 18-test inventory in `run_tests.ps1`, so deleting `penta_tile_ground.tres` would break the plan's success criterion ("All 18 tests still pass").
-- `addons/penta_tile/tests/_populate_bitmask_demo.gd` line 34 hardcodes `const _GROUND_TRES := "res://addons/penta_tile/demo/penta_tile_ground.tres"`. This is a utility script (not in the inventory) but it would crash at runtime if invoked.
+- `tests/penta_ground_hollow_test.gd` line 41 hardcodes `const _GROUND_TS_PATH := "res://addons/penta_tile/demo/penta_tile_ground.tres"`. This test IS in the 18-test inventory in `run_tests.ps1`, so deleting `penta_tile_ground.tres` would break the plan's success criterion ("All 18 tests still pass").
+- `tests/_populate_bitmask_demo.gd` line 34 hardcodes `const _GROUND_TRES := "res://addons/penta_tile/demo/penta_tile_ground.tres"`. This is a utility script (not in the inventory) but it would crash at runtime if invoked.
 
 **Fix (per CLAUDE.md HARD RULE — no compat shims, breakage is fine):**
 - `git rm` both test files + their `.uid` sidecars in the same commit as the demo deletes.
 - Removed `"penta_ground_hollow_test"` from the inventory in `run_tests.ps1`. Inventory is now 17 tests (still green).
 
-**Files modified:** `addons/penta_tile/tests/run_tests.ps1` (delete 1 inventory line)
-**Files deleted:** `addons/penta_tile/tests/penta_ground_hollow_test.gd{,.uid}`, `addons/penta_tile/tests/_populate_bitmask_demo.gd{,.uid}`
+**Files modified:** `tests/run_tests.ps1` (delete 1 inventory line)
+**Files deleted:** `tests/penta_ground_hollow_test.gd{,.uid}`, `tests/_populate_bitmask_demo.gd{,.uid}`
 **Commit:** `40ad5ee`
 
 ### No other deviations
@@ -205,7 +205,7 @@ N/A — this plan is `type: execute`, not `type: tdd`.
 **Files deleted (key deletes):**
 - `addons/penta_tile/demo/demo_player.gd` MISSING (correctly — deleted)
 - `addons/penta_tile/demo/penta_tile_ground.tres` MISSING (correctly — deleted)
-- `addons/penta_tile/tests/penta_ground_hollow_test.gd` MISSING (correctly — deleted)
+- `tests/penta_ground_hollow_test.gd` MISSING (correctly — deleted)
 
 **Commits:**
 - `40ad5ee` FOUND in `git log`
@@ -245,8 +245,8 @@ Per plan `<output>`:
 - Additional retirements driven by the Rule 1 deviation (also worth flagging in CHANGELOG):
 
   ```
-  addons/penta_tile/tests/penta_ground_hollow_test.gd
-  addons/penta_tile/tests/penta_ground_hollow_test.gd.uid
-  addons/penta_tile/tests/_populate_bitmask_demo.gd
-  addons/penta_tile/tests/_populate_bitmask_demo.gd.uid
+  tests/penta_ground_hollow_test.gd
+  tests/penta_ground_hollow_test.gd.uid
+  tests/_populate_bitmask_demo.gd
+  tests/_populate_bitmask_demo.gd.uid
   ```

@@ -22,8 +22,8 @@ Review these files and the relationships between them:
 - `addons/penta_tile/layouts/penta_tile_layout_blob_47_godot.gd`
 - `addons/penta_tile/layouts/penta_tile_layout_pixel_lab_top_down.gd`
 - `addons/penta_tile/layouts/penta_tile_layout_pixel_lab_side_scroller.gd`
-- `addons/penta_tile/tests/fallback_routing_test.gd`
-- `addons/penta_tile/tests/run_tests.ps1`
+- `tests/fallback_routing_test.gd`
+- `tests/run_tests.ps1`
 - `.planning/phases/04-fallback-routing/04-FALLBACK-UAT.md`
 - `.planning/phases/04-fallback-routing/04-DOC-SWEEP.md`
 - `.planning/phases/04-fallback-routing/04-CONTEXT.md`

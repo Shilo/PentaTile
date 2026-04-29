@@ -94,7 +94,7 @@ Coverage script result: every public method/export check returned `missing=` emp
 
 ## Verification
 
-- `pwsh -File addons/penta_tile/tests/run_tests.ps1 -NoPause` passed after each task.
+- `pwsh -File tests/run_tests.ps1 -NoPause` passed after each task.
 - Final full-suite result: `ALL GREEN (18 tests)`.
 - `Select-String` coverage checks confirmed every `^(static )?func [a-z]` and every `^@export` line has a nearby/immediate `##` doc-comment.
 - `## @experimental` count is exactly 1 and appears only in `addons/penta_tile/layouts/penta_tile_layout.gd`.

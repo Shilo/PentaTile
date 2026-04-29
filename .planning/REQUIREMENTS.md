@@ -139,7 +139,7 @@ Auto-detection reads `TileSetAtlasSource.get_atlas_grid_size()` along the strip 
 **: FOUR mode visual regression. Captured baseline (NOT v0.1 bit-identity since slot ordering changed — slot 3 is now InnerCorner, was OuterCorner in v0.1). Baseline-capture protocol:
   1. **What's captured**: render output of a fixed test scene (a 5×5 painted region with each mask state 0..15 represented at known coords) using a checked-in `PentaTileLayoutPenta(axis=HORIZONTAL, tile_count=FOUR)` Resource pointing at a fixed test atlas.
   2. **How it's captured**: `Viewport.get_texture().get_image().get_data().hash()` (single int per render) OR `Image.save_png()` to a baseline file (visual eyeball + structural diff). Planner picks one — int hash is cheaper and stricter.
-  3. **Where the baseline lives**: `addons/penta_tile/tests/baselines/four_mode_5x5.<hash|png>` (path TBD by planner).
+  3. **Where the baseline lives**: `tests/baselines/four_mode_5x5.<hash|png>` (path TBD by planner).
   4. **When it's captured**: once, at the end of Phase 2 Wave 7, after synthesis is verified visually correct. Subsequent runs assert hash-equality against this baseline.
   5. **What "regression blocks merge" means**: if a future commit changes the hash, the test fails and CI (or manual check) blocks the merge until either (a) the regression is fixed, or (b) the baseline is intentionally updated with a justification commit.
   6. Planner is free to refine the protocol but must answer all 5 points before implementation.
@@ -218,6 +218,18 @@ Greyboxed silhouette PNGs the artist paints over.
 - [ ] **REL-02**: Git tag `v0.2.0` cut on the release commit (no `-pre`/`-alpha`/`-dev` suffixes).
 - [ ] **REL-03**: GitHub Release artifact `penta_tile-v<release-version>.zip` with `addons/penta_tile/` at the archive root, including bundled bitmask PNGs. Per D-72/D-73, NO ATTRIBUTION.md ships — TileBitTools acknowledgment lives in README "External Resources" section as a design-inspiration footnote (DOC-05).
 
+### Phase 7 Repo Docs Follow-Up (REPO / DOCS)
+
+Post-v0.2.0 repository hygiene and documentation-site work. This phase changes
+repository structure and docs only; runtime addon behavior is unchanged.
+
+- [x] **REPO-01**: Move the regression suite out of the addon package from `addons/penta_tile/tests/` to root `tests/` so release archives can ship only runtime addon files.
+- [x] **REPO-02**: Update test runners, Godot script paths, test fixture resource paths, release workflow commands, README, AGENTS/CLAUDE, and current planning docs to use root `tests/`.
+- [x] **REPO-03**: Confirm GitHub release packaging still archives only `addons/penta_tile/`, excluding root `tests/`, `docs/`, and `.planning/`.
+- [x] **DOCS-06**: Add a minimal MkDocs site with quickstart, installation, layouts overview, one page per shipped layout, Penta definition page, and custom layout authoring page.
+- [x] **DOCS-07**: Configure the docs theme to default to dark mode with a manual dark/light toggle and no custom theme code.
+- [x] **DOCS-08**: Create an LLM-friendly docs decision artifact comparing direct source docs against an auto-generated flat text artifact, with recommendation and revisit trigger.
+
 ## v2 Requirements
 
 Deferred to a future milestone but acknowledged. The original v0.2 feature pillars live here now since they pushed past this milestone.
@@ -281,7 +293,7 @@ Backlog item added 2026-04-26 from Phase 2.1 brainstorm and superseded 2026-04-2
 ### Tooling & Distribution
 
 - **TOOL-03**: Collision authoring tools / auto-collision generation.
-- ~~**TOOL-04**: MkDocs documentation site.~~ — **Promoted to Phase 7** (v0.2.0 follow-up) on 2026-04-29; new REQ-IDs in `DOCS-*` family will be created during `/gsd-plan-phase 7`.
+- ~~**TOOL-04**: MkDocs documentation site.~~ — **Promoted to Phase 7** (v0.2.0 follow-up) on 2026-04-29 and satisfied as DOCS-06 / DOCS-07.
 - **DIST-01**: Godot Asset Library submission.
 - **DIST-02**: Formal automated test suite (GUT or similar).
 
@@ -375,7 +387,7 @@ Which phases cover which requirements. Empty initially — populated by `gsd-roa
 | PIXLAB-04 | 3.5 | Complete (Plan 05 / `94774a4` `aff6f35` `6687eb4`: pixellab_visual_regression_test composes rendered canvas via blit + transform helper against checked-in spike-003 PixelLab sample fixtures (128×128, 8×8 atlas at 16px); asserts non-empty cells + canvas-size match + bit-stable rebuild via direct PackedByteArray equality; D-102 case 3 closed) |
 | PREVIEW-01 | 2 | Complete (`template_image` renamed `bitmask_template` in Wave 1) |
 | PREVIEW-02 | 2 | Complete (dual-role `bitmask_template` serves preview AND fallback codegen) |
-| PREVIEW-03 | 4 | Complete (Plan 01 / commit `8c6a05e`: addons/penta_tile/tests/fallback_routing_test.gd ships composed-canvas test exercising all 8 actually-shipped layouts under `tile_set = null` per D-04-05; PREVIEW-03 contract — `tile_set` auto-fills from `layout.get_fallback_tile_set()` — verified programmatically AND via manual demo eyeball pass per D-04-06 belt+suspenders / 04-FALLBACK-UAT.md) |
+| PREVIEW-03 | 4 | Complete (Plan 01 / commit `8c6a05e`: tests/fallback_routing_test.gd ships composed-canvas test exercising all 8 actually-shipped layouts under `tile_set = null` per D-04-05; PREVIEW-03 contract — `tile_set` auto-fills from `layout.get_fallback_tile_set()` — verified programmatically AND via manual demo eyeball pass per D-04-06 belt+suspenders / 04-FALLBACK-UAT.md) |
 | PREVIEW-04 | 4 | Complete (Plan 01 / commit `8c6a05e`: same test asserts user-supplied `tile_set` overrides fallback (`_tile_set_is_fallback` flips to false on direct write); clearing `tile_set` + re-assigning `layout` re-engages fallback. Manual eyeball pass per 04-FALLBACK-UAT.md row 9.) |
 | TEMPLATE-01 | 2 | Complete (14 bundled PNGs at co-located paths; `templates/` folder deleted in Wave 5) |
 | TEMPLATE-02 | 3 + 3 → v0.3+ | Partial — Blob47Godot PNG ships (Plan 04 / commit `fad4054`); Tilesetter pair (TilesetterWang15 + TilesetterBlob47 PNGs) deferred to v0.3+ per D-86 option (b). Tracked as `TEMPLATE-02-DEFERRED` in v2 Requirements. |
@@ -392,6 +404,12 @@ Which phases cover which requirements. Empty initially — populated by `gsd-roa
 | REL-01 | 5 | Complete (Plan 05-04 + 05-05 / workflow run 25131034672: plugin.cfg version bumped 0.1.0 → 0.2.0 by the release workflow per D-05-16 auto-increment rule; release commit `a3223b9`) |
 | REL-02 | 5 | Complete (Plan 05-04 + 05-05 / workflow run 25131034672: git tag `v0.2.0` cut on release commit `a3223b9`) |
 | REL-03 | 5 | Complete (Plan 05-04 + 05-05 / workflow run 25131034672: penta_tile-v0.2.0.zip (208024 bytes) published to the v0.2.0 Release at https://github.com/Shilo/PentaTile/releases/tag/v0.2.0; addons/penta_tile/ at archive root with bundled bitmask PNGs; per SC-B, NO ATTRIBUTION.md ships) |
+| REPO-01 | 7 | Complete (tests moved from `addons/penta_tile/tests/` to root `tests/`) |
+| REPO-02 | 7 | Complete (runners, fixture imports, release workflow, README, AGENTS/CLAUDE, and current planning docs retargeted to root `tests/`) |
+| REPO-03 | 7 | Complete (release workflow still archives only `addons/penta_tile/`; root `tests/` and `docs/` excluded) |
+| DOCS-06 | 7 | Complete (`mkdocs.yml` + `docs/` site with required pages) |
+| DOCS-07 | 7 | Complete (Material for MkDocs dark-first palette with manual light/dark toggle) |
+| DOCS-08 | 7 | Complete (`07-LLM-DOCS-DECISION.md` recommends direct source docs over generated flat artifact for now) |
 
 **Coverage:**
 - v1 requirements: 58 total (39 original − 5 CONTRACT (deleted) + 6 added Phase 1 discuss + 12 PENTA-SYNTH-* (5 progressive modes ONE→FIVE + AUTO/AUTO_STRIP detection + per-layout PNG conventions) + 5 LAYER-* (replace contract; LAYER-04 demo rebind, LAYER-05 Phase 1 test migration added during cleanup audit 2026-04-26) + 2 LAYOUT-06/07 (`get_fallback_tile_set()` virtual + co-located bundled PNGs) − 1 VAR-PIXEL-01 (moved to v2 backlog with VAR-01))
@@ -400,6 +418,7 @@ Which phases cover which requirements. Empty initially — populated by `gsd-roa
 - 2026-04-29 D-86 outcome (Plan 05 SKIPPED): TBT-01, TBT-02, and the Tilesetter half of TEMPLATE-02 were originally mapped to Phase 3. Per the user's option-(b) decision, all three deferred to v0.3+ (tracked as TBT-01-DEFERRED / TBT-02-DEFERRED / TEMPLATE-02-DEFERRED in v2 Requirements). Phase 3 still owns these IDs in the Traceability table but their Status reads "Deferred" / "Partial" rather than "Complete." Phase 3 effective coverage: TBT-03 + TBT-04 + DOC-05 + Blob47Godot half of TEMPLATE-02 (4 of 6 originally-planned Phase 3 IDs).
 - 2026-04-29 Phase 3.5 closeout (Plan 06): PIXLAB-01..04 flipped to Complete. VAR-PIXEL-01 explicitly stays in v2 Requirements per D-89/D-90/D-91 — bank-pick wiring deferred until variation work reopens (design-coupled with VAR-01 + MULTITERR-01). The phase title "+ Variation-Seed Wiring" was a misnomer in v0.2 — no `variation_seed` property is exposed; layouts ship with first-cell pick only. Coverage counter unchanged: 58 v1 reqs (PIXLAB-01..04 were already counted as v1; the change is Status not membership).
 - 2026-04-29: Phase 5 closeout. DEMO-01..03 + DOC-01..04 + REL-01..03 flipped to Complete. v0.2.0 published via release workflow run 25131034672 (44s wall-clock); release commit `a3223b9`; git tag `v0.2.0`; release page https://github.com/Shilo/PentaTile/releases/tag/v0.2.0. v0.2.0 milestone shipped end-to-end. Coverage: 58 / 58 v1 requirements satisfied (zero pending). Per SC-A reframe, demo + docs cover 8 actually-shipped layouts (Tilesetter pair stays deferred to v0.3+ per D-86 b). Per SC-B, no ATTRIBUTION.md ships (TileBitTools acknowledgment lives in README "External Resources" footnote per DOC-05). Per SC-C, identity is hot-path minimalism + anti-pattern absence (D-05-11), audit at `.planning/phases/05-demo-refresh-documentation-release/05-LOC-AUDIT.md` with summary in README "Identity & Footprint". Per SC-D, REL-01 ownership flipped from "manual commit" to "workflow side-effect" (D-05-16).
+- 2026-04-29: Phase 7 closeout. REPO-01..03 + DOCS-06..08 flipped to Complete. Tests moved to root `tests/`; MkDocs site added under `docs/`; LLM docs decision recorded. Post-release follow-up coverage: 6 / 6 Phase 7 requirements satisfied.
 - 2026-04-26 architectural pivots (locked after fourth iteration):
   - **Slot ordering**: `0=IsolatedCell, 1=Fill, 2=Border, 3=InnerCorner, 4=OppositeCorners`. OuterCorner is implicit (synthesized from slot 0's corners across all modes).
   - **Five progressive modes**: ONE → TWO → THREE → FOUR → FIVE, each adding one explicit slot. AUTO detects from atlas axis size (uniform across strips); AUTO_STRIP detects per-strip (strips can differ).

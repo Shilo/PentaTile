@@ -104,10 +104,10 @@ The following files would have been created under D-86 = (a) or (c) but are NOT 
 - `addons/penta_tile/layouts/penta_tile_layout_tilesetter_wang_15.png`
 - `addons/penta_tile/layouts/penta_tile_layout_tilesetter_blob_47.gd`
 - `addons/penta_tile/layouts/penta_tile_layout_tilesetter_blob_47.png`
-- `addons/penta_tile/tests/tilesetter_wang_15_dispatch_test.gd`
-- `addons/penta_tile/tests/tilesetter_blob_47_collapse_test.gd`
+- `tests/tilesetter_wang_15_dispatch_test.gd`
+- `tests/tilesetter_blob_47_collapse_test.gd`
 - (no extension to `addons/penta_tile/_generate_bitmasks.py`)
-- (no entries appended to `addons/penta_tile/tests/run_tests.ps1`)
+- (no entries appended to `tests/run_tests.ps1`)
 
 Phase 3 test count remains 15 (Phase 2's 12 + Plan 01's `single_grid_8_moore_propagation_test` + Plan 04's `blob_47_collapse_test` + `blob_47_hollow_test`). Plan 06's matrix integration may add 0 tests or 1 (depending on whether the comprehensive matrix needs a Phase-3-specific case beyond Blob47Godot).
 
@@ -187,7 +187,7 @@ Verified post-write:
 
 - `.planning/phases/03-tilebittools-sourced-layouts/03-05-SUMMARY.md` exists. ✓
 - Zero new files in `addons/penta_tile/layouts/` matching `*tilesetter*`. ✓
-- Zero new files in `addons/penta_tile/tests/` matching `*tilesetter*`. ✓
+- Zero new files in `tests/` matching `*tilesetter*`. ✓
 - STATE.md `TILESETTER_DECISION: b` line still present. ✓
 - ROADMAP.md Plan 05 row carries `[~]` SKIPPED annotation. ✓
 - `git status --short` shows only doc deltas (no source/PNG/test files). ✓ (verified pre-commit)
