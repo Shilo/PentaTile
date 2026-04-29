@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 04-02-PLAN.md
-last_updated: "2026-04-29T16:55:26.729Z"
-last_activity: 2026-04-29 -- Phase 04 execution started
+status: phase_complete
+stopped_at: "Phase 4 closed (PREVIEW-03/04 Complete; 4 closeout artifacts committed; ROADMAP [x]; Codex pass deferred per quota wall)"
+last_updated: "2026-04-29T17:30:00.000Z"
+last_activity: 2026-04-29 -- Phase 4 closed
 progress:
   total_phases: 8
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 32
-  completed_plans: 29
-  percent: 91
+  completed_plans: 32
+  percent: 100
 ---
 
 # Project State
@@ -21,18 +21,20 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-25 after v0.2 pivot to layout library)
 
 **Core value:** Painting tiles with the native `TileMapLayer` API produces correct dual-grid autotiled visuals — without the user maintaining caches, terrain metadata, or 16-tile blob sets.
-**Current focus:** Phase 04 — fallback-routing
+**Current focus:** Phase 5 — Demo Refresh + Documentation + Release (next planning step)
 
 ## Current Position
 
-Phase: 04 (fallback-routing) — EXECUTING
-Plan: 1 of 5
-Status: Executing Phase 04
-Last activity: 2026-04-29 -- Phase 04 execution started
+Phase: 5
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-04-29 -- Phase 4 closed
 
-> Phase 3.5 closed 2026-04-29 with full scope: PIXLAB-01..04 Complete. PentaTileLayoutPixelLabTopDown + PentaTileLayoutPixelLabSideScroller ship as single-grid corner-mask twin subclasses with cached first-cell dispatch per D-89; 2 new bundled greybox PNGs (8×8 atlas, 256×256) co-located under addons/penta_tile/layouts/; 2 new tests (pixellab_first_cell_test + pixellab_visual_regression_test) green; matrix grew to 8 layouts × 18 patterns = 144 combos; bitmask_bounds_test extended; run_tests.ps1 lists 17 tests. VAR-PIXEL-01 (variation-bank pick) preserved in v2 backlog per D-91; ROADMAP retitled to drop the "+ Variation-Seed Wiring" misnomer. Phase 4 (Fallback Routing) is the next planning step.
+> Phase 3.5 closed 2026-04-29 with full scope: PIXLAB-01..04 Complete. PentaTileLayoutPixelLabTopDown + PentaTileLayoutPixelLabSideScroller ship as single-grid corner-mask twin subclasses with cached first-cell dispatch per D-89; 2 new bundled greybox PNGs (8×8 atlas, 256×256) co-located under addons/penta_tile/layouts/; 2 new tests (pixellab_first_cell_test + pixellab_visual_regression_test) green; matrix grew to 8 layouts × 18 patterns = 144 combos; bitmask_bounds_test extended; run_tests.ps1 lists 17 tests. VAR-PIXEL-01 (variation-bank pick) preserved in v2 backlog per D-91; ROADMAP retitled to drop the "+ Variation-Seed Wiring" misnomer.
 
-Progress: [█████████░] 91%
+> Phase 4 closed 2026-04-29 with full in-scope coverage: PREVIEW-03 + PREVIEW-04 Complete (8 actually-shipped layouts verified under fallback path via `fallback_routing_test.gd` composed-canvas test + manual demo UAT per D-04-06 belt+suspenders); doc-comment sweep landed on all 12 addon scripts per Godot's official format (D-04-01..04), annotation-only — zero logic changes; cross-AI review pass executed under D-04-10 strict order with Gemini headless returning `status: clean` (0 findings) and the Codex headless pass DEFERRED at closeout due to a hard external Codex CLI quota wall (RESEARCH § 8 Pitfall #14; user elected to skip and continue per `AskUserQuestion`). All 4 closeout artifacts committed (FALLBACK-UAT.md + DOC-SWEEP.md + GEMINI-REVIEW-FIX.md + CODEX-REVIEW-FIX.md). Test suite stayed ALL GREEN (18 tests). Cumulative runtime LOC: 2884 (Phase 3.5 baseline 2663 + Phase 4 delta 221, all from added `##` doc-comment lines — Phase 4 was annotation-only). Identity guardrail AT RISK carry-forward — formal gate is Phase 5 final audit. The Codex prompt is preserved at `04-CODEX-PROMPT.md` for re-use when quota resets. Phase 5 (Demo Refresh + Documentation + Release) is the next planning step.
+
+Progress: [██████████] 100%
 
 > Out-of-band progress: 5 of 8 greyboxed template PNGs + the generator script shipped in commit e86036f as part of the discovery pass. Counted as TEMPLATE-01 + TEMPLATE-03 covered. The remaining 3 templates (Blob47Godot, TilesetterWang15, TilesetterBlob47) ship in Phase 3 once their slot tables are transcribed from TileBitTools.
 
@@ -79,6 +81,9 @@ Progress: [█████████░] 91%
 | Phase 03.5 P06 | 5min | 3 tasks | 3 files |
 | Phase 04-fallback-routing P01 | 5min | 4 tasks | 4 files |
 | Phase 04-fallback-routing P02 | 50min | 3 tasks | 13 files |
+| Phase 04 P03 | — | 4 tasks | 5 files |
+| Phase 04 P04 | — | 3 tasks | 4 files |
+| Phase 04 P05 | — | 1 task  | 3 files |
 
 ## Accumulated Context
 
@@ -167,6 +172,8 @@ TILESETTER_DECISION: b
 - Phase 3.5 closed 2026-04-29 with full in-scope coverage: PIXLAB-01..04 Complete; VAR-PIXEL-01 stays deferred in v2 per D-91 (design-coupled with VAR-01 + MULTITERR-01). ROADMAP retitled to drop the '+ Variation-Seed Wiring' misnomer. Cumulative runtime LOC measured 2663 (Phase 3 baseline 2455 + 207 LOC for 2 PIXLAB layouts + 1 LOC unrelated; same recipe as Phase 3 close, no methodology drift). Phase 4 (Fallback Routing) is the next planning step.
 - Phase 04 Plan 01: fallback test composes from the visual layer's effective TileSet so synthesized Penta output is verified as actually rendered.
 - Plan 04-02 preserved the existing PixelLab D-92 no-version-field doc notes verbatim; code-only scan confirmed no version fields or forward-compat machinery exist.
+- 2026-04-29 (Phase 4 closeout — Plan 04-05): **Phase 4 closed.** Fallback Routing + Doc Sweep + Cross-AI Review shipped (PREVIEW-03/04 Complete). PentaTileMapLayer fallback wiring (already shipped at penta_tile_map_layer.gd:54-70 in Phase 2 per the auto-fill chain refinement) verified across all 8 actually-shipped layouts via new `addons/penta_tile/tests/fallback_routing_test.gd` (composed-canvas pipeline + 2 PREVIEW-04 contract sub-tests; verify-the-regression cycle confirmed) + manual demo eyeball pass per `04-FALLBACK-UAT.md`. Tilesetter pair (TBT-01/02-DEFERRED) stays out of scope per D-86 (b). Doc-comment sweep landed on all 12 addon scripts per Godot's official format (D-04-01..04): class-level `##` + every public method (41/41) + every `@export` property (15/15); `@experimental` flag added ONLY on `PentaTileLayout` abstract base per D-04-03; ZERO `@deprecated` tags introduced; sweep was annotation-only — zero logic changes (delta is +221 LOC of `##` doc-comment lines vs Phase 3.5 baseline 2663 → 2884 cumulative). Cross-AI review pass: Gemini headless (`gemini --skip-trust --include-directories ".planning,addons/penta_tile" -p -`) returned `status: clean` with 0 findings (fallback model `gemini-2.5-flash` after `gemini-2.5-pro` returned HTTP 429 per RESEARCH § 8 Pitfall #14). Codex headless pass DEFERRED at closeout — Codex CLI 0.124.0 returned `ERROR: You've hit your usage limit ... try again at 11:29 AM` on both `codex exec --skip-git-repo-check -` and `codex review -`; user elected to skip and continue per `AskUserQuestion`. Phase 4 ships with single-pass cross-AI coverage rather than the two-pass coverage D-04-10 originally specified; the Codex prompt is preserved at `04-CODEX-PROMPT.md` for re-use when quota resets. Severity-tiered fix policy (D-04-13) and standard disqualification list (D-04-14, 7 hard triggers + 7a Gemini-already-dispositioned guard) had no fixes to apply (Gemini = 0 findings; Codex = deferred). Atomic-commit-per-finding format `fix(04): {TOOL}-{SEVERITY-LETTER}-{NN} — ...` per D-04-15 with em-dash separator was therefore exercised zero times. Test suite stayed ALL GREEN (18 tests) at every commit boundary. Cumulative runtime LOC: 2884 (`git ls-files 'addons/penta_tile/*.gd' 'addons/penta_tile/layouts/*.gd' | grep -v 'tests/' | grep -v 'demo/' | xargs wc -l`); +221 LOC delta over Phase 3.5 baseline is doc-comments only (no functional code changes). Identity guardrail AT RISK carry-forward — formal gate is Phase 5 final audit. No ATTRIBUTION.md created (D-72/D-73 final guard verified). Phase 5 (Demo Refresh + Documentation + Release) is the next planning step.
+- Phase 4 cross-AI review-fix loop closed: 0 Gemini findings + 0 Codex findings (Codex pass deferred per quota wall) dispositioned per D-04-13/14; 0 atomic fix commits landed; test suite stayed green; identity guardrails preserved (no compat shims, no forward-compat versioning, no Phase 5 work, no ATTRIBUTION.md, no Coined-Term violations, no locked-decision contradictions slipped through — all triggers ran zero times because there were no findings).
 
 ### Pending Todos
 
@@ -205,15 +212,17 @@ Items acknowledged and carried forward as v2 requirements (see REQUIREMENTS.md v
 
 ## Session Continuity
 
-Last session: 2026-04-29T13:51:38.161Z
-Stopped at: Completed 04-02-PLAN.md
+Last session: 2026-04-29T17:30:00.000Z
+Stopped at: Phase 4 closed (PREVIEW-03/04 Complete; 4 closeout artifacts committed; ROADMAP [x]; Codex pass deferred per quota wall)
 Resume file: None
 
 **Completed Phase:** 01 (Contract Skeleton + Penta Layouts) — 5/5 plans, 14/14 requirements, 26/26 automated tests PASS — 2026-04-26
 **Completed Phase:** 01.1 (PentaTile Rename + Penta Codename Establishment) — 3/3 plans, 0 formal REQ-IDs (rename phase), demo loads cleanly under new name, git remote tracks PentaTile origin — 2026-04-26
 **In-progress Phase:** 02 (Native Layouts + Architectural Simplification) — 7/7 plans executed + retroactive AUTO_STRIP dispatch wave (29cba37), 30/30 requirements satisfied programmatically, 3 code review passes clean (status: clean; 0 Critical / 0 Warning / 13 Info), 4 determinism sub-tests pass (BASELINE_HASH=2986698704, BASELINE_CELLS=46), VERTICAL regression net active, paint_test ALL PASS across 6 single-strip modes + 4 AUTO_STRIP cases + abstract guard. **Outstanding gates:** (1) human visual UAT — 2 items still pending in `02-HUMAN-UAT.md` (DualGrid16/Wang2*/Min3x3 visual correctness, Min3x3 collapse) + 1 partial (Penta multi-mode visual seam-check; programmatic dispatch ✓), (2) LOC overage decision — 1827 runtime LOC vs ~1500 trigger (informational at Phase 2; formal gate is Phase 5 final audit). AUTO/AUTO_STRIP detection UAT (test 4) now ✓ pass programmatically. ROADMAP Phase 2 entry intentionally `[ ]` until both gates resolved.
-**Next Phase:** 04 (Fallback Routing) — wires PentaTileMapLayer to use layout.get_fallback_tile_set() when tile_set == null; visual regression across all 10 layouts (5 Phase 2 + 1 Phase 3 + 2 Phase 3.5 = 8 actually-shipped; 2 Phase 3 Tilesetter pair deferred per D-86 b)
+**Next Phase:** 5 (Demo Refresh + Documentation + Release) — updated demo scene showcasing all 10 layouts (5 Phase 2 + 3 Phase 3 + 2 Phase 3.5; Tilesetter pair stays deferred per D-86 b — Phase 5 docs reference 8 actually-shipped + clear deferral note); README sections (Layouts / Upgrading / Authoring a Custom Layout); CHANGELOG; plugin.cfg bump 0.1.0 → 0.2.0; v0.2.0 git tag; GitHub Release zip
 
 **Planned Phase:** 4 (fallback-routing) — 5 plans — 2026-04-29T12:56:46.695Z
 
 **Completed Phase:** 03.5 (PixelLab Layouts) — 6/6 plans, 4/4 in-scope requirements (PIXLAB-01..04), 17 automated tests green, VAR-PIXEL-01 stays in v2 backlog per D-91 — 2026-04-29
+
+**Completed Phase:** 04 (Fallback Routing + Doc Sweep + Cross-AI Review) — 5/5 plans, 2/2 in-scope requirements (PREVIEW-03 + PREVIEW-04), 18 automated tests green, doc-comment sweep on 12 addon scripts (annotation-only — zero logic changes), Gemini cross-AI pass returned `status: clean` (0 findings), Codex pass DEFERRED due to a hard external CLI quota wall (user elected to skip and continue per `AskUserQuestion`); single-pass cross-AI coverage shipped — 2026-04-29

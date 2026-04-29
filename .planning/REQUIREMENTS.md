@@ -357,8 +357,8 @@ Which phases cover which requirements. Empty initially — populated by `gsd-roa
 | PIXLAB-04 | 3.5 | Complete (Plan 05 / `94774a4` `aff6f35` `6687eb4`: pixellab_visual_regression_test composes rendered canvas via blit + transform helper against checked-in spike-003 PixelLab sample fixtures (128×128, 8×8 atlas at 16px); asserts non-empty cells + canvas-size match + bit-stable rebuild via direct PackedByteArray equality; D-102 case 3 closed) |
 | PREVIEW-01 | 2 | Complete (`template_image` renamed `bitmask_template` in Wave 1) |
 | PREVIEW-02 | 2 | Complete (dual-role `bitmask_template` serves preview AND fallback codegen) |
-| PREVIEW-03 | 4 | Pending |
-| PREVIEW-04 | 4 | Pending |
+| PREVIEW-03 | 4 | Complete (Plan 01 / commit `8c6a05e`: addons/penta_tile/tests/fallback_routing_test.gd ships composed-canvas test exercising all 8 actually-shipped layouts under `tile_set = null` per D-04-05; PREVIEW-03 contract — `tile_set` auto-fills from `layout.get_fallback_tile_set()` — verified programmatically AND via manual demo eyeball pass per D-04-06 belt+suspenders / 04-FALLBACK-UAT.md) |
+| PREVIEW-04 | 4 | Complete (Plan 01 / commit `8c6a05e`: same test asserts user-supplied `tile_set` overrides fallback (`_tile_set_is_fallback` flips to false on direct write); clearing `tile_set` + re-assigning `layout` re-engages fallback. Manual eyeball pass per 04-FALLBACK-UAT.md row 9.) |
 | TEMPLATE-01 | 2 | Complete (14 bundled PNGs at co-located paths; `templates/` folder deleted in Wave 5) |
 | TEMPLATE-02 | 3 + 3 → v0.3+ | Partial — Blob47Godot PNG ships (Plan 04 / commit `fad4054`); Tilesetter pair (TilesetterWang15 + TilesetterBlob47 PNGs) deferred to v0.3+ per D-86 option (b). Tracked as `TEMPLATE-02-DEFERRED` in v2 Requirements. |
 | TEMPLATE-03 | Pre-shipped | Complete (template image format established v0.1; carried forward) |
