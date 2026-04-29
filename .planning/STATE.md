@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
-status: planning
+status: executing
 stopped_at: Phase 3 context gathered — public-convention layouts pivot (TBT data-lift dropped, BorisTheBrave + Tilesetter as primary sources, 03-TBT-DEEP-AUDIT.md as Wave 0 deliverable)
-last_updated: "2026-04-29T05:29:58.244Z"
-last_activity: 2026-04-28
+last_updated: "2026-04-29T06:51:49.056Z"
+last_activity: 2026-04-29 -- Phase 03 execution started
 progress:
   total_phases: 8
   completed_phases: 3
-  total_plans: 15
+  total_plans: 21
   completed_plans: 15
-  percent: 100
+  percent: 71
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-25 after v0.2 pivot to layout library)
 
 **Core value:** Painting tiles with the native `TileMapLayer` API produces correct dual-grid autotiled visuals — without the user maintaining caches, terrain metadata, or 16-tile blob sets.
-**Current focus:** Phase 02 — native-layouts
+**Current focus:** Phase 03 — Public-Convention Layouts (Blob47 + Tilesetter)
 
 ## Current Position
 
-Phase: 02 (native-layouts) — COMPLETE (visual UAT confirmed 2026-04-28 via the 16-mask-pattern demo scene)
-Plan: 7 of 7 executed (+ retroactive AUTO_STRIP per-strip dispatch wave + UAT bug-fix sweep — see 2026-04-27 + 2026-04-28 entries)
-Status: All plans done. Code review passed cleanly across 3 passes. 7 Critical/Warning findings (WR-01..WR-07) all fixed and verified. 3 new Info findings (IN-11/12/13) fixed in commit c9a6aa9. AUTO_STRIP per-strip dispatch — originally deferred to Phase 5 in Wave 6 — completed retroactively in commit 29cba37 (2026-04-27) after UAT exposed the gap. UAT bug-fix sweep completed 2026-04-28 across 7 bug classes (commits 6553380..205fb67): edge-greybox plus-pattern → corner-cuts → solid; Min3x3 lossy-9 background extension; layer-level single-grid logic-painted gate; Wang2Corner partial-quadrant artifacts (its own solid 32×32 atlas); single-grid mask=0 default-atlas dispatch; Penta canonical-archetype-silhouette enforcement on authored slots (catches artist art straying into cut quadrants → rotation bleed). Test suite grew 9 → 12: added bitmask_bounds_test, comprehensive_bitmask_test (16 patterns × 5 layouts), penta_ground_hollow_test (uses user's actual ground.tres fixture); fortified all_layouts_swap_pixel_test (+bbox + +solidity assertions). Determinism BASELINE_HASH=2986698704 still holds. Methodology codified in CLAUDE.md § Test Methodology + .planning/phases/02-native-layouts/02-UAT-LESSONS-LEARNED.md. Phase 2 ROADMAP entry can move to `[x]` once HUMAN-UAT.md is updated to reflect automated coverage (next step before Phase 3 starts).
-Last activity: 2026-04-28
+Phase: 03 (Public-Convention Layouts (Blob47 + Tilesetter)) — EXECUTING
+Plan: 1 of 6
+Status: Executing Phase 03
+Last activity: 2026-04-29 -- Phase 03 execution started
 
 Progress: [██████████] 100% (plans + UAT-class bug fixes) | UAT: 4/4 substantively covered (programmatic — Test 1 DualGrid16/Wang2*/Min3x3 visual now covered by comprehensive_bitmask_test pattern × layout matrix + per-cell solidity; Test 2 Min3x3 open-side collapse covered by all 16 mask states in pattern matrix; Test 3 Penta multi-mode synthesis covered by penta_ground_hollow_test against user's actual artist tile_set across ONE/FOUR/FIVE × H/V; Test 4 AUTO/AUTO_STRIP already passed programmatically). Editor smoke-test optional — automated suite reproduces every UAT scenario.
 
@@ -172,4 +172,4 @@ Resume file: --resume-file
 **In-progress Phase:** 02 (Native Layouts + Architectural Simplification) — 7/7 plans executed + retroactive AUTO_STRIP dispatch wave (29cba37), 30/30 requirements satisfied programmatically, 3 code review passes clean (status: clean; 0 Critical / 0 Warning / 13 Info), 4 determinism sub-tests pass (BASELINE_HASH=2986698704, BASELINE_CELLS=46), VERTICAL regression net active, paint_test ALL PASS across 6 single-strip modes + 4 AUTO_STRIP cases + abstract guard. **Outstanding gates:** (1) human visual UAT — 2 items still pending in `02-HUMAN-UAT.md` (DualGrid16/Wang2*/Min3x3 visual correctness, Min3x3 collapse) + 1 partial (Penta multi-mode visual seam-check; programmatic dispatch ✓), (2) LOC overage decision — 1827 runtime LOC vs ~1500 trigger (informational at Phase 2; formal gate is Phase 5 final audit). AUTO/AUTO_STRIP detection UAT (test 4) now ✓ pass programmatically. ROADMAP Phase 2 entry intentionally `[ ]` until both gates resolved.
 **Next Phase:** 03 (TileBitTools-Sourced Layouts) — Blob47Godot, TilesetterWang15, TilesetterBlob47 + ATTRIBUTION.md (chains automatically once Phase 2 approved in --auto mode)
 
-**Planned Phase:** 02 (native-layouts) — 7 plans — 2026-04-26T18:54:39.523Z
+**Planned Phase:** 03 (Public-Convention Layouts (Blob47 + Tilesetter)) — 6 plans — 2026-04-29T06:50:38.901Z
