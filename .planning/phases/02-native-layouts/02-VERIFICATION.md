@@ -1,25 +1,11 @@
 ---
 phase: 02-native-layouts
 verified: 2026-04-26T21:00:00Z
-status: human_needed
-score: 14/17
+revisited: 2026-04-28T22:00:00Z
+status: complete
+score: 17/17
 overrides_applied: 0
-human_verification:
-  - test: "DualGrid16 paints all 16 mask states correctly in Godot editor"
-    expected: "Corner-mask TL=1/TR=2/BL=4/BR=8 produces correct visual for each of the 16 states; no broken seams or wrong tiles"
-    why_human: "Visual rendering correctness requires Godot editor / runtime; cannot be verified from GDScript source alone"
-  - test: "Wang2Edge and Wang2Corner mask-to-atlas correctness in Godot editor"
-    expected: "All 16 edge/corner mask states paint correctly; Wang2Corner produces visuals identical to DualGrid16 on the same atlas data (SC-2, SC-3)"
-    why_human: "Visual comparison between two layouts on the same atlas requires running Godot and inspecting rendered output"
-  - test: "Min3x3 open-side collapse paints all 16 edge-mask states using 9 tiles in Godot editor"
-    expected: "Masks 5 (T+B) and 10 (E+W) collapse to center (1,1); mask 0 renders null (isolated cell); no broken seams across all 16 states (SC-4)"
-    why_human: "Collapse logic correctness for non-trivial mask states (5, 10, diagonal-only) is a visual property"
-  - test: "ONE/TWO/THREE/FOUR/FIVE synthesis modes render without broken seams in Godot editor"
-    expected: "SC-8: ONE-mode single tile renders all 16 mask states without broken seams across isolated/strip/L-shape/filled-rect. SC-9: FIVE-mode renders all 16 states using only hand-authored archetypes. SC-10: TWO/THREE/FOUR synthesize missing archetypes and produce progressively improving visuals (SC-10)"
-    why_human: "Synthesis visual quality (no seams, correct sub-region anchoring) requires running Godot and painting all 16 mask states"
-  - test: "AUTO and AUTO_STRIP detection select the correct mode in a live Godot scene"
-    expected: "SC-6: AUTO maps axis size 1→ONE/.../5→FIVE; 0 or 6+ emits warning and disables rendering. SC-7: AUTO_STRIP independently resolves each strip; different strips can use different modes in one atlas"
-    why_human: "Detection outcome depends on the TileSet resource bound at runtime; requires loading a real TileSet with known dimensions in the Godot editor"
+closure_notes: "All 5 originally-flagged human-verification items closed by automated tests added during the 2026-04-28 UAT bug-fix sweep (commits 6553380..205fb67). The new tests (`comprehensive_bitmask_test.gd` covering 16 patterns × 5 layouts; `penta_ground_hollow_test.gd` covering Penta ONE/FOUR/FIVE × H/V against the user's actual `penta_tile_ground.tres`; `bitmask_bounds_test.gd` covering per-slot expected silhouettes; fortified `all_layouts_swap_pixel_test.gd` with bbox + edge-continuity + per-cell solidity assertions) reproduce every visual scenario the original human-verification items required. User confirmed final visual UAT 2026-04-28T22:00 by inspecting the populated demo scene (`addons/penta_tile/demo/penta_tile_demo.tscn` — two PentaTileMapLayer nodes painting all 16 corner-mask configurations in a 4×4 grid against bundled greybox + ground.tres respectively). See `.planning/phases/02-native-layouts/02-UAT-LESSONS-LEARNED.md` for full retrospective and `.planning/phases/02-native-layouts/02-HUMAN-UAT.md` for per-test closure citations."
 ---
 
 # Phase 2: Native Layouts + Architectural Simplification — Verification Report

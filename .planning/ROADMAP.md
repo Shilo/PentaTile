@@ -25,8 +25,8 @@ The original v0.2 feature pillars (Y-axis variation, top tiles, non-rotating til
 - [x] **Phase 2: Native Layouts + Penta Synthesis (1/2/3/4/5 auto-detect)** — Ship DualGrid16, Wang2Edge, Wang2Corner, Min3x3 subclasses. Plus the architectural pivot: Phase 1's `PentaTileLayoutPentaHorizontal`/`Vertical` are merged into a single `PentaTileLayoutPenta` class with `axis: Axis` enum and `tile_count: TileCountMode { AUTO, AUTO_STRIP, ONE, TWO, THREE, FOUR, FIVE }` enum — five progressive synthesis modes per strip with AUTO/AUTO_STRIP detection variants. Runtime overlay layer DELETED entirely (single-layer dispatch only). New slot ordering: `0=IsolatedCell, 1=Fill, 2=Border, 3=InnerCorner, 4=OppositeCorners`; OuterCorner is implicit (synthesized from slot 0). Closed 2026-04-28 after the UAT bug-fix sweep (7 bug classes across commits 6553380..205fb67) — see `.planning/phases/02-native-layouts/02-UAT-LESSONS-LEARNED.md`. Companion artifact: `.planning/research/layouts/RPG_MAKER.md` documents the deferred RPG Maker family for v0.3+.
 - [ ] **Phase 3: TileBitTools-Sourced Layouts** — Transcribe slot tables from TBT's MIT-licensed `tilesetter_blob.tres`, `tilesetter_wang.tres`, and the matching Godot blob template `.tres`. Ship Blob47Godot, TilesetterWang15, TilesetterBlob47. Generate the 3 missing template PNGs from the slot tables. Add `ATTRIBUTION.md`.
 - [ ] **Phase 3.5: PixelLab Layouts + Variation-Seed Wiring** — Ship `PentaTileLayoutPixelLabTopDown` and `PentaTileLayoutPixelLabSideScroller` (8×8 atlas, single-grid, 4-bit corner mask, variation-bank). Wire `variation_seed` deterministic-hash bucket-pick. Add `PentaTileLayoutMinimal3x3` if not already shipped in Phase 2.
-- [ ] **Phase 4: Fallback Routing** — Wire `PentaTileMapLayer` to use `layout.fallback_tile_set` when `tile_set == null`. Verify all 8 layouts paint correctly with their bundled fallback. Visual regression on the demo scene.
-- [ ] **Phase 5: Demo Refresh + Documentation + Release** — One updated demo scene showcasing all 8 layouts, README sections (Layouts / Upgrading / Authoring a Custom Layout), CHANGELOG, plugin.cfg bump, GitHub Release zip with `v0.2.0` tag.
+- [ ] **Phase 4: Fallback Routing** — Wire `PentaTileMapLayer` to use `layout.fallback_tile_set` when `tile_set == null`. Verify all 10 layouts (5 Phase 2 + 3 Phase 3 + 2 Phase 3.5) paint correctly with their bundled fallback. Visual regression on the demo scene.
+- [ ] **Phase 5: Demo Refresh + Documentation + Release** — One updated demo scene showcasing all 10 layouts (5 Phase 2 + 3 Phase 3 + 2 Phase 3.5), README sections (Layouts / Upgrading / Authoring a Custom Layout), CHANGELOG, plugin.cfg bump, GitHub Release zip with `v0.2.0` tag.
 
 ## Phase Details
 
@@ -154,31 +154,31 @@ Plans:
 
 **Goal**: When `PentaTileMapLayer.tile_set == null` and `layout != null`, the layer routes rendering through `layout.get_fallback_tile_set()` (codegen from `bitmask_template`). This is the prototyping UX win — drop a fresh layer into a scene with just a layout attached and start painting.
 
-**Depends on**: Phase 1 (layer integration), Phase 2 (Phase 2 ships `get_fallback_tile_set()` codegen on the base class + co-located bundled bitmask PNGs for all 5 layouts shipped so far), Phase 3 (TBT layouts add their own `get_fallback_tile_set()` overrides). Wires the consumer side once all 8 layouts can produce a fallback TileSet.
+**Depends on**: Phase 1 (layer integration), Phase 2 (Phase 2 ships `get_fallback_tile_set()` codegen on the base class + co-located bundled bitmask PNGs for all 5 layouts shipped so far), Phase 3 (TBT layouts add their own `get_fallback_tile_set()` overrides). Wires the consumer side once all 10 layouts (5 Phase 2 + 3 Phase 3 + 2 Phase 3.5) can produce a fallback TileSet.
 
-**Requirements**: PREVIEW-03, PREVIEW-04. Final visual-regression sweep across all 8 layouts.
+**Requirements**: PREVIEW-03, PREVIEW-04. Final visual-regression sweep across all 10 layouts (5 Phase 2 + 3 Phase 3 + 2 Phase 3.5).
 
 **Success Criteria** (what must be TRUE):
-1. Creating a new `PentaTileMapLayer` node with `tile_set = null` and `layout` attached (with any of the 8 layouts) makes drag-paint produce visible greybox tiles immediately — no TileSet authored.
+1. Creating a new `PentaTileMapLayer` node with `tile_set = null` and `layout` attached (with any of the 10 layouts) makes drag-paint produce visible greybox tiles immediately — no TileSet authored.
 2. Assigning `tile_set` directly overrides the fallback (no warnings, no errors). Removing `tile_set` again (back to null) re-routes to the fallback.
-3. All 8 layouts have a working fallback path: paint a small scene using each layout's fallback, confirm visible output matches the layout's bitmask-template silhouettes.
+3. All 10 layouts have a working fallback path: paint a small scene using each layout's fallback, confirm visible output matches the layout's bitmask-template silhouettes.
 4. The fallback routing path doesn't change behavior when `tile_set` is provided (regression check: existing scenes with `tile_set` set don't suddenly use fallback art).
 
 **Plans**: TBD
 
 ### Phase 5: Demo Refresh + Documentation + Release
 
-**Goal**: One updated demo scene showcasing all 8 built-in layouts, README sections documenting the library, CHANGELOG, and a tagged GitHub release.
+**Goal**: One updated demo scene showcasing all 10 built-in layouts (5 Phase 2 + 3 Phase 3 + 2 Phase 3.5), README sections documenting the library, CHANGELOG, and a tagged GitHub release.
 
 **Depends on**: Phase 1, Phase 2, Phase 3, Phase 4 (consuming phase — uses every output of the prior phases).
 
 **Requirements**: DEMO-01, DEMO-02, DEMO-03, DOC-01, DOC-02, DOC-03, DOC-04, REL-01, REL-02, REL-03.
 
 **Success Criteria** (what must be TRUE):
-1. The updated `penta_tile_demo.tscn` showcases all 8 layouts — either via runtime layout switching (UI to swap the `layout` property) or side-by-side `PentaTileMapLayer` instances arranged spatially. A casual playtester can see each layout in action.
+1. The updated `penta_tile_demo.tscn` showcases all 10 layouts (5 Phase 2 + 3 Phase 3 + 2 Phase 3.5) — either via runtime layout switching (UI to swap the `layout` property) or side-by-side `PentaTileMapLayer` instances arranged spatially. A casual playtester can see each layout in action.
 2. The demo references the bundled fallback TileSets (via `get_fallback_tile_set()` codegen) so it works out of the box without any authored tilesets (proves the prototyping UX).
 3. Runtime drag-paint (existing `demo_runtime_painter.gd`) continues to work across all layouts in the updated demo without script changes beyond layout-switching glue.
-4. README has a "Layouts" section listing all 8 built-in layouts with names, descriptions, atlas grids, tile counts, and which conventions they target. Plus "Upgrading from 0.1.x" and "Authoring a Custom Layout" (experimental).
+4. README has a "Layouts" section listing all 10 built-in layouts (5 Phase 2 + 3 Phase 3 + 2 Phase 3.5) with names, descriptions, atlas grids, tile counts, and which conventions they target. Plus "Upgrading from 0.1.x" and "Authoring a Custom Layout" (experimental).
 5. `plugin.cfg` `version` field reads `0.2.0` exactly (no `-pre` / `-alpha` / `-dev` suffix). `CHANGELOG.md` has a v0.2.0 entry naming all breaking changes (`PentaTileAtlasContract` deletion, `template_image` → `bitmask_template` rename, `fallback_tile_set` @export removal, separate Penta H/V class merge, overlay-layer deletion, etc.).
 6. Downloading the v0.2.0 GitHub Release zip and extracting to a fresh Godot 4.6 project produces a working demo with no errors on first run; ATTRIBUTION.md is present at the addon root.
 7. Final LOC audit confirms `addons/penta_tile/` total surface area stays under TileMapDual's equivalent — the result included in the release notes.
@@ -194,7 +194,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 3.5 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Contract Skeleton + Penta Layouts | 5/5 | Complete (substantially superseded by Phase 2 architectural sweep) | 2026-04-26 |
 | 1.1. PentaTile Rename + Penta Codename Establishment | 3/3 | Complete | 2026-04-26 |
-| 2. Native Layouts + Architectural Simplification | 7/7 | Code-complete; 3 review passes clean (0 Critical, 0 Warning, 13 Info); awaiting human visual UAT (4 items) + LOC overage decision | - |
+| 2. Native Layouts + Architectural Simplification | 7/7 + retroactive AUTO_STRIP wave + UAT bug-fix sweep | **Complete.** 3 review passes clean (0 Critical, 0 Warning, 13 Info). UAT bug-fix sweep 2026-04-28 closed 7 bug classes across commits 6553380..205fb67 — 12 automated tests green, methodology codified in `02-UAT-LESSONS-LEARNED.md`. User confirmed visual UAT via the 16-mask-pattern demo scene 2026-04-28T22:00. LOC overage (1827 vs ~1500 informational trigger) carried forward; formal gate is Phase 5 final audit. | 2026-04-28 |
 | 3. TileBitTools-Sourced Layouts | 0/TBD | Not started | - |
 | 3.5. PixelLab Layouts (variation-bank pick deferred to v2) | 0/TBD | Not started | - |
 | 4. Fallback Routing | 0/TBD | Not started | - |

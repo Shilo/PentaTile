@@ -190,13 +190,13 @@ Greyboxed silhouette PNGs the artist paints over.
 
 ### Demo (DEMO)
 
-- [ ] **DEMO-01**: One updated demo scene (`penta_tile_demo.tscn`) showcases all 8 built-in layouts — runtime layout switching OR side-by-side `PentaTileMapLayer` instances.
+- [ ] **DEMO-01**: One updated demo scene (`penta_tile_demo.tscn`) showcases all 10 built-in layouts — runtime layout switching OR side-by-side `PentaTileMapLayer` instances.
 - [ ] **DEMO-02**: Demo references the bundled fallback `TileSet`s so it works out of the box without authored tilesets (proves the prototyping UX).
 - [ ] **DEMO-03**: Runtime drag-paint continues to work across all layouts (the existing `demo_runtime_painter.gd` doesn't break).
 
 ### Documentation (DOC)
 
-- [ ] **DOC-01**: README has a "Layouts" section listing all 8 built-in layouts with names, descriptions, atlas grids, and tile counts.
+- [ ] **DOC-01**: README has a "Layouts" section listing all 10 built-in layouts with names, descriptions, atlas grids, and tile counts.
 - [ ] **DOC-02**: README has an "Upgrading from 0.1.x" section documenting the bundled-default contract as the primary migration path.
 - [ ] **DOC-03**: README has an "Authoring a Custom Layout" section showing how to subclass `PentaTileLayout` (marked experimental).
 - [ ] **DOC-04**: `CHANGELOG.md` entry documents all breaking changes for v0.2.0 — `PentaTileAtlasContract` deletion (replaced by direct `layout: PentaTileLayout` on the layer), `template_image` → `bitmask_template` rename, `fallback_tile_set` no longer @export'd, `decoder_image` deletion, `PentaTileLayoutPentaHorizontal`/`Vertical` merged into `PentaTileLayoutPenta`, new slot ordering (`0=IsolatedCell, 1=Fill, 2=Border, 3=InnerCorner, 4=OppositeCorners`; OuterCorner now implicit), 5-mode `tile_count` enum (ONE/TWO/THREE/FOUR/FIVE), AUTO_STRIP detection, overlay layer removal, all template PNG path changes (templates folder deleted; PNGs co-located in `layouts/`).
