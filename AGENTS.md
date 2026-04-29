@@ -169,6 +169,17 @@ Canonical "What is a Penta tileset?" definition lives in `README.md`.
 - Export properties: `snake_case` (`atlas_source_id`, `layout`)
 - File names: snake_case matching class name (`penta_tile_map_layer.gd` → `PentaTileMapLayer`)
 
+## LLM Docs
+
+Auto-generated single-file documentation (per [llms.txt standard](https://llmstxt.org/)) is published on every docs build:
+
+- **<https://shilo.github.io/PentaTile/llms.txt>** — TOC per the llmstxt.org spec.
+- **<https://shilo.github.io/PentaTile/llms-full.txt>** — full content concatenation: every doc page + the GDScript API extracted from `##` doc-comments.
+
+Pipeline: `mkdocs-llmstxt` plugin + `tools/mkdocs_hooks.py` (which writes a virtual `docs/api-reference.md` from `addons/penta_tile/**/*.gd` `##` comments). Wired in `.github/workflows/docs.yml`. Reversed Phase 7's original "no generator" decision — see `.planning/phases/07-repo-restructure-extract-tests-mkdocs-site-llm-friendly-docs/07-LLM-DOCS-DECISION-REVISION.md`.
+
+When agents work in the repo, prefer reading `AGENTS.md` + `docs/` + `addons/penta_tile/**/*.gd` directly. The `llms-full.txt` URL is for over-the-network agents that don't have filesystem access.
+
 ## Next Step
 
 Run `/gsd-progress` to see current position. Phase 2 is code-complete (7/7 plans, 3 review passes clean) and awaiting visual UAT — see `.planning/phases/02-native-layouts/02-HUMAN-UAT.md`.

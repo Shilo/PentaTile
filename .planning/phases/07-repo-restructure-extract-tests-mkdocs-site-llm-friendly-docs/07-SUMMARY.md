@@ -36,3 +36,15 @@
 None required for Phase 7. A flat LLM artifact can be reconsidered only if a
 specific consumer or repeated agent failure proves the direct-source approach is
 not enough.
+
+## Revision (2026-04-29)
+
+The "no generated LLM artifact" decision is **reversed**. PentaTile now ships
+auto-generated `llms.txt` and `llms-full.txt` on every docs build via
+`mkdocs-llmstxt` plus `tools/mkdocs_hooks.py`. Trigger: project audience widened
+from "the author's own games" to "readable and widely usable library," which
+fires Revisit Trigger (1) ("docs host needs single-page export") in the
+original decision.
+
+Full rationale, ship list, and future revisit triggers in
+[07-LLM-DOCS-DECISION-REVISION.md](./07-LLM-DOCS-DECISION-REVISION.md).

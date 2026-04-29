@@ -25,8 +25,47 @@ theme:
     - navigation.top
     - content.code.copy
 
+hooks:
+  # Regenerates docs/api-reference.md from Godot ## doc-comments before each build.
+  # See tools/mkdocs_hooks.py and Phase 7 reversal at
+  # .planning/phases/07-repo-restructure-extract-tests-mkdocs-site-llm-friendly-docs/07-LLM-DOCS-DECISION-REVISION.md
+  - tools/mkdocs_hooks.py
+
 plugins:
   - search
+  - llmstxt:
+      # Generates site/llms.txt (TOC index per llmstxt.org spec) and
+      # site/llms-full.txt (full content concatenation) on every mkdocs build.
+      # Requires site_url to be set (we have it at line 3).
+      full_output: llms-full.txt
+      markdown_description: |
+        PentaTile is a lightweight dual-grid autotiling addon for Godot 4.6+.
+        Users paint with the native TileMapLayer set_cell / erase_cell API;
+        the addon dispatches those logic cells into visual cells through
+        _update_cells. A pluggable PentaTileLayout resource defines mask
+        topology and slot resolution, with native support for Penta,
+        DualGrid16, Wang2Edge, Wang2Corner, Minimal3x3, Blob47Godot, and
+        PixelLab top-down/side-scroller layouts.
+      sections:
+        Getting Started:
+          - index.md: Quickstart and core concepts
+          - installation.md: Install via GitHub Release zip into addons/
+        Layouts:
+          - layouts/index.md: Layout overview and selection guide
+          - layouts/penta.md: Penta — the project's native 5-archetype format
+          - layouts/dual-grid-16.md: DualGrid16 — 16-tile corner-mask atlas
+          - layouts/wang-2-edge.md: Wang2Edge — 16-tile edge-mask atlas
+          - layouts/wang-2-corner.md: Wang2Corner — 16-tile corner-mask atlas
+          - layouts/minimal-3x3.md: Minimal3x3 — 9-tile single-grid edge-mask
+          - layouts/blob-47-godot.md: Blob47Godot — BorisTheBrave 47-blob convention
+          - layouts/pixellab-top-down.md: PixelLab Top-Down — 8x8 corner-mask
+          - layouts/pixellab-side-scroller.md: PixelLab Side-Scroller — 8x8 corner-mask
+        Reference:
+          - penta-tileset.md: What is a Penta tileset? — codename definition
+          - custom-layouts.md: Authoring a custom PentaTileLayout subclass
+          - api-reference.md: Full GDScript API extracted from ## doc-comments
+        About:
+          - llm-docs.md: How LLMs and agents should consume these docs
 
 markdown_extensions:
   - admonition
@@ -50,4 +89,5 @@ nav:
       - PixelLab Side-Scroller: layouts/pixellab-side-scroller.md
   - What is a Penta tileset?: penta-tileset.md
   - Authoring Custom Layouts: custom-layouts.md
+  - API Reference: api-reference.md
   - LLM Docs: llm-docs.md
