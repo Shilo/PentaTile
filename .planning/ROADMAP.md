@@ -213,7 +213,14 @@ Plans:
 6. Downloading the v0.2.0 GitHub Release zip and extracting to a fresh Godot 4.6 project produces a working demo with no errors on first run; ATTRIBUTION.md is present at the addon root.
 7. Final LOC audit confirms `addons/penta_tile/` total surface area stays under TileMapDual's equivalent — the result included in the release notes.
 
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — Demo refresh: 8-instance spatial-grid scene + hover-target painter + retired demo_player + authored ground + 4 legacy .tres orphans (DEMO-01..03)
+- [ ] 05-02-PLAN.md — Documentation + spec corrections: 4 new README sections + accumulated CHANGELOG + 14 spec corrections (DOC-01..04 + SC-A..D)
+- [ ] 05-03-PLAN.md — Identity audit: TileMapDual v5.0.2 comparison (3-axis: LOC + public surface + hot-path) + D-05-11 ship/extract decision + README Identity & Footprint summary (manual prerequisite per D-05-13)
+- [ ] 05-04-PLAN.md — Release infrastructure: .github/workflows/release.yml (workflow_dispatch, no inputs, auto-version-increment) + addons/penta_tile/tests/run_tests.sh Linux mirror (REL-01..03 enabled)
+- [ ] 05-05-PLAN.md — Closeout: workflow run via GitHub UI + Traceability flips + ROADMAP / STATE updates (REL-01..03 satisfied via workflow side-effects)
 
 ## Progress
 
