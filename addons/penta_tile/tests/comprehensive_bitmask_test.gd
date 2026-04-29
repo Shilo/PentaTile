@@ -37,6 +37,7 @@ const _DualGrid16Sc    = preload("res://addons/penta_tile/layouts/penta_tile_lay
 const _Wang2EdgeSc     = preload("res://addons/penta_tile/layouts/penta_tile_layout_wang_2_edge.gd")
 const _Wang2CornerSc   = preload("res://addons/penta_tile/layouts/penta_tile_layout_wang_2_corner.gd")
 const _Min3x3Sc        = preload("res://addons/penta_tile/layouts/penta_tile_layout_minimal_3x3.gd")
+const _Blob47GodotSc   = preload("res://addons/penta_tile/layouts/penta_tile_layout_blob_47_godot.gd")
 
 var _failures: Array = []
 
@@ -61,6 +62,19 @@ func _initialize() -> void:
 		{"name": "diag_pair",      "cells": [Vector2i(0,0), Vector2i(1,1)]},
 		{"name": "diag_anti",      "cells": [Vector2i(1,0), Vector2i(0,1)]},
 		{"name": "3_isolated",     "cells": [Vector2i(0,0), Vector2i(3,0), Vector2i(0,3)]},
+		# 8-Moore-revealing patterns (added Phase 3 Plan 06 for Blob47Godot coverage —
+		# RESEARCH § 8.1). plus_with_diagonals fills a 3x3 to exercise the center cell
+		# at mask=255 (all 4 edges + all 4 corners survive collapse). diag_chain
+		# exercises corner-collapses-to-zero (cells whose only neighbors are diagonal
+		# with no edge bits set).
+		{"name": "plus_with_diagonals", "cells": [
+			Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0),
+			Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1),
+			Vector2i(0, 2), Vector2i(1, 2), Vector2i(2, 2),
+		]},
+		{"name": "diag_chain", "cells": [
+			Vector2i(0, 0), Vector2i(1, 1), Vector2i(2, 2), Vector2i(3, 3),
+		]},
 	]
 
 	var layouts := [
@@ -69,6 +83,7 @@ func _initialize() -> void:
 		{"name": "Wang2Edge",   "script": _Wang2EdgeSc,     "is_dual_grid": false},
 		{"name": "Wang2Corner", "script": _Wang2CornerSc,   "is_dual_grid": false},
 		{"name": "Min3x3",      "script": _Min3x3Sc,        "is_dual_grid": false},
+		{"name": "Blob47Godot", "script": _Blob47GodotSc,   "is_dual_grid": false},
 	]
 
 	for layout: Dictionary in layouts:
