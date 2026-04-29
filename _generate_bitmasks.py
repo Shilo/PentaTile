@@ -14,6 +14,9 @@ Mask conventions LOCKED (also documented in each layout's class doc-comment):
 - DualGrid16 / Wang2Corner: TL=1, TR=2, BL=4, BR=8 (corner mask, 4x4 atlas)
 - Wang2Edge: CR31 N=1, E=2, S=4, W=8 (edge mask, 4x4 atlas)
 - Min3x3: T=1, E=2, B=4, W=8 (edge mask, 3x3 atlas)
+- Blob47Godot (Phase 3): 8-bit Moore mask (D-76) N=1, E=2, S=4, W=8, NE=16, SE=32,
+  SW=64, NW=128. 7x7 atlas, 47 used cells + 2 transparent. Mask encoded by atlas
+  position only — solid 32x32 silhouettes (per Phase 2 UAT bug class #5 lessons).
 
 This script is committed alongside the generated PNGs so anyone can
 regenerate / tweak the greyboxes without reverse-engineering pixel data.
@@ -90,6 +93,27 @@ def draw_edge_mask(draw: ImageDraw.ImageDraw, col: int, row: int, mask: int) -> 
     a clean rectangle with no outward extension).
 
     mask is unused; kept for callsite symmetry.
+    """
+    x0, y0 = col * TILE, row * TILE
+    draw.rectangle((x0, y0, x0 + TILE - 1, y0 + TILE - 1), fill=GREY)
+
+
+def draw_47_blob_silhouette(draw: ImageDraw.ImageDraw, col: int, row: int, mask: int) -> None:
+    """Solid 32x32 grey silhouette per atlas slot for 47-blob layouts.
+
+    The mask is encoded by atlas POSITION only (per the layout's
+    _MASK_TO_ATLAS dict — see PentaTileLayoutBlob47Godot's 7×7 row-major
+    packing). The silhouette is solid grey so single-grid rendering
+    composes correctly without transparent-quadrant edge artifacts.
+
+    Phase 2 UAT bug class #5 lessons-learned: single-grid layouts
+    cannot compose partial-fill silhouettes; gen_wang_2_corner solved
+    this by going solid-32×32 across all 16 slots. Same applies to
+    47-blob: the mask differentiator is the atlas slot's POSITION,
+    not the silhouette shape.
+
+    mask is unused by the silhouette but kept for callsite symmetry
+    (matches draw_corner_mask / draw_edge_mask conventions).
     """
     x0, y0 = col * TILE, row * TILE
     draw.rectangle((x0, y0, x0 + TILE - 1, y0 + TILE - 1), fill=GREY)
@@ -260,6 +284,35 @@ def gen_minimal_3x3() -> Image.Image:
     return img
 
 
+# 47 D-76-ordered, COLLAPSED masks reachable via _collapse_8bit_moore on
+# raw input range [0, 256). Sorted ascending; mirror of _MASK_TO_ATLAS keys
+# in penta_tile_layout_blob_47_godot.gd.
+BLOB_47_GODOT_MASKS = [
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 19, 23, 27, 31,
+    38, 39, 46, 47, 55, 63, 76, 77, 78, 79, 95, 110, 111, 127, 137, 139,
+    141, 143, 155, 159, 175, 191, 205, 207, 223, 239, 255,
+]
+
+
+def gen_blob_47_godot() -> Image.Image:
+    """7x7 atlas (Caeles canonical packing). 47 used cells + 2 unused
+    (the unused cells stay transparent). Solid 32x32 silhouettes per
+    slot; mask encoded by atlas POSITION via the layout's _MASK_TO_ATLAS
+    dict. Slot order matches penta_tile_layout_blob_47_godot.gd:
+    index → (col=index%7, row=index/7) over BLOB_47_GODOT_MASKS sorted ascending.
+    """
+    assert len(BLOB_47_GODOT_MASKS) == 47, "BLOB_47_GODOT_MASKS must hold exactly 47 entries"
+    img = new_atlas(7, 7)
+    draw = ImageDraw.Draw(img)
+    for index, mask in enumerate(BLOB_47_GODOT_MASKS):
+        col = index % 7
+        row = index // 7
+        draw_47_blob_silhouette(draw, col, row, mask)
+        draw_slot_outline(draw, col, row)
+    # Cells (5, 6) and (6, 6) are intentionally left transparent.
+    return img
+
+
 def main() -> None:
     OUT_LAYOUTS.mkdir(parents=True, exist_ok=True)
     OUT_PENTA.mkdir(parents=True, exist_ok=True)
@@ -276,7 +329,10 @@ def main() -> None:
     gen_wang_2_corner().save(OUT_LAYOUTS / "penta_tile_layout_wang_2_corner.png")
     gen_minimal_3x3().save(OUT_LAYOUTS / "penta_tile_layout_minimal_3x3.png")
 
-    print("Generated 14 bitmask PNGs at:", OUT_LAYOUTS)
+    # Phase 3 — Blob47Godot (7x7 atlas, 47 used + 2 transparent slots)
+    gen_blob_47_godot().save(OUT_LAYOUTS / "penta_tile_layout_blob_47_godot.png")
+
+    print("Generated 15 bitmask PNGs at:", OUT_LAYOUTS)
 
 
 if __name__ == "__main__":
