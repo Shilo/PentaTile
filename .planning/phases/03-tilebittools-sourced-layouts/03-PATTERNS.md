@@ -575,6 +575,9 @@ $allTests = @(
 
 ## Shared Patterns
 
+> **I-3 note:** Patches (Plan 01) and pure-math tests (e.g., `blob_47_collapse_test`) do NOT use the layout class skeleton — they operate on the layer pipeline directly (Plan 01) or on static layout helpers without instantiating a full layout (collapse tests). The shared pattern templates in this section apply to NEW layout subclasses + their integration tests.
+
+
 ### Layout class skeleton (applies to all 3 NEW layout files)
 
 **Source:** `addons/penta_tile/layouts/penta_tile_layout_wang_2_corner.gd` lines 1-26 (header) + lines 33-34 (`is_dual_grid`) + lines 58-63 (fallback declarations).
