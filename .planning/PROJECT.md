@@ -41,7 +41,6 @@ Painting tiles with the native `TileMapLayer` API produces correct dual-grid aut
 - [ ] Bundled bitmask PNGs co-located next to layout `.gd` files (`addons/penta_tile/layouts/penta_tile_layout_penta/{one,two,three,four,five}_{horizontal,vertical}.png` + flat siblings for single-variant layouts)
 - [ ] Updated demo scene showcasing layout switching across the library
 - [ ] README "Layouts" section + "Upgrading from 0.1.x" + "Authoring a Custom Layout"
-- [ ] `addons/penta_tile/ATTRIBUTION.md` crediting TileBitTools (MIT)
 - [ ] GitHub release tagged `v0.2.0`
 
 ### Out of Scope
@@ -85,7 +84,7 @@ Painting tiles with the native `TileMapLayer` API produces correct dual-grid aut
 - **Distribution**: GitHub releases with plain semver tags (no `-pre`, `-alpha`, `-dev` suffixes). No Asset Library submission this milestone.
 - **Audience**: The author's own games. No public-API SLA. **Breaking changes are always allowed and explicitly encouraged when they enable improvements; never write backwards-compatibility shims, never defer features because they would break v0.1. Equally: never speculate about forward-compat — no `version: int` fields, schema markers, or speculative extension points "in case a future feature needs them."** Migration notes go in CHANGELOG and release notes; that's the only "compat" work in either direction.
 - **Performance**: Demo-scale target (~100–1k cells). Interactive painting and runtime drag-paint must remain fluid; large-map perf is not a milestone gate.
-- **Identity**: PentaTile must remain visibly smaller and simpler than TileMapDual; expansions should not pull in terrain metadata, tile caches, or watcher infrastructure.
+- **Identity**: PentaTile prioritizes hot-path minimalism and anti-pattern absence over raw LOC delta vs TileMapDual. The runtime path stays short (`_update_cells → compute_mask → mask_to_atlas → set_cell`), and the addon does not adopt terrain metadata, tile caches, watcher / signal-fanout systems, persistent coordinate caches, parallel paint APIs, or `EditorInspectorPlugin` polish. LOC is reported as data, not a verdict (D-05-11).
 
 ## Key Decisions
 
