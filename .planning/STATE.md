@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
-status: shipped
+status: ready_to_plan
 stopped_at: v0.2.0 SHIPPED
 last_updated: "2026-04-29T20:04:14Z"
 last_activity: 2026-04-29 -- Phase 5 closed; v0.2.0 published
 progress:
   total_phases: 8
-  completed_phases: 7
+  completed_phases: 8
   total_plans: 37
   completed_plans: 37
   percent: 100
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-04-25 after v0.2 pivot to layout library
 
 ## Current Position
 
-Phase: 5
-Plan: 05-05 (closeout)
-Status: v0.2.0 SHIPPED
-Last activity: 2026-04-29 -- Phase 5 closed; v0.2.0 published via release workflow run 25131034672
+Phase: 06
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-04-29
 
 > Phase 3.5 closed 2026-04-29 with full scope: PIXLAB-01..04 Complete. PentaTileLayoutPixelLabTopDown + PentaTileLayoutPixelLabSideScroller ship as single-grid corner-mask twin subclasses with cached first-cell dispatch per D-89; 2 new bundled greybox PNGs (8×8 atlas, 256×256) co-located under addons/penta_tile/layouts/; 2 new tests (pixellab_first_cell_test + pixellab_visual_regression_test) green; matrix grew to 8 layouts × 18 patterns = 144 combos; bitmask_bounds_test extended; run_tests.ps1 lists 17 tests. VAR-PIXEL-01 (variation-bank pick) preserved in v2 backlog per D-91; ROADMAP retitled to drop the "+ Variation-Seed Wiring" misnomer.
 
@@ -42,7 +42,7 @@ Progress: [██████████] 100%
 
 **Velocity:**
 
-- Total plans completed: 17
+- Total plans completed: 22
 - Average duration: —
 - Total execution time: 0.0 hours
 
@@ -53,6 +53,7 @@ Progress: [██████████] 100%
 | 01 | 5 | - | - |
 | 03 | 6 | - | - |
 | 03.5 | 6 | - | - |
+| 05 | 5 | - | - |
 
 **Recent Trend:**
 
