@@ -184,7 +184,8 @@ Greyboxed silhouette PNGs the artist paints over.
   - **Penta (multi-variant)**: `addons/penta_tile/layouts/penta_tile_layout_penta/{one,two,three,four,five}_{horizontal,vertical}.png` — 10 PNGs in a subfolder
   - **Single-variant layouts**: `addons/penta_tile/layouts/penta_tile_layout_<slug>.png` — flat sibling to the `.gd` file (DualGrid16, Wang2Edge, Wang2Corner, Min3x3)
   - The existing flat PNGs in `templates/` are migrated to the new locations and the `templates/` folder is deleted
-- [ ] **TEMPLATE-02**: Same convention for TBT-decoded layouts (Phase 3): `penta_tile_layout_blob_47_godot.png`, `penta_tile_layout_tilesetter_wang_15.png`, `penta_tile_layout_tilesetter_blob_47.png` — each as a flat sibling to its `.gd` file.
+- [x] **TEMPLATE-02
+**: Same convention for TBT-decoded layouts (Phase 3): `penta_tile_layout_blob_47_godot.png`, `penta_tile_layout_tilesetter_wang_15.png`, `penta_tile_layout_tilesetter_blob_47.png` — each as a flat sibling to its `.gd` file.
 - [x] **TEMPLATE-03
 **: A bitmask-template generator script (renamed/relocated from `_generate_greybox_templates.py`) produces all bundled PNGs from data definitions — regenerable from source. New location TBD by Phase 2 plan (probably `addons/penta_tile/_generate_bitmasks.py` or repo root).
 - [x] **TEMPLATE-04
