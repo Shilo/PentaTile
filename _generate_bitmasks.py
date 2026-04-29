@@ -294,6 +294,73 @@ BLOB_47_GODOT_MASKS = [
 ]
 
 
+# ---- Phase 3.5: PixelLab cell-to-role tables ----
+# Mirrors penta_tile_layout_pixel_lab_*.gd consts. Verbatim from
+# tileset_transform.lua:17-26 (top-down) and :28-36 (side-scroller).
+PIXELLAB_TOP_DOWN_CELL_TO_ROLE = [
+    6, 6, 6, 6, 6, 6, 6, 6,
+    6, 7, 9, 10, 7, 9, 10, 6,
+    6, 11, 12, 8, 15, 12, 1, 6,
+    6, 11, 12, 12, 13, 3, 5, 6,
+    6, 2, 0, 13, 14, 9, 10, 6,
+    6, 7, 4, 5, 11, 12, 1, 6,
+    6, 2, 5, 12, 2, 3, 5, 6,
+    6, 6, 6, 6, 6, 6, 6, 6,
+]
+PIXELLAB_SIDE_SCROLLER_CELL_TO_ROLE = [
+    12, 12, 12, 12, 13,  3,  3,  3,
+     0, 13,  3,  3, 14,  9, 10,  6,
+    11,  8,  9,  9, 15, 12,  1,  6,
+    11, 12, 12, 12, 12, 12,  8,  9,
+     2,  3,  3,  3,  0, 12, 12, 12,
+     6,  6,  6,  7, 15, 12, 12, 12,
+     6,  6,  6, 11, 13,  3,  3,  3,
+     6,  6,  7,  4,  5,  6,  6,  6,
+]
+# role index -> 4-bit corner mask (TL=1, TR=2, BL=4, BR=8). Locked by spike 003.
+PIXELLAB_ROLE_TO_MASK = [4, 10, 13, 12, 9, 14, 15, 7, 2, 3, 11, 5, 0, 8, 6, 1]
+
+
+def draw_pixel_lab_cell(draw: ImageDraw.ImageDraw, col: int, row: int, role: int) -> None:
+    """Per-role corner-mask silhouette for PixelLab atlases (D-101 option A).
+
+    Cells with the same role get the same silhouette so first-cell pick is
+    visually consistent. Reuses draw_corner_mask (TL=1, TR=2, BL=4, BR=8
+    corner-quadrant convention). Mask 0 (role 12) renders fully transparent;
+    mask 15 (role 6) renders as a solid 32x32; intermediate masks fill the
+    matching corner quadrants.
+    """
+    mask = PIXELLAB_ROLE_TO_MASK[role]
+    draw_corner_mask(draw, col, row, mask)
+
+
+def gen_pixel_lab_top_down() -> Image.Image:
+    """8x8 PixelLab top-down atlas (256x256 at TILE=32). Each cell renders
+    a corner-mask silhouette derived from its role. Cells sharing a role
+    are visually identical (D-101)."""
+    img = new_atlas(8, 8)
+    draw = ImageDraw.Draw(img)
+    for row in range(8):
+        for col in range(8):
+            role = PIXELLAB_TOP_DOWN_CELL_TO_ROLE[row * 8 + col]
+            draw_pixel_lab_cell(draw, col, row, role)
+            draw_slot_outline(draw, col, row)
+    return img
+
+
+def gen_pixel_lab_side_scroller() -> Image.Image:
+    """8x8 PixelLab side-scroller atlas (256x256 at TILE=32). Same shape as
+    top-down with the side-scroller cell-to-role table (D-95)."""
+    img = new_atlas(8, 8)
+    draw = ImageDraw.Draw(img)
+    for row in range(8):
+        for col in range(8):
+            role = PIXELLAB_SIDE_SCROLLER_CELL_TO_ROLE[row * 8 + col]
+            draw_pixel_lab_cell(draw, col, row, role)
+            draw_slot_outline(draw, col, row)
+    return img
+
+
 def gen_blob_47_godot() -> Image.Image:
     """7x7 atlas (Caeles canonical packing). 47 used cells + 2 unused
     (the unused cells stay transparent). Solid 32x32 silhouettes per
@@ -332,7 +399,11 @@ def main() -> None:
     # Phase 3 — Blob47Godot (7x7 atlas, 47 used + 2 transparent slots)
     gen_blob_47_godot().save(OUT_LAYOUTS / "penta_tile_layout_blob_47_godot.png")
 
-    print("Generated 15 bitmask PNGs at:", OUT_LAYOUTS)
+    # Phase 3.5 — PixelLab Top-Down + Side-Scroller (8x8 atlas, role-coded silhouettes)
+    gen_pixel_lab_top_down().save(OUT_LAYOUTS / "penta_tile_layout_pixel_lab_top_down.png")
+    gen_pixel_lab_side_scroller().save(OUT_LAYOUTS / "penta_tile_layout_pixel_lab_side_scroller.png")
+
+    print("Generated 17 bitmask PNGs at:", OUT_LAYOUTS)
 
 
 if __name__ == "__main__":
