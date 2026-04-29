@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
-status: planning
-stopped_at: Phase 3.5 context gathered
-last_updated: "2026-04-29T09:32:12.968Z"
+status: executing
+stopped_at: Plan 03.5-01 complete
+last_updated: "2026-04-29T09:38:29.131Z"
 last_activity: 2026-04-29
 progress:
   total_phases: 8
@@ -21,18 +21,18 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-25 after v0.2 pivot to layout library)
 
 **Core value:** Painting tiles with the native `TileMapLayer` API produces correct dual-grid autotiled visuals — without the user maintaining caches, terrain metadata, or 16-tile blob sets.
-**Current focus:** Phase 03 — Public-Convention Layouts (Blob47 + Tilesetter)
+**Current focus:** Phase 03.5 — PixelLab Layouts + Variation-Seed Wiring
 
 ## Current Position
 
-Phase: 06
-Plan: Not started
-Status: Ready to plan
+Phase: 03.5 (PixelLab Layouts + Variation-Seed Wiring) — EXECUTING
+Plan: 2 of 6
+Status: Ready to execute
 Last activity: 2026-04-29
 
 > Phase 03 closed 2026-04-29 with reduced scope per D-86 = (b). Blob47Godot shipped (TBT-03 + TEMPLATE-02 partial); audit deliverable + README footnote landed (TBT-04, DOC-05); 8-Moore single-grid propagation patch landed (D-87); Tilesetter pair + Tilesetter half of TEMPLATE-02 deferred to v0.3+ backlog (`TBT-01-DEFERRED` / `TBT-02-DEFERRED` / `TEMPLATE-02-DEFERRED`). Plan 06 (closeout) extended `comprehensive_bitmask_test` + `bitmask_bounds_test` with Blob47Godot, added 2 new 8-Moore-revealing patterns (plus_with_diagonals, diag_chain), recorded the deferred-backlog entries in REQUIREMENTS.md, and flipped Phase 3 ROADMAP entry to `[x]`.
 
-Progress: [██████████] 100%
+Progress: [████████░░] 78%
 
 > Out-of-band progress: 5 of 8 greyboxed template PNGs + the generator script shipped in commit e86036f as part of the discovery pass. Counted as TEMPLATE-01 + TEMPLATE-03 covered. The remaining 3 templates (Blob47Godot, TilesetterWang15, TilesetterBlob47) ship in Phase 3 once their slot tables are transcribed from TileBitTools.
 
@@ -70,6 +70,7 @@ Progress: [██████████] 100%
 | Phase Phase 03 P04 P04 | 12min | 3 tasks tasks | 9 files files |
 | Phase Phase 03 PP05 | 2min | 0 tasks (skipped) tasks | 1 file files |
 | Phase 03 P06 | 25min | 2 tasks tasks | 5 files files |
+| Phase 03.5 P01 | 3min | 2 tasks tasks | 5 files files |
 
 ## Accumulated Context
 
@@ -149,6 +150,7 @@ TILESETTER_DECISION: b
 - **2026-04-29 (Plan 05 SKIPPED):** D-86 resolved to option (b). PentaTileLayoutTilesetterWang15 + PentaTileLayoutTilesetterBlob47 deferred to v0.3+ backlog. Plan 06 (closeout) handles the REQUIREMENTS.md / ROADMAP.md / Coverage table updates (records TBT-01-DEFERRED / TBT-02-DEFERRED / TEMPLATE-02-DEFERRED v2 backlog entries). No source files / .pngs / tests created in Plan 05 — single SUMMARY-only commit captured the skip. Phase 3 cumulative runtime LOC unchanged at ~1948 (well below the 2500 informational concern). Plan 05 SUMMARY at `.planning/phases/03-tilebittools-sourced-layouts/03-05-SUMMARY.md`.
 - 2026-04-29 (Phase 3 closeout — Plan 06): comprehensive_bitmask_test extended with Blob47Godot + 2 new 8-Moore-revealing patterns (plus_with_diagonals, diag_chain); bitmask_bounds_test extended with explicit gap_cells: Array[Vector2i] whitelist parameter (W-3 fix — no Callable() universal skip). Matrix combos grew 80 → 108. Phase 3 closed at cumulative ~2455 runtime LOC (direct measurement) with methodology-drift note vs Phase 2's 1827 baseline. Identity guardrail AT RISK carry-forward to Phase 5 final audit.
 - 2026-04-29 (Phase 3 closeout — Plan 06): TBT-01-DEFERRED + TBT-02-DEFERRED + TEMPLATE-02-DEFERRED added to REQUIREMENTS.md v2 Requirements section (B-2 coverage-invariant fix). Original TBT-01/02 IDs stay in Traceability with Status='Deferred to v0.3+'; TEMPLATE-02 marked Partial (Blob47Godot half ships; Tilesetter half deferred). ROADMAP Phase 3 row flipped to [x] with 2026-04-29 completion date. ATTRIBUTION.md verified absent (D-73 final guard).
+- Phase 3.5 Plan 01 complete: extended _generate_bitmasks.py with PIXELLAB_TOP_DOWN_CELL_TO_ROLE + PIXELLAB_SIDE_SCROLLER_CELL_TO_ROLE + PIXELLAB_ROLE_TO_MASK + draw_pixel_lab_cell helper + 2 gen functions; produced 2 bundled greybox PNGs (256x256 RGBA at TILE=32, 8x8 atlas) + 2 .import sidecars. Generator print count 15 -> 17. Blocks unblocked: Plans 02 + 03 layout subclasses (require these PNGs to load via _default_bitmask_template_path). LOC delta in generator: 72 insertions (62 non-blank lines), within D-105 spirit (verbatim plan content).
 
 ### Pending Todos
 
@@ -187,9 +189,9 @@ Items acknowledged and carried forward as v2 requirements (see REQUIREMENTS.md v
 
 ## Session Continuity
 
-Last session: --stopped-at
-Stopped at: Phase 3.5 context gathered
-Resume file: --resume-file
+Last session: 2026-04-29T09:38:01.444Z
+Stopped at: Plan 03.5-01 complete
+Resume file: None
 
 **Completed Phase:** 01 (Contract Skeleton + Penta Layouts) — 5/5 plans, 14/14 requirements, 26/26 automated tests PASS — 2026-04-26
 **Completed Phase:** 01.1 (PentaTile Rename + Penta Codename Establishment) — 3/3 plans, 0 formal REQ-IDs (rename phase), demo loads cleanly under new name, git remote tracks PentaTile origin — 2026-04-26
