@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
-status: planning
-stopped_at: Phase 5 context gathered
-last_updated: "2026-04-29T18:23:28.169Z"
-last_activity: 2026-04-29 -- Phase 4 closed
+status: shipped
+stopped_at: v0.2.0 SHIPPED
+last_updated: "2026-04-29T20:04:14Z"
+last_activity: 2026-04-29 -- Phase 5 closed; v0.2.0 published
 progress:
   total_phases: 8
-  completed_phases: 6
-  total_plans: 32
-  completed_plans: 32
+  completed_phases: 7
+  total_plans: 37
+  completed_plans: 37
   percent: 100
 ---
 
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-04-25 after v0.2 pivot to layout library
 ## Current Position
 
 Phase: 5
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-04-29 -- Phase 4 closed
+Plan: 05-05 (closeout)
+Status: v0.2.0 SHIPPED
+Last activity: 2026-04-29 -- Phase 5 closed; v0.2.0 published via release workflow run 25131034672
 
 > Phase 3.5 closed 2026-04-29 with full scope: PIXLAB-01..04 Complete. PentaTileLayoutPixelLabTopDown + PentaTileLayoutPixelLabSideScroller ship as single-grid corner-mask twin subclasses with cached first-cell dispatch per D-89; 2 new bundled greybox PNGs (8×8 atlas, 256×256) co-located under addons/penta_tile/layouts/; 2 new tests (pixellab_first_cell_test + pixellab_visual_regression_test) green; matrix grew to 8 layouts × 18 patterns = 144 combos; bitmask_bounds_test extended; run_tests.ps1 lists 17 tests. VAR-PIXEL-01 (variation-bank pick) preserved in v2 backlog per D-91; ROADMAP retitled to drop the "+ Variation-Seed Wiring" misnomer.
 
@@ -84,6 +84,11 @@ Progress: [██████████] 100%
 | Phase 04 P03 | — | 4 tasks | 5 files |
 | Phase 04 P04 | — | 3 tasks | 4 files |
 | Phase 04 P05 | — | 1 task  | 3 files |
+| Phase 05 P01 | 8min | 4 tasks (3 auto + 1 checkpoint auto-approved) | 17 files (10 demo deletes + 4 test deletes from Rule 1 deviation; 1 scene rewrite, 1 painter rewrite, 1 run_tests.ps1 inventory edit) |
+| Phase 05 P02 | 17min | 3 tasks | 6 files (REQ + ROADMAP + PROJECT + CLAUDE + README + CHANGELOG) |
+| Phase 05 P03 | 7min | 3 tasks (1 audit + 1 checkpoint + 1 README summary) | 2 files (LOC-AUDIT.md, README) |
+| Phase 05 P04 | 10min | 2 tasks | 2 files (.github/workflows/release.yml, addons/penta_tile/tests/run_tests.sh) |
+| Phase 05 P05 | — | 5 tasks (1 checkpoint + 3 traceability flips + 1 final commit) | 4 files (REQUIREMENTS, ROADMAP, STATE, 05-05-SUMMARY) |
 
 ## Accumulated Context
 
@@ -174,6 +179,14 @@ TILESETTER_DECISION: b
 - Plan 04-02 preserved the existing PixelLab D-92 no-version-field doc notes verbatim; code-only scan confirmed no version fields or forward-compat machinery exist.
 - 2026-04-29 (Phase 4 closeout — Plan 04-05): **Phase 4 closed.** Fallback Routing + Doc Sweep + Cross-AI Review shipped (PREVIEW-03/04 Complete). PentaTileMapLayer fallback wiring (already shipped at penta_tile_map_layer.gd:54-70 in Phase 2 per the auto-fill chain refinement) verified across all 8 actually-shipped layouts via new `addons/penta_tile/tests/fallback_routing_test.gd` (composed-canvas pipeline + 2 PREVIEW-04 contract sub-tests; verify-the-regression cycle confirmed) + manual demo eyeball pass per `04-FALLBACK-UAT.md`. Tilesetter pair (TBT-01/02-DEFERRED) stays out of scope per D-86 (b). Doc-comment sweep landed on all 12 addon scripts per Godot's official format (D-04-01..04): class-level `##` + every public method (41/41) + every `@export` property (15/15); `@experimental` flag added ONLY on `PentaTileLayout` abstract base per D-04-03; ZERO `@deprecated` tags introduced; sweep was annotation-only — zero logic changes (delta is +221 LOC of `##` doc-comment lines vs Phase 3.5 baseline 2663 → 2884 cumulative). Cross-AI review pass: Gemini headless (`gemini --skip-trust --include-directories ".planning,addons/penta_tile" -p -`) returned `status: clean` with 0 findings (fallback model `gemini-2.5-flash` after `gemini-2.5-pro` returned HTTP 429 per RESEARCH § 8 Pitfall #14). Codex headless pass DEFERRED at closeout — Codex CLI 0.124.0 returned `ERROR: You've hit your usage limit ... try again at 11:29 AM` on both `codex exec --skip-git-repo-check -` and `codex review -`; user elected to skip and continue per `AskUserQuestion`. Phase 4 ships with single-pass cross-AI coverage rather than the two-pass coverage D-04-10 originally specified; the Codex prompt is preserved at `04-CODEX-PROMPT.md` for re-use when quota resets. Severity-tiered fix policy (D-04-13) and standard disqualification list (D-04-14, 7 hard triggers + 7a Gemini-already-dispositioned guard) had no fixes to apply (Gemini = 0 findings; Codex = deferred). Atomic-commit-per-finding format `fix(04): {TOOL}-{SEVERITY-LETTER}-{NN} — ...` per D-04-15 with em-dash separator was therefore exercised zero times. Test suite stayed ALL GREEN (18 tests) at every commit boundary. Cumulative runtime LOC: 2884 (`git ls-files 'addons/penta_tile/*.gd' 'addons/penta_tile/layouts/*.gd' | grep -v 'tests/' | grep -v 'demo/' | xargs wc -l`); +221 LOC delta over Phase 3.5 baseline is doc-comments only (no functional code changes). Identity guardrail AT RISK carry-forward — formal gate is Phase 5 final audit. No ATTRIBUTION.md created (D-72/D-73 final guard verified). Phase 5 (Demo Refresh + Documentation + Release) is the next planning step.
 - Phase 4 cross-AI review-fix loop closed: 0 Gemini findings + 0 Codex findings (Codex pass deferred per quota wall) dispositioned per D-04-13/14; 0 atomic fix commits landed; test suite stayed green; identity guardrails preserved (no compat shims, no forward-compat versioning, no Phase 5 work, no ATTRIBUTION.md, no Coined-Term violations, no locked-decision contradictions slipped through — all triggers ran zero times because there were no findings).
+- 2026-04-29: **Phase 5 closed; v0.2.0 SHIPPED.** All 10 in-scope requirements flipped Complete (DEMO-01..03 / DOC-01..04 / REL-01..03). Plans:
+  - **05-01:** Demo refresh — penta_tile_demo.tscn rewritten as 8-instance spatial-grid showcase (Penta FOUR / DualGrid16 / Wang2Edge / Wang2Corner / Min3x3 / Blob47Godot / PixelLabTopDown / PixelLabSideScroller); each instance uses bundled fallback (`tile_set = null`, `layout = <bundled>`); demo_runtime_painter.gd rewritten with hover-target detection. Retired (clean delete per breaking-changes policy): demo_player.gd + .uid, penta_tile_ground.{png,png.import,tres}, _regen_demo_ground.py, 4 legacy `penta_tile_*.tres` orphans, 2 fixture-coupled tests (penta_ground_hollow_test + _populate_bitmask_demo). Pitfall #6 mitigation: Penta FOUR instance named literally "PentaTileMapLayer" so `_capture_baseline.gd` still works. Test inventory dropped 18 → 17 (test was tied to the deleted ground.tres fixture). Commits: `40ad5ee` `d0e9849` `8addacc`. (DEMO-01..03 satisfied)
+  - **05-02:** Documentation — README ships 4 new sections (Layouts table 8 rows, Upgrading from 0.1.x, Authoring a Custom Layout with `@experimental` example, Identity & Footprint). CHANGELOG `[Unreleased]` block accumulated Phase 3 + 3.5 + 4 + 5 deltas before the workflow rewrote the header at release time. 15 spec corrections applied (14 planned + 1 ROADMAP.md:303 follow-up): SC-A (6 occurrences of "10 layouts" → "8 actually-shipped"), SC-B (3 ATTRIBUTION.md mentions deleted/reframed per D-72/D-73), SC-C (5 identity-constraint reframes per D-05-11), SC-D (REL-01 ownership flipped to workflow side-effect per D-05-16). Commits: `42523ee` `0b9430e` `8477790`. (DOC-01..04 satisfied)
+  - **05-03:** Identity audit (manual prerequisite per D-05-13, NOT a CI gate) — TileMapDual cloned at v5.0.2; 3-axis measurement (LOC, public surface, hot-path); anti-pattern register check covering CLAUDE.md Identity Guardrails + PITFALLS.md AP entries; D-05-11 outcome **SHIP** recorded. Per-cell hot path is 4 stack frames vs TileMapDual's 8+ frames; 16/16 anti-pattern register items absent (6 CLAUDE.md guardrails + 10 AP-1..AP-10 from PITFALLS.md). +758 LOC delta vs TileMapDual is signal NOT verdict per D-05-11 (PentaTile's biggest single file is the load-time 5-archetype synthesis engine — a user-facing feature). README "Identity & Footprint" summary published. Full audit at `.planning/phases/05-demo-refresh-documentation-release/05-LOC-AUDIT.md`. Commits: `5cc2b5a` `9ad9083`.
+  - **05-04:** Release infrastructure — `.github/workflows/release.yml` (single `workflow_dispatch` trigger, no inputs per D-05-15/D-05-16; auto-version-increment per D-05-16; 13-step pipeline per D-05-17; release notes = CHANGELOG slice per D-05-18; Pitfalls #1/#2/#3/#5/#7/#11 mitigated). `addons/penta_tile/tests/run_tests.sh` Linux/CI mirror of run_tests.ps1 with the same 17-test inventory. Commits: `3d0ced3` `f8e4200`.
+  - **05-05:** Closeout — workflow ran once on main (run id 25131034672, 44s wall-clock); v0.2.0 published with `penta_tile-v0.2.0.zip` (208024 bytes, top-level prefix `penta_tile-v0.2.0/`, contains `addons/penta_tile/` only — no `.planning/`, no `.godot/`, no `ATTRIBUTION.md`); CHANGELOG header rewritten to `## [0.2.0] — 2026-04-29`; plugin.cfg bumped 0.1.0 → 0.2.0; git tag `v0.2.0` cut on commit `a3223b9`; release page https://github.com/Shilo/PentaTile/releases/tag/v0.2.0. (REL-01..03 satisfied via workflow side-effects.)
+
+  Identity guardrail: **AT RISK carry-forward from Phase 4 RESOLVED** per Plan 05-03 audit decision (SHIP outcome). Cumulative runtime LOC: 2884 (unchanged from Phase 4 close — Plan 05-01 modifies demo/, Plans 05-02/03/04 modify docs/spec/CI infrastructure; runtime code surface stayed flat through Phase 5). v0.3+ backlog persists: TBT-01-DEFERRED, TBT-02-DEFERRED, TEMPLATE-02-DEFERRED, VAR-PIXEL-01, VAR-01, TOP-01, MULTITERR-01..05, TERRAIN-01, RPGM-01..03, TOOL-01..04, IMPORT-01..02, DIST-01..02, PERF-01..02, NONROT-01.
 
 ### Pending Todos
 
@@ -212,14 +225,16 @@ Items acknowledged and carried forward as v2 requirements (see REQUIREMENTS.md v
 
 ## Session Continuity
 
-Last session: --stopped-at
-Stopped at: Phase 5 context gathered
-Resume file: --resume-file
+Last session: 2026-04-29T20:04:14Z
+Stopped at: v0.2.0 SHIPPED
+Resume file: None — milestone closed
 
 **Completed Phase:** 01 (Contract Skeleton + Penta Layouts) — 5/5 plans, 14/14 requirements, 26/26 automated tests PASS — 2026-04-26
 **Completed Phase:** 01.1 (PentaTile Rename + Penta Codename Establishment) — 3/3 plans, 0 formal REQ-IDs (rename phase), demo loads cleanly under new name, git remote tracks PentaTile origin — 2026-04-26
 **In-progress Phase:** 02 (Native Layouts + Architectural Simplification) — 7/7 plans executed + retroactive AUTO_STRIP dispatch wave (29cba37), 30/30 requirements satisfied programmatically, 3 code review passes clean (status: clean; 0 Critical / 0 Warning / 13 Info), 4 determinism sub-tests pass (BASELINE_HASH=2986698704, BASELINE_CELLS=46), VERTICAL regression net active, paint_test ALL PASS across 6 single-strip modes + 4 AUTO_STRIP cases + abstract guard. **Outstanding gates:** (1) human visual UAT — 2 items still pending in `02-HUMAN-UAT.md` (DualGrid16/Wang2*/Min3x3 visual correctness, Min3x3 collapse) + 1 partial (Penta multi-mode visual seam-check; programmatic dispatch ✓), (2) LOC overage decision — 1827 runtime LOC vs ~1500 trigger (informational at Phase 2; formal gate is Phase 5 final audit). AUTO/AUTO_STRIP detection UAT (test 4) now ✓ pass programmatically. ROADMAP Phase 2 entry intentionally `[ ]` until both gates resolved.
-**Next Phase:** 5 (Demo Refresh + Documentation + Release) — updated demo scene showcasing all 10 layouts (5 Phase 2 + 3 Phase 3 + 2 Phase 3.5; Tilesetter pair stays deferred per D-86 b — Phase 5 docs reference 8 actually-shipped + clear deferral note); README sections (Layouts / Upgrading / Authoring a Custom Layout); CHANGELOG; plugin.cfg bump 0.1.0 → 0.2.0; v0.2.0 git tag; GitHub Release zip
+**Next Phase:** None for v0.2.0 (milestone shipped). Phase 6 (Editor Line/Rect/Bucket Tool Preview During Drag) deferred to far-future; revisit after the v0.3+ backlog priorities are set. Other v0.3+ backlog items: Tilesetter Wang 15 + Blob 47 (TBT-01-DEFERRED / TBT-02-DEFERRED), PixelLab variation-bank pick (VAR-PIXEL-01), Y-axis variation (VAR-01), top tiles (TOP-01), multi-terrain (MULTITERR-01..05), RPG Maker A2/A4 subtile compositor (RPGM-01..02).
+
+**Completed Phase:** 05 (Demo Refresh + Documentation + Release) — 5/5 plans, 10/10 in-scope requirements (DEMO-01..03 + DOC-01..04 + REL-01..03), 17 automated tests green throughout, identity audit per D-05-11 outcome **SHIP** (clean hot path + 16/16 anti-patterns absent; +758 LOC vs TileMapDual is signal not verdict), release workflow ran successfully on 2026-04-29 (run id 25131034672, 44s) publishing v0.2.0 — 2026-04-29
 
 **Planned Phase:** 4 (fallback-routing) — 5 plans — 2026-04-29T12:56:46.695Z
 

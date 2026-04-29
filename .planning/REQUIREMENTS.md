@@ -363,17 +363,17 @@ Which phases cover which requirements. Empty initially — populated by `gsd-roa
 | TEMPLATE-02 | 3 + 3 → v0.3+ | Partial — Blob47Godot PNG ships (Plan 04 / commit `fad4054`); Tilesetter pair (TilesetterWang15 + TilesetterBlob47 PNGs) deferred to v0.3+ per D-86 option (b). Tracked as `TEMPLATE-02-DEFERRED` in v2 Requirements. |
 | TEMPLATE-03 | Pre-shipped | Complete (template image format established v0.1; carried forward) |
 | TEMPLATE-04 | 2 | Complete (slot 0 IsolatedCell PNG has transparent gaps; verified Wave 5 / `e17512e`) |
-| DEMO-01 | 5 | Pending |
-| DEMO-02 | 5 | Pending |
-| DEMO-03 | 5 | Pending |
-| DOC-01 | 5 | Pending |
-| DOC-02 | 5 | Pending |
-| DOC-03 | 5 | Pending |
-| DOC-04 | 5 | Pending |
+| DEMO-01 | 5 | Complete (Plan 05-01 / commit `8addacc`: penta_tile_demo.tscn rewritten as 8-instance spatial-grid showcase; per-layout Label nodes; visual UAT approved) |
+| DEMO-02 | 5 | Complete (Plan 05-01 / commit `8addacc`: every PentaTileMapLayer instance has tile_set = null; layout-bound bundled fallback engages get_fallback_tile_set() per Phase 4 PREVIEW-03 routing) |
+| DEMO-03 | 5 | Complete (Plan 05-01 / commit `d0e9849`: demo_runtime_painter.gd rewritten with hover-target detection across the 8-instance grid; manual UAT confirmed cross-instance painting + erasing) |
+| DOC-01 | 5 | Complete (Plan 05-02 / commit `0b9430e`: README "Layouts" section ships an 8-row table per SC-A reframe — 5 Phase 2 + 1 Phase 3 + 2 Phase 3.5; Tilesetter pair stays deferred to v0.3+ per D-86 b) |
+| DOC-02 | 5 | Complete (Plan 05-02 / commit `0b9430e`: README "Upgrading from 0.1.x" section enumerates the v0.1 → v0.2 surface migrations with cross-link to CHANGELOG) |
+| DOC-03 | 5 | Complete (Plan 05-02 / commit `0b9430e`: README "Authoring a Custom Layout" section ships with a minimal `@experimental`-marked subclass example per Phase 4 doc-comment sweep) |
+| DOC-04 | 5 | Complete (Plan 05-02 / commit `8477790`: CHANGELOG [Unreleased] block accumulated Phase 3 + 3.5 + 4 + 5 deltas; release workflow rewrote the header to `[0.2.0] — 2026-04-29` per D-05-17 step 4 in commit `a3223b9`) |
 | DOC-05 | 3 | Complete (Plan 03 / commit `fcfb9e4`: same as TBT-04 — README footnote ships; ATTRIBUTION.md banned per D-73) |
-| REL-01 | 5 | Pending |
-| REL-02 | 5 | Pending |
-| REL-03 | 5 | Pending |
+| REL-01 | 5 | Complete (Plan 05-04 + 05-05 / workflow run 25131034672: plugin.cfg version bumped 0.1.0 → 0.2.0 by the release workflow per D-05-16 auto-increment rule; release commit `a3223b9`) |
+| REL-02 | 5 | Complete (Plan 05-04 + 05-05 / workflow run 25131034672: git tag `v0.2.0` cut on release commit `a3223b9`) |
+| REL-03 | 5 | Complete (Plan 05-04 + 05-05 / workflow run 25131034672: penta_tile-v0.2.0.zip (208024 bytes) published to the v0.2.0 Release at https://github.com/Shilo/PentaTile/releases/tag/v0.2.0; addons/penta_tile/ at archive root with bundled bitmask PNGs; per SC-B, NO ATTRIBUTION.md ships) |
 
 **Coverage:**
 - v1 requirements: 58 total (39 original − 5 CONTRACT (deleted) + 6 added Phase 1 discuss + 12 PENTA-SYNTH-* (5 progressive modes ONE→FIVE + AUTO/AUTO_STRIP detection + per-layout PNG conventions) + 5 LAYER-* (replace contract; LAYER-04 demo rebind, LAYER-05 Phase 1 test migration added during cleanup audit 2026-04-26) + 2 LAYOUT-06/07 (`get_fallback_tile_set()` virtual + co-located bundled PNGs) − 1 VAR-PIXEL-01 (moved to v2 backlog with VAR-01))
@@ -381,6 +381,7 @@ Which phases cover which requirements. Empty initially — populated by `gsd-roa
 - Unmapped: 0
 - 2026-04-29 D-86 outcome (Plan 05 SKIPPED): TBT-01, TBT-02, and the Tilesetter half of TEMPLATE-02 were originally mapped to Phase 3. Per the user's option-(b) decision, all three deferred to v0.3+ (tracked as TBT-01-DEFERRED / TBT-02-DEFERRED / TEMPLATE-02-DEFERRED in v2 Requirements). Phase 3 still owns these IDs in the Traceability table but their Status reads "Deferred" / "Partial" rather than "Complete." Phase 3 effective coverage: TBT-03 + TBT-04 + DOC-05 + Blob47Godot half of TEMPLATE-02 (4 of 6 originally-planned Phase 3 IDs).
 - 2026-04-29 Phase 3.5 closeout (Plan 06): PIXLAB-01..04 flipped to Complete. VAR-PIXEL-01 explicitly stays in v2 Requirements per D-89/D-90/D-91 — bank-pick wiring deferred until variation work reopens (design-coupled with VAR-01 + MULTITERR-01). The phase title "+ Variation-Seed Wiring" was a misnomer in v0.2 — no `variation_seed` property is exposed; layouts ship with first-cell pick only. Coverage counter unchanged: 58 v1 reqs (PIXLAB-01..04 were already counted as v1; the change is Status not membership).
+- 2026-04-29: Phase 5 closeout. DEMO-01..03 + DOC-01..04 + REL-01..03 flipped to Complete. v0.2.0 published via release workflow run 25131034672 (44s wall-clock); release commit `a3223b9`; git tag `v0.2.0`; release page https://github.com/Shilo/PentaTile/releases/tag/v0.2.0. v0.2.0 milestone shipped end-to-end. Coverage: 58 / 58 v1 requirements satisfied (zero pending). Per SC-A reframe, demo + docs cover 8 actually-shipped layouts (Tilesetter pair stays deferred to v0.3+ per D-86 b). Per SC-B, no ATTRIBUTION.md ships (TileBitTools acknowledgment lives in README "External Resources" footnote per DOC-05). Per SC-C, identity is hot-path minimalism + anti-pattern absence (D-05-11), audit at `.planning/phases/05-demo-refresh-documentation-release/05-LOC-AUDIT.md` with summary in README "Identity & Footprint". Per SC-D, REL-01 ownership flipped from "manual commit" to "workflow side-effect" (D-05-16).
 - 2026-04-26 architectural pivots (locked after fourth iteration):
   - **Slot ordering**: `0=IsolatedCell, 1=Fill, 2=Border, 3=InnerCorner, 4=OppositeCorners`. OuterCorner is implicit (synthesized from slot 0's corners across all modes).
   - **Five progressive modes**: ONE → TWO → THREE → FOUR → FIVE, each adding one explicit slot. AUTO detects from atlas axis size (uniform across strips); AUTO_STRIP detects per-strip (strips can differ).
