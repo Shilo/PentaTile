@@ -62,7 +62,8 @@ try {
         "bitmask_bounds_test",
         "comprehensive_bitmask_test",
         "penta_ground_hollow_test",
-        "determinism_test"
+        "determinism_test",
+        "single_grid_8_moore_propagation_test"
     )
 
     $tests = $allTests
