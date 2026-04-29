@@ -4,14 +4,14 @@ milestone: v0.2.0
 milestone_name: milestone
 status: planning
 stopped_at: Phase 3.5 context gathered
-last_updated: "2026-04-29T08:40:14.124Z"
+last_updated: "2026-04-29T09:32:12.968Z"
 last_activity: 2026-04-29
 progress:
   total_phases: 8
   completed_phases: 4
-  total_plans: 21
+  total_plans: 27
   completed_plans: 21
-  percent: 100
+  percent: 78
 ---
 
 # Project State
@@ -196,4 +196,4 @@ Resume file: --resume-file
 **In-progress Phase:** 02 (Native Layouts + Architectural Simplification) — 7/7 plans executed + retroactive AUTO_STRIP dispatch wave (29cba37), 30/30 requirements satisfied programmatically, 3 code review passes clean (status: clean; 0 Critical / 0 Warning / 13 Info), 4 determinism sub-tests pass (BASELINE_HASH=2986698704, BASELINE_CELLS=46), VERTICAL regression net active, paint_test ALL PASS across 6 single-strip modes + 4 AUTO_STRIP cases + abstract guard. **Outstanding gates:** (1) human visual UAT — 2 items still pending in `02-HUMAN-UAT.md` (DualGrid16/Wang2*/Min3x3 visual correctness, Min3x3 collapse) + 1 partial (Penta multi-mode visual seam-check; programmatic dispatch ✓), (2) LOC overage decision — 1827 runtime LOC vs ~1500 trigger (informational at Phase 2; formal gate is Phase 5 final audit). AUTO/AUTO_STRIP detection UAT (test 4) now ✓ pass programmatically. ROADMAP Phase 2 entry intentionally `[ ]` until both gates resolved.
 **Next Phase:** 03 (TileBitTools-Sourced Layouts) — Blob47Godot, TilesetterWang15, TilesetterBlob47 + ATTRIBUTION.md (chains automatically once Phase 2 approved in --auto mode)
 
-**Planned Phase:** 03 (Public-Convention Layouts (Blob47 + Tilesetter)) — 6 plans — 2026-04-29T06:50:38.901Z
+**Planned Phase:** 3.5 (PixelLab Layouts + Variation-Seed Wiring) — 6 plans — 2026-04-29T09:32:12.962Z
