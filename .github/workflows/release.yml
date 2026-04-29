@@ -1,0 +1,201 @@
+# .github/workflows/release.yml
+#
+# Single manually-triggered release pipeline for PentaTile v0.2.x and beyond.
+#
+# Decision references (.planning/phases/05-demo-refresh-documentation-release/05-CONTEXT.md):
+#   D-05-15 — single workflow_dispatch with NO inputs ("if it cannot be automatic, remove it")
+#   D-05-16 — auto-version-increment: minor +1 by default; major +1 / minor=0 if minor would
+#             exceed 9. Patch always 0 (patches are intentionally NOT supported by this scheme).
+#   D-05-17 — 11-step pipeline: read version -> CI checks -> bump -> CHANGELOG header -> commit/tag/push
+#             -> archive -> CHANGELOG slice -> publish release.
+#   D-05-18 — release notes body = CHANGELOG slice for the just-rewritten [<version>] block.
+#
+# Pitfall references (.planning/phases/05-demo-refresh-documentation-release/05-RESEARCH.md):
+#   #1 Godot --headless exit codes unreliable -> use stderr grep for ERROR / SCRIPT ERROR markers.
+#   #2 permissions: contents: write at JOB level (not workflow level).
+#   #3 actions/checkout@v6 persist-credentials defaults to true -> enables git push.
+#   #5 softprops/action-gh-release@v3 needs Node 24 -> ubuntu-latest (24.04) — DO NOT pin to ubuntu-22.04.
+#   #7 plugin.cfg version="X.Y.Z" is quoted -> sed must preserve quotes.
+#   #11 git archive includes ONLY tracked files at the tagged commit (excludes .godot/, untracked).
+
+name: Release
+
+on:
+  workflow_dispatch:
+    # Per D-05-16: NO inputs. Version is auto-derived from plugin.cfg.
+
+jobs:
+  release:
+    runs-on: ubuntu-latest                  # has Node 24 for action-gh-release@v3 (Pitfall #5)
+    permissions:
+      contents: write                       # Pitfall #2: job-level grant (NOT workflow-level)
+    env:
+      GODOT_VERSION: 4.6.2-stable           # pinned per CLAUDE.md Stack
+      GODOT_ZIP_NAME: Godot_v4.6.2-stable_linux.x86_64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        # Pitfall #3: persist-credentials: true (default in v6) wires GITHUB_TOKEN
+        # into the local git remote — no extra config needed for git push.
+        with:
+          fetch-depth: 0                    # full history needed for git archive at tag
+          persist-credentials: true
+
+      - name: Configure git identity (github-actions[bot])
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Compute next version (D-05-16 auto-increment)
+        id: version
+        run: |
+          set -e
+          PLUGIN_CFG="addons/penta_tile/plugin.cfg"
+          if [ ! -f "$PLUGIN_CFG" ]; then
+            echo "::error::plugin.cfg not found at $PLUGIN_CFG"; exit 1
+          fi
+
+          # Extract current version. Robust to optional quotes + whitespace
+          # (Pitfall #7: actual file uses version="0.1.0" with quotes).
+          CURRENT=$(grep -E '^version\s*=' "$PLUGIN_CFG" | sed -E 's/^version\s*=\s*"?([^"]+)"?$/\1/')
+          if [ -z "$CURRENT" ]; then
+            echo "::error::Could not parse current version from $PLUGIN_CFG"; exit 1
+          fi
+
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+          if [ -z "$MAJOR" ] || [ -z "$MINOR" ] || [ -z "$PATCH" ]; then
+            echo "::error::Current version '$CURRENT' is not in MAJOR.MINOR.PATCH form"; exit 1
+          fi
+
+          # D-05-16: minor +1 by default; if minor would exceed 9, major +1 + minor=0.
+          # Patch always 0 (patches NOT supported by this scheme).
+          if [ "$MINOR" -ge 9 ]; then
+            MAJOR=$((MAJOR + 1))
+            MINOR=0
+          else
+            MINOR=$((MINOR + 1))
+          fi
+          PATCH=0
+
+          NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          echo "Bumping ${CURRENT} -> ${NEW_VERSION}"
+          echo "NEW_VERSION=${NEW_VERSION}" >> "$GITHUB_ENV"
+          echo "RELEASE_DATE=$(date -u +%Y-%m-%d)" >> "$GITHUB_ENV"
+
+      - name: Download Godot ${{ env.GODOT_VERSION }} Linux
+        run: |
+          set -e
+          wget -q "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/${GODOT_ZIP_NAME}.zip" -O godot.zip
+          unzip -q godot.zip
+          mv "${GODOT_ZIP_NAME}" godot
+          chmod +x godot
+          ./godot --version
+
+      - name: Headless project import (Pitfall #1 mitigated)
+        run: |
+          set +e
+          ./godot --headless --path . --import --quit-after 2 2> import_stderr.log
+          echo "import exit code: $?"
+          if grep -qE '^(ERROR|SCRIPT ERROR):' import_stderr.log; then
+            echo "::error::Godot import produced errors:"
+            cat import_stderr.log
+            exit 1
+          fi
+          echo "Import clean."
+
+      - name: Run 17-test suite
+        run: |
+          set -e
+          chmod +x addons/penta_tile/tests/run_tests.sh
+          GODOT="$(pwd)/godot" bash addons/penta_tile/tests/run_tests.sh
+
+      - name: Headless-open demo scene (Pitfall #1 mitigated)
+        run: |
+          set +e
+          ./godot --headless --quit-after 2 res://addons/penta_tile/demo/penta_tile_demo.tscn 2> open_stderr.log
+          echo "open exit code: $?"
+          if grep -qE '^(ERROR|SCRIPT ERROR):' open_stderr.log; then
+            echo "::error::Demo scene open produced errors:"
+            cat open_stderr.log
+            exit 1
+          fi
+          echo "Demo open clean."
+
+      - name: Bump plugin.cfg version (preserves quotes — Pitfall #7)
+        run: |
+          set -e
+          sed -i -E "s/^version\s*=.*\$/version=\"${NEW_VERSION}\"/" addons/penta_tile/plugin.cfg
+          # Sanity check the rewrite worked:
+          grep -qE "^version=\"${NEW_VERSION}\"\$" addons/penta_tile/plugin.cfg
+          echo "plugin.cfg updated to ${NEW_VERSION}:"
+          grep -E '^(name|version)' addons/penta_tile/plugin.cfg
+
+      - name: Rewrite CHANGELOG header [Unreleased] -> [<NEW_VERSION>] — <DATE>
+        run: |
+          set -e
+          # Match the literal current heading (Plan B keeps this stable through release time).
+          # Must match: ## [Unreleased] — v0.2 in progress (or any text after the closing bracket).
+          sed -i -E "s/^## \[Unreleased\][^\$]*\$/## [${NEW_VERSION}] — ${RELEASE_DATE}/" CHANGELOG.md
+          # Sanity: the new heading is present, the old one is gone.
+          grep -qE "^## \[${NEW_VERSION}\] — ${RELEASE_DATE}\$" CHANGELOG.md
+          ! grep -qE "^## \[Unreleased\]" CHANGELOG.md
+
+      - name: Commit, tag, push
+        run: |
+          set -e
+          git add addons/penta_tile/plugin.cfg CHANGELOG.md
+          git commit -m "chore(release): v${NEW_VERSION}"
+          git tag -a "v${NEW_VERSION}" -m "PentaTile v${NEW_VERSION}"
+          # Pitfall #4: HEAD:main pushes the local commit to remote main; fails fast on divergence.
+          git push origin HEAD:main
+          git push origin "v${NEW_VERSION}"
+
+      - name: Build release zip via git archive (Pitfall #11)
+        run: |
+          set -e
+          # git archive includes ONLY tracked files at the tagged commit.
+          # --prefix puts everything under penta_tile-v<VERSION>/ inside the zip.
+          # The pathspec restricts the archive to addons/penta_tile/ only.
+          git archive --format=zip \
+            --prefix="penta_tile-v${NEW_VERSION}/" \
+            -o "penta_tile-v${NEW_VERSION}.zip" \
+            "v${NEW_VERSION}" -- addons/penta_tile/
+          ls -la "penta_tile-v${NEW_VERSION}.zip"
+          echo "Zip contents (first 20 entries):"
+          unzip -l "penta_tile-v${NEW_VERSION}.zip" | head -25
+
+      - name: Extract CHANGELOG slice for release body (D-05-18)
+        run: |
+          set -e
+          awk -v ver="${NEW_VERSION}" '
+            /^## \[/ {
+              if (in_section) { exit }
+              if (index($0, "[" ver "]") > 0) { in_section = 1; print; next }
+            }
+            in_section { print }
+          ' CHANGELOG.md > release-notes-body.md
+
+          # Trim trailing blank lines.
+          sed -i -e :a -e '/^[[:space:]]*$/{$d;N;ba' -e '}' release-notes-body.md
+
+          # Sanity: file must be non-empty.
+          if [ ! -s release-notes-body.md ]; then
+            echo "::error::release-notes-body.md is empty — slice extraction failed"
+            cat CHANGELOG.md | head -30
+            exit 1
+          fi
+
+          echo "First 20 lines of release notes:"
+          head -20 release-notes-body.md
+
+      - name: Publish GitHub Release (softprops/action-gh-release@v3 — Pitfall #5)
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: v${{ env.NEW_VERSION }}
+          name: PentaTile v${{ env.NEW_VERSION }}
+          body_path: release-notes-body.md
+          files: penta_tile-v${{ env.NEW_VERSION }}.zip
+          draft: false
+          prerelease: false
+          # Implicit auth via the job-level permissions: contents: write.
