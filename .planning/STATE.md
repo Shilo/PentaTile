@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-04 — Blob47Godot layout + bundled PNG + collapse/hollow tests (15/15 green)
-last_updated: "2026-04-29T07:51:02.361Z"
+stopped_at: Plan 05 SKIPPED per D-86 = b — Tilesetter deferred to v0.3+
+last_updated: "2026-04-29T07:55:58.021Z"
 last_activity: 2026-04-29
 progress:
   total_phases: 8
   completed_phases: 3
   total_plans: 21
-  completed_plans: 19
-  percent: 90
+  completed_plans: 20
+  percent: 95
 ---
 
 # Project State
@@ -26,13 +26,13 @@ See: .planning/PROJECT.md (updated 2026-04-25 after v0.2 pivot to layout library
 ## Current Position
 
 Phase: 03 (Public-Convention Layouts (Blob47 + Tilesetter)) — EXECUTING
-Plan: 5 of 6
+Plan: 6 of 6
 Status: Ready to execute
 Last activity: 2026-04-29
 
 > Phase 03 — Wave 1 prereqs landed (8-Moore patch + D-86 gate resolved as option b — Tilesetter deferred to v0.3+). Plan 03-05 (Tilesetter layouts) is now SKIPPED for Phase 3; remaining plans 03-04 (Blob47Godot) and 03-06 (closeout) proceed.
 
-Progress: [█████████░] 90%
+Progress: [██████████] 95%
 
 > Out-of-band progress: 5 of 8 greyboxed template PNGs + the generator script shipped in commit e86036f as part of the discovery pass. Counted as TEMPLATE-01 + TEMPLATE-03 covered. The remaining 3 templates (Blob47Godot, TilesetterWang15, TilesetterBlob47) ship in Phase 3 once their slot tables are transcribed from TileBitTools.
 
@@ -67,6 +67,7 @@ Progress: [█████████░] 90%
 | Phase 03 P03 | 3min | 2 tasks tasks | 3 files files |
 | Phase 03 P01 | 12min | 2 tasks tasks | 4 files files |
 | Phase Phase 03 P04 P04 | 12min | 3 tasks tasks | 9 files files |
+| Phase Phase 03 PP05 | 2min | 0 tasks (skipped) tasks | 1 file files |
 
 ## Accumulated Context
 
@@ -142,6 +143,7 @@ TILESETTER_DECISION: b
 - D-86 RESOLVED — option (b) defer Tilesetter layouts to v0.3+. Plan 03-05 SKIPPED. TilesetterWang15 + TilesetterBlob47 + Tilesetter half of TEMPLATE-02 deferred to v2 backlog. Phase 3 ships Blob47Godot + audit + 8-Moore patch + req rewrites only. TILESETTER_DECISION: b
 - D-87 8-Moore single-grid propagation patch landed (penta_tile_map_layer._mark_affected_single_grid_cells extended from 4 cardinals to 8 Moore neighbors). 4-cardinal layouts unaffected — extra diagonal cells hit existing logic-painted-only short-circuit. Verify-the-regression cycle confirmed (CLAUDE.md Test Methodology #5).
 - Phase 3 Plan 04: Blob47Godot layout shipped — algorithmic 256→47 collapse rule + 47-entry _MASK_TO_ATLAS dict + 7×7 BorisTheBrave-canonical packing. blob_47_collapse_test verify-the-regression cycle confirmed. blob_47_hollow_test catches layout-level dispatch correctness (mask=0 fallthrough, hole emptiness, bbox); does NOT catch 8-Moore propagation regression under batch paint (that's the propagation test's job — Plan 01). Auto-fixed: _primary_layer access via Object.get() (not get_node — Node name is _PentaTileVisual); Godot --import pass required for new bundled PNG to be load()-able at runtime. 15/15 tests green.
+- **2026-04-29 (Plan 05 SKIPPED):** D-86 resolved to option (b). PentaTileLayoutTilesetterWang15 + PentaTileLayoutTilesetterBlob47 deferred to v0.3+ backlog. Plan 06 (closeout) handles the REQUIREMENTS.md / ROADMAP.md / Coverage table updates (records TBT-01-DEFERRED / TBT-02-DEFERRED / TEMPLATE-02-DEFERRED v2 backlog entries). No source files / .pngs / tests created in Plan 05 — single SUMMARY-only commit captured the skip. Phase 3 cumulative runtime LOC unchanged at ~1948 (well below the 2500 informational concern). Plan 05 SUMMARY at `.planning/phases/03-tilebittools-sourced-layouts/03-05-SUMMARY.md`.
 
 ### Pending Todos
 
@@ -180,8 +182,8 @@ Items acknowledged and carried forward as v2 requirements (see REQUIREMENTS.md v
 
 ## Session Continuity
 
-Last session: 2026-04-29T07:51:02.355Z
-Stopped at: Completed 03-04 — Blob47Godot layout + bundled PNG + collapse/hollow tests (15/15 green)
+Last session: 2026-04-29T07:55:58.013Z
+Stopped at: Plan 05 SKIPPED per D-86 = b — Tilesetter deferred to v0.3+
 Resume file: None
 
 **Completed Phase:** 01 (Contract Skeleton + Penta Layouts) — 5/5 plans, 14/14 requirements, 26/26 automated tests PASS — 2026-04-26
