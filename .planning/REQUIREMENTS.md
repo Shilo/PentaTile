@@ -176,8 +176,10 @@ The drop-in prototyping UX. Each layout has an inspector-visible thumbnail (the 
 ).
 - [x] **PREVIEW-02
 **: Each shipped layout's `get_fallback_tile_set()` returns a TileSet built from the layout's `bitmask_template` PNG (the SAME image that's shown in the inspector preview — single PNG serves both roles) with slot positions configured per the layout's `mask_to_atlas` table. Generated at first call, cached on the layout instance. No `.tres` files — the TileSet is constructed in code.
-- [ ] **PREVIEW-03**: When `PentaTileMapLayer.tile_set == null` AND `layout != null`, the layer routes rendering through `layout.get_fallback_tile_set()` for prototyping.
-- [ ] **PREVIEW-04**: When the user assigns `tile_set` directly, it overrides the fallback (no warnings, no errors — uses what the user provided).
+- [x] **PREVIEW-03
+**: When `PentaTileMapLayer.tile_set == null` AND `layout != null`, the layer routes rendering through `layout.get_fallback_tile_set()` for prototyping.
+- [x] **PREVIEW-04
+**: When the user assigns `tile_set` directly, it overrides the fallback (no warnings, no errors — uses what the user provided).
 
 ### Templates (TEMPLATE)
 
