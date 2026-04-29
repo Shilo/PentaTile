@@ -31,6 +31,18 @@
 - Release workflow inspection — PASS, test step calls `tests/run_tests.sh` and
   archive step remains restricted to `addons/penta_tile/`.
 
+## 2026-04-29 Follow-Up Review
+
+- Reviewed commits `01d46a4` and `ace016f`.
+- Fixed docs deploy workflow comments to match the reversed LLM-docs decision.
+- Expanded docs workflow path filters to include `addons/penta_tile/**/*.gd` and
+  `tools/mkdocs_hooks.py`, so API-reference and LLM artifact changes redeploy.
+- Expanded every layout page with template images, setup steps, atlas contracts,
+  and authoring notes.
+- Added MkDocs logo/favicon and homepage logo from the PentaTile brand assets.
+- Fixed `tools/mkdocs_hooks.py` class-doc extraction and hid private
+  `@export_storage` members from the generated public API reference.
+
 ## Follow-Up
 
 None required for Phase 7. A flat LLM artifact can be reconsidered only if a

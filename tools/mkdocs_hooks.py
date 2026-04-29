@@ -82,19 +82,25 @@ def _extract_class(path: Path) -> dict | None:
             m = _CLASS_NAME_RE.match(line)
             if m:
                 class_name = m.group(1)
-                # Class doc: walk forward (Godot convention) skipping ``extends`` + ``@icon`` etc.
-                j = i + 1
-                while j < len(lines) and lines[j].strip().startswith(("extends ", "@", "")):
-                    if lines[j].strip().startswith("##"):
+                class_doc = _read_doc_block(lines, i)
+                if not class_doc:
+                    # PentaTileMapLayer keeps its class doc after ``extends``
+                    # because ``@icon`` and ``class_name`` occupy the top lines.
+                    # Skip only annotations, ``extends`` and blanks; if the next
+                    # meaningful line is not a doc block, leave class_doc empty.
+                    j = i + 1
+                    while j < len(lines):
+                        stripped = lines[j].strip()
+                        if stripped == "" or stripped.startswith("extends ") or stripped.startswith("@"):
+                            j += 1
+                            continue
                         break
-                    j += 1
-                # Now collect contiguous ``## `` block.
-                block = []
-                while j < len(lines) and lines[j].strip().startswith("##"):
-                    s = lines[j].strip()
-                    block.append(s[2:].lstrip() if s.startswith("## ") else s[2:])
-                    j += 1
-                class_doc = "\n".join(block).strip()
+                    block = []
+                    while j < len(lines) and lines[j].strip().startswith("##"):
+                        s = lines[j].strip()
+                        block.append(s[2:].lstrip() if s.startswith("## ") else s[2:])
+                        j += 1
+                    class_doc = "\n".join(block).strip()
                 continue
 
         if extends is None:
@@ -119,6 +125,8 @@ def _extract_class(path: Path) -> dict | None:
 
         m_exp = _EXPORT_RE.match(line)
         if m_exp:
+            if m_exp.group(1).startswith("_"):
+                continue  # Private storage exports are implementation detail.
             doc = _read_doc_block(lines, i)
             if not doc:
                 continue  # Undocumented export: skip.

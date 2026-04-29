@@ -4,12 +4,10 @@
 #
 # Phase 7 references (.planning/phases/07-repo-restructure-extract-tests-mkdocs-site-llm-friendly-docs/):
 #   07-SUMMARY.md           — MkDocs Material site shipped 2026-04-29 (dark-default + light toggle).
-#   07-LLM-DOCS-DECISION.md — LLM-friendly artifact generator REJECTED. Direct source
-#                             (docs/ + AGENTS.md + addons/penta_tile/**/*.gd ## comments + tests/)
-#                             is the LLM doc surface. This workflow therefore deploys ONLY the
-#                             rendered MkDocs site; it does not generate or commit a flat LLM file.
-#                             Revisit only if a concrete consumer appears (07-LLM-DOCS-DECISION.md
-#                             "Revisit Trigger").
+#   07-LLM-DOCS-DECISION-REVISION.md — LLM-friendly artifacts are generated during
+#                                      mkdocs build via mkdocs-llmstxt plus
+#                                      tools/mkdocs_hooks.py. Pages serves HTML,
+#                                      llms.txt, and llms-full.txt.
 #
 # Repo-style references (.planning/phases/05-demo-refresh-documentation-release/05-CONTEXT.md):
 #   D-05-15 — manual triggers preferred when full automation is not justified; this workflow
@@ -27,6 +25,8 @@ on:
     branches: [main]
     paths:
       - 'docs/**'
+      - 'addons/penta_tile/**/*.gd'
+      - 'tools/mkdocs_hooks.py'
       - 'mkdocs.yml'
       - 'requirements-docs.txt'
       - '.github/workflows/docs.yml'

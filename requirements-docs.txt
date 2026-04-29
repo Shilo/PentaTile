@@ -1,2 +1,2 @@
 mkdocs-material==9.*
-mkdocs-llmstxt
+mkdocs-llmstxt==0.5.*

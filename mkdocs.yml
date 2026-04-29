@@ -7,6 +7,8 @@ repo_name: Shilo/PentaTile
 theme:
   name: material
   language: en
+  logo: assets/brand/penta_tile_icon.png
+  favicon: assets/brand/penta_tile_icon.png
   palette:
     - scheme: slate
       primary: teal
@@ -63,11 +65,12 @@ plugins:
         Reference:
           - penta-tileset.md: What is a Penta tileset? — codename definition
           - custom-layouts.md: Authoring a custom PentaTileLayout subclass
-          - api-reference.md: Full GDScript API extracted from ## doc-comments
+          - api-reference.md: Full GDScript API extracted from GDScript documentation comments
         About:
           - llm-docs.md: How LLMs and agents should consume these docs
 
 markdown_extensions:
+  - attr_list
   - admonition
   - pymdownx.details
   - pymdownx.superfences
