@@ -307,5 +307,24 @@ Architectural anti-patterns explicitly NOT introduced (per `.planning/research/l
 Plans:
 - [ ] TBD (run /gsd-plan-phase 6 to break down — but only after v0.2.0 ships)
 
+### Phase 7: Repo Restructure: Extract Tests + MkDocs Site + LLM-Friendly Docs Pipeline
+
+**Goal:** Three deliverables, all v0.2.0 follow-up post-release:
+
+1. **Move `addons/penta_tile/tests/` → `./tests/`.** Tests should not ship in the GitHub Release zip. Verify self-containment (no path assumptions into `addons/penta_tile/`), then move. Update all references: `.github/workflows/release.yml`, `run_tests.ps1`, `run_tests.sh`, `.gitignore`, CLAUDE.md, planning docs.
+
+2. **MkDocs documentation site.** Dark mode by default with a dark↔light toggle (two-state, no system-preference auto). Includes a quickstart guide and per-layout dedication pages, with a "What is a Penta tileset?" deep-dive page anchoring the codename. (This reverses PROJECT.md's prior "no MkDocs" stance — that decision was made when the audience was strictly the author; reconciled in PROJECT.md + REQUIREMENTS.md.)
+
+3. **LLM-friendly documentation pipeline.** Research whether an LLM agent reads this addon better via (a) the mkdocs source + GDScript `##` doc-comments directly, or (b) an auto-generated flat text artifact. If (b) wins, design a GitHub Actions workflow that regenerates the artifact on every mkdocs/GDScript-doc change. The research-and-decide is the deliverable — don't presuppose the answer.
+
+**Requirements**: TBD — likely a new `DOCS-*` / `REPO-*` family during plan-phase. TOOL-04 (MkDocs documentation site) promoted from v2 backlog into Phase 7 scope.
+
+**Depends on:** Phase 5 (consumes the shipped v0.2.0 surface). Independent of Phase 6 (deferred editor-preview work).
+
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 7 to break down)
+
 ---
 *Roadmap re-spun: 2026-04-25 after v0.2 pivot to layout library*

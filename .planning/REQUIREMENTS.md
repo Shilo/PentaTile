@@ -267,7 +267,7 @@ Backlog item added 2026-04-26 from Phase 2.1 brainstorm. Goal: support multiple 
 ### Tooling & Distribution
 
 - **TOOL-03**: Collision authoring tools / auto-collision generation.
-- **TOOL-04**: MkDocs documentation site.
+- ~~**TOOL-04**: MkDocs documentation site.~~ — **Promoted to Phase 7** (v0.2.0 follow-up) on 2026-04-29; new REQ-IDs in `DOCS-*` family will be created during `/gsd-plan-phase 7`.
 - **DIST-01**: Godot Asset Library submission.
 - **DIST-02**: Formal automated test suite (GUT or similar).
 
@@ -297,7 +297,6 @@ Explicitly excluded for v0.2.0. Documented to prevent scope creep.
 | Multi-terrain transitions | Distinct R&D track |
 | Shader fallback for diagonal compositing | Demo-scale doesn't need it |
 | Collision authoring / auto-collision generation | TileSet-physics path is sufficient |
-| MkDocs documentation site | GitHub README is enough for the private audience |
 | Godot Asset Library distribution | GitHub-only this milestone |
 | Formal automated test suite (GUT) | "Works in my game" quality bar |
 | Large-map performance benchmarking | Demo-scale only |

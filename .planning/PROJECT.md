@@ -60,7 +60,6 @@ Painting tiles with the native `TileMapLayer` API produces correct dual-grid aut
 - Outer transition tile support (multi-terrain) — Distinct R&D track
 - Shader fallback for diagonal compositing — Performance optimization not needed at demo scale
 - Collision authoring / auto-collision generation — TileSet-physics path is sufficient
-- MkDocs documentation site — GitHub README is enough
 - Godot Asset Library distribution — GitHub-only this milestone
 - Formal automated test suite (GUT) — "Works in my game" quality bar
 - Large-map performance benchmarking (>10k cells) — Demo-scale only
@@ -105,7 +104,7 @@ Painting tiles with the native `TileMapLayer` API produces correct dual-grid aut
 | TileBitTools' `EditorInspectorPlugin` architecture explicitly NOT copied | Their addon is ~3,800 LOC of edit-time UI; PentaTile's identity is small runtime + zero editor polish | — Pending |
 | Breaking changes always allowed and encouraged; never add backwards-compat shims | Pre-1.0; audience is the author's own games. User explicit policy 2026-04-26: never defer features or write fallbacks for compat reasons. CHANGELOG entries are the only acceptable "compat" work. | — Active |
 | v0.2 architecture: every layout renders via load-time synthesis to a 5-archetype dispatch; runtime overlay layer removed entirely | Eliminates a TileMapLayer per node, simplifies AtlasSlot (drops `diagonal_complement_atlas_coords`), folds Penta4 + Penta5 into one auto-detect layout, makes Single-Tile and any future synthesized layouts share one render path. Synthesis happens at `layout` setter time (editor + runtime); produces the OppositeCorners archetype for masks 6/9. | — **Validated in Phase 2** |
-| GitHub release only; no Asset Library, no MkDocs | Audience is private; discoverability and full docs site are not goals this milestone | — Pending |
+| GitHub release only; no Asset Library | Audience is private; Asset Library discoverability is not a goal this milestone. (Original "no MkDocs" stance reversed 2026-04-29 when Phase 7 added MkDocs docs site as v0.2.0 follow-up.) | — Pending |
 | Quality bar is "works in my game" — no formal test suite, no perf benchmarks | Keeps milestone scope tight on the layout library | — Pending |
 | One expanded demo scene over multiple per-feature demos | Simpler maintenance; surface area stays small as layouts land | — Pending |
 
