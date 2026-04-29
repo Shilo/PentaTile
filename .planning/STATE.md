@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 2 substantively complete — UAT-class bugs (7 classes across commits 6553380..205fb67) fixed, automated coverage extended (12 tests green, 4 added/fortified during UAT), methodology codified in CLAUDE.md + 02-UAT-LESSONS-LEARNED.md. HUMAN-UAT visual items now covered programmatically by comprehensive_bitmask_test + penta_ground_hollow_test using user fixtures.
+stopped_at: Phase 2 COMPLETE — UAT-class bugs (7 classes across commits 6553380..205fb67) fixed, 12 automated tests green, methodology codified, and visual UAT confirmed by user via the 16-mask-pattern demo scene (Layer A bundled greybox + Layer B ground.tres, both rendering correctly). Ready to begin Phase 3 (TileBitTools-Sourced Layouts).
 last_updated: "2026-04-28T20:00:00.000Z"
 last_activity: 2026-04-28
 progress:
@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-04-25 after v0.2 pivot to layout library
 
 ## Current Position
 
-Phase: 02 (native-layouts) — CODE-COMPLETE + UAT BUG SWEEP COMPLETE; READY TO CLOSE
+Phase: 02 (native-layouts) — COMPLETE (visual UAT confirmed 2026-04-28 via the 16-mask-pattern demo scene)
 Plan: 7 of 7 executed (+ retroactive AUTO_STRIP per-strip dispatch wave + UAT bug-fix sweep — see 2026-04-27 + 2026-04-28 entries)
 Status: All plans done. Code review passed cleanly across 3 passes. 7 Critical/Warning findings (WR-01..WR-07) all fixed and verified. 3 new Info findings (IN-11/12/13) fixed in commit c9a6aa9. AUTO_STRIP per-strip dispatch — originally deferred to Phase 5 in Wave 6 — completed retroactively in commit 29cba37 (2026-04-27) after UAT exposed the gap. UAT bug-fix sweep completed 2026-04-28 across 7 bug classes (commits 6553380..205fb67): edge-greybox plus-pattern → corner-cuts → solid; Min3x3 lossy-9 background extension; layer-level single-grid logic-painted gate; Wang2Corner partial-quadrant artifacts (its own solid 32×32 atlas); single-grid mask=0 default-atlas dispatch; Penta canonical-archetype-silhouette enforcement on authored slots (catches artist art straying into cut quadrants → rotation bleed). Test suite grew 9 → 12: added bitmask_bounds_test, comprehensive_bitmask_test (16 patterns × 5 layouts), penta_ground_hollow_test (uses user's actual ground.tres fixture); fortified all_layouts_swap_pixel_test (+bbox + +solidity assertions). Determinism BASELINE_HASH=2986698704 still holds. Methodology codified in CLAUDE.md § Test Methodology + .planning/phases/02-native-layouts/02-UAT-LESSONS-LEARNED.md. Phase 2 ROADMAP entry can move to `[x]` once HUMAN-UAT.md is updated to reflect automated coverage (next step before Phase 3 starts).
 Last activity: 2026-04-28
@@ -163,8 +163,8 @@ Items acknowledged and carried forward as v2 requirements (see REQUIREMENTS.md v
 
 ## Session Continuity
 
-Last session: 2026-04-28T20:00:00.000Z
-Stopped at: Phase 2 substantively complete after UAT bug-fix sweep (7 bug classes across commits 6553380..205fb67). 12 tests green. Methodology codified. ROADMAP Phase 2 entry ready to move to `[x]` once HUMAN-UAT.md is reflagged based on automated coverage. Next: review HUMAN-UAT.md → mark Phase 2 done → run /gsd-next or /gsd-plan-phase 3 to begin Phase 3 (TileBitTools-decoded layouts: Blob47Godot + TilesetterWang15 + TilesetterBlob47 + ATTRIBUTION.md).
+Last session: 2026-04-28T22:00:00.000Z
+Stopped at: Phase 2 COMPLETE. User confirmed visual UAT via the 16-mask-pattern demo scene (`addons/penta_tile/demo/penta_tile_demo.tscn` — two PentaTileMapLayer nodes, one against bundled greybox, one against `penta_tile_ground.tres`, each painting all 16 corner-mask configurations in a 4×4 grid). 12 automated tests green. ROADMAP Phase 2 = `[x]`. Next: run `/gsd-next` or `/gsd-plan-phase 3` to begin Phase 3 (TileBitTools-Sourced Layouts: Blob47Godot + TilesetterWang15 + TilesetterBlob47 + ATTRIBUTION.md).
 Resume file: None
 
 **Completed Phase:** 01 (Contract Skeleton + Penta Layouts) — 5/5 plans, 14/14 requirements, 26/26 automated tests PASS — 2026-04-26
