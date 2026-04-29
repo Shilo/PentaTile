@@ -65,7 +65,8 @@ try {
         "determinism_test",
         "blob_47_collapse_test",
         "blob_47_hollow_test",
-        "single_grid_8_moore_propagation_test"
+        "single_grid_8_moore_propagation_test",
+        "pixellab_first_cell_test"
     )
 
     $tests = $allTests
