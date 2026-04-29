@@ -24,7 +24,7 @@ The original v0.2 feature pillars (Y-axis variation, top tiles, non-rotating til
 - [x] **Phase 1.1: PentaTile Rename + Penta Codename Establishment** — Project-wide rename to `PentaTile` (source code, saved resources, planning + project docs, GitHub repo, local clone, Claude memory) before Phase 2 ships new files under the old name. "Penta" coined as the 5-archetype tileset codename via canonical README anchor + CLAUDE.md project invariant. CHANGELOG.md ships the v0.2 BREAKING entry.
 - [x] **Phase 2: Native Layouts + Penta Synthesis (1/2/3/4/5 auto-detect)** — Ship DualGrid16, Wang2Edge, Wang2Corner, Min3x3 subclasses. Plus the architectural pivot: Phase 1's `PentaTileLayoutPentaHorizontal`/`Vertical` are merged into a single `PentaTileLayoutPenta` class with `axis: Axis` enum and `tile_count: TileCountMode { AUTO, AUTO_STRIP, ONE, TWO, THREE, FOUR, FIVE }` enum — five progressive synthesis modes per strip with AUTO/AUTO_STRIP detection variants. Runtime overlay layer DELETED entirely (single-layer dispatch only). New slot ordering: `0=IsolatedCell, 1=Fill, 2=Border, 3=InnerCorner, 4=OppositeCorners`; OuterCorner is implicit (synthesized from slot 0). Closed 2026-04-28 after the UAT bug-fix sweep (7 bug classes across commits 6553380..205fb67) — see `.planning/phases/02-native-layouts/02-UAT-LESSONS-LEARNED.md`. Companion artifact: `.planning/research/layouts/RPG_MAKER.md` documents the deferred RPG Maker family for v0.3+.
 - [x] **Phase 3: Public-Convention Layouts (Blob47 only; Tilesetter deferred to v0.3+ per D-86 b)** — Shipped `PentaTileLayoutBlob47Godot` (BorisTheBrave 7×7 + algorithmic 256→47 collapse rule + 47-entry dispatch dict), 8-Moore single-grid propagation patch, TBT design-inspiration audit (`03-TBT-DEEP-AUDIT.md`), README "External Resources" footnote acknowledging TileBitTools (NO `addons/penta_tile/ATTRIBUTION.md` per D-73), and the closeout matrix-test extension. **Plan 05 SKIPPED** per D-86 user decision (option b — Tilesetter primary source not located in plan-phase research; deferred to v0.3+). TBT-01 / TBT-02 / Tilesetter half of TEMPLATE-02 carry forward as `TBT-01-DEFERRED` / `TBT-02-DEFERRED` / `TEMPLATE-02-DEFERRED` in REQUIREMENTS.md v2 backlog.
-- [ ] **Phase 3.5: PixelLab Layouts + Variation-Seed Wiring** — Ship `PentaTileLayoutPixelLabTopDown` and `PentaTileLayoutPixelLabSideScroller` (8×8 atlas, single-grid, 4-bit corner mask, variation-bank). Wire `variation_seed` deterministic-hash bucket-pick. Add `PentaTileLayoutMinimal3x3` if not already shipped in Phase 2.
+- [x] **Phase 3.5: PixelLab Layouts (variation-bank pick deferred to v2 per D-91)** — Shipped `PentaTileLayoutPixelLabTopDown` and `PentaTileLayoutPixelLabSideScroller` (8×8 atlas, single-grid, 4-bit corner mask). Both share the locked role-to-mask bijection from spike 003 and dispatch via cached `_first_cell_by_mask` (first-cell row-major pick per D-89). The "+ Variation-Seed Wiring" suffix from the original phase title was a v0.2 misnomer — `variation_seed` property NOT exposed; bank-pick wiring deferred to v2 backlog as VAR-PIXEL-01 (design-coupled with VAR-01 + MULTITERR-01). Min3x3 already shipped in Phase 2 — no Phase 3.5 work needed. (Closed 2026-04-29.)
 - [ ] **Phase 4: Fallback Routing** — Wire `PentaTileMapLayer` to use `layout.fallback_tile_set` when `tile_set == null`. Verify all 10 layouts (5 Phase 2 + 3 Phase 3 + 2 Phase 3.5) paint correctly with their bundled fallback. Visual regression on the demo scene.
 - [ ] **Phase 5: Demo Refresh + Documentation + Release** — One updated demo scene showcasing all 10 layouts (5 Phase 2 + 3 Phase 3 + 2 Phase 3.5), README sections (Layouts / Upgrading / Authoring a Custom Layout), CHANGELOG, plugin.cfg bump, GitHub Release zip with `v0.2.0` tag.
 
@@ -144,27 +144,27 @@ Plans:
 
 ### Phase 3.5: PixelLab Layouts + Variation-Seed Wiring
 
-**Goal**: Ship `PentaTileLayoutPixelLabTopDown` and `PentaTileLayoutPixelLabSideScroller` subclasses. Both consume PixelLab Aseprite plugin native 8×8 atlas output with variation banks. Both share the locked role-to-mask bijection `[4, 10, 13, 12, 9, 14, 15, 7, 2, 3, 11, 5, 0, 8, 6, 1]` (corner mask). Wire `variation_seed` deterministic-hash bucket-pick: `mask → cells[]; pick = cells[hash(coord, variation_seed) % cells.size()]`.
+**Goal**: Ship `PentaTileLayoutPixelLabTopDown` and `PentaTileLayoutPixelLabSideScroller` subclasses. Both consume PixelLab Aseprite plugin native 8×8 atlas output. Both share the locked role-to-mask bijection `[4, 10, 13, 12, 9, 14, 15, 7, 2, 3, 11, 5, 0, 8, 6, 1]` (corner mask). **Variation handling for v0.2 is first-cell row-major pick only** — when multiple cells map to the same mask, `mask_to_atlas` returns the row-major-first cell (D-89). The `variation_seed` deterministic-hash bucket-pick is **deferred to v2 backlog as VAR-PIXEL-01** per D-91 — design-coupled with VAR-01 (Y-axis variation) and MULTITERR-01 (multi-terrain).
 
 **Depends on**: Phase 1 (architecture), Phase 2 or Phase 3 (single-grid pipeline first consumed by Wang2Corner in Phase 2).
 
-**Requirements**: PIXLAB-01, PIXLAB-02, PIXLAB-03, PIXLAB-04, VAR-PIXEL-01.
+**Requirements**: PIXLAB-01, PIXLAB-02, PIXLAB-03, PIXLAB-04. (VAR-PIXEL-01 deferred to v2 backlog per D-91 — see REQUIREMENTS.md "v2 Requirements" section.)
 
 **Success Criteria** (what must be TRUE):
 1. `PentaTileLayoutPixelLabTopDown.compute_mask` and `mask_to_atlas` consume the locked role-to-mask mapping; visual regression on a PixelLab 8×8 sample matches the Aseprite plugin output.
 2. `PentaTileLayoutPixelLabSideScroller` shares the role-to-mask mapping; cell-to-role differs (the side-scroller variant). Visual regression on a side-scroller PixelLab 8×8 sample passes.
-3. Variation-bank: when a mask has multiple cells (PixelLab variations), `mask_to_atlas` returns a deterministic pick keyed on `(coord, variation_seed)`. Same `(coord, seed)` always returns the same cell across `rebuild()` invocations (no shimmering).
-4. Setting `variation_seed = N` produces a different deterministic pick than `variation_seed = N+1`, verified visually on a uniform painted region.
+3. Variation handling: when a mask has multiple cells (PixelLab variations), `mask_to_atlas` returns the row-major-FIRST cell deterministically (D-89). Bank pick (`hash(coord, variation_seed) % cells.size()`) is deferred to v2 — `VAR-PIXEL-01` in REQUIREMENTS.md.
+4. ~~`variation_seed` produces different picks for different seed values~~ — **DEFERRED to v2 (VAR-PIXEL-01)** per D-91. v0.2 Phase 3.5 ships first-cell pick only.
 
-**Plans**: 6 plans
+**Plans**: 6 plans complete (6/6) — closed 2026-04-29
 
 Plans:
-- [ ] 03.5-01-PLAN.md — Wave 1: generator extension + 2 bundled PixelLab greybox PNGs (256×256, 8×8 atlas) + .import sidecars
-- [x] 03.5-02-PLAN.md — Wave 2: PentaTileLayoutPixelLabTopDown subclass (PIXLAB-01)
-- [x] 03.5-03-PLAN.md — Wave 2: PentaTileLayoutPixelLabSideScroller subclass (PIXLAB-02)
-- [x] 03.5-04-PLAN.md — Wave 3: pixellab_first_cell_test + comprehensive_bitmask_test matrix extension to 8×18=144 + bitmask_bounds_test 8×8 PIXLAB extension + run_tests.ps1 (PIXLAB-03) — 2026-04-29
-- [x] 03.5-05-PLAN.md — Wave 4: pixellab_visual_regression_test composed-canvas + checked-in spike-003 PixelLab samples + run_tests.ps1 (PIXLAB-04) — 2026-04-29
-- [ ] 03.5-06-PLAN.md — Wave 4: closeout — REQUIREMENTS Traceability + ROADMAP retitle + ROADMAP [x] + STATE.md cumulative LOC + Roadmap Evolution + VAR-PIXEL-01 deferral preservation
+- [x] 03.5-01-PLAN.md — Generator extension: gen_pixel_lab_top_down + gen_pixel_lab_side_scroller in _generate_bitmasks.py + 2 bundled PNGs at 256×256 + .import sidecars (TEMPLATE-01 partial — PixelLab half)
+- [x] 03.5-02-PLAN.md — PentaTileLayoutPixelLabTopDown shipping (PIXLAB-01)
+- [x] 03.5-03-PLAN.md — PentaTileLayoutPixelLabSideScroller shipping (PIXLAB-02)
+- [x] 03.5-04-PLAN.md — pixellab_first_cell_test (D-89 cache contract) + comprehensive_bitmask_test matrix extension to 8×18=144 + bitmask_bounds_test 8×8 PIXLAB extension + run_tests.ps1 registration (PIXLAB-03)
+- [x] 03.5-05-PLAN.md — pixellab_visual_regression_test composed-canvas test + checked-in spike-003 PixelLab samples + run_tests.ps1 registration (PIXLAB-04)
+- [x] 03.5-06-PLAN.md — Closeout: REQUIREMENTS Traceability + ROADMAP retitle + ROADMAP [x] + STATE.md cumulative LOC + Roadmap Evolution entry + VAR-PIXEL-01 deferral preservation
 
 ### Phase 4: Fallback Routing
 
@@ -212,7 +212,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 3.5 → 4 → 5
 | 1.1. PentaTile Rename + Penta Codename Establishment | 3/3 | Complete | 2026-04-26 |
 | 2. Native Layouts + Architectural Simplification | 7/7 + retroactive AUTO_STRIP wave + UAT bug-fix sweep | **Complete.** 3 review passes clean (0 Critical, 0 Warning, 13 Info). UAT bug-fix sweep 2026-04-28 closed 7 bug classes across commits 6553380..205fb67 — 12 automated tests green, methodology codified in `02-UAT-LESSONS-LEARNED.md`. User confirmed visual UAT via the 16-mask-pattern demo scene 2026-04-28T22:00. LOC overage (1827 vs ~1500 informational trigger) carried forward; formal gate is Phase 5 final audit. | 2026-04-28 |
 | 3. Public-Convention Layouts (Blob47 only; Tilesetter deferred to v0.3+) | 6/6 (5 executed + Plan 05 SKIPPED per D-86 = b) | **Complete with reduced scope per D-86 (b)** — Blob47Godot ships (TBT-03), audit deliverable + README footnote land (TBT-04, DOC-05); Tilesetter pair (TBT-01/02) + Tilesetter half of TEMPLATE-02 deferred to v0.3+ via `TBT-01-DEFERRED` / `TBT-02-DEFERRED` / `TEMPLATE-02-DEFERRED`. 15 automated tests green; matrix coverage extended to 6×18=108 combos in comprehensive_bitmask_test. Cumulative runtime LOC ~2455 (Phase 2 baseline 1827 + Phase 3 delta ~121 + measurement methodology drift; AT RISK carry-forward for Phase 5 final identity audit). No `addons/penta_tile/ATTRIBUTION.md` created (D-73 final guard). | 2026-04-29 |
-| 3.5. PixelLab Layouts (variation-bank pick deferred to v2) | 5/6 | In progress — Plans 01-05 complete (generator + 2 greybox PNGs + both PIXLAB layouts + first-cell test + visual regression test against real PixelLab samples; PIXLAB-01..04 closed). Plan 06 closeout pending. | - |
+| 3.5. PixelLab Layouts (variation-bank pick deferred to v2) | 6/6 | **Complete.** Both PixelLab layouts (top-down + side-scroller) shipped with cached first-cell row-major dispatch. 2 new tests (pixellab_first_cell_test + pixellab_visual_regression_test) green; matrix grew to 8 layouts × 18 patterns = 144 combos; bounds extended with PIXLAB silhouettes. VAR-PIXEL-01 (variation-bank pick) preserved in v2 backlog per D-91. | 2026-04-29 |
 | 4. Fallback Routing | 0/TBD | Not started | - |
 | 5. Demo Refresh + Documentation + Release | 0/TBD | Not started | - |
 
