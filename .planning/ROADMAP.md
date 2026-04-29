@@ -156,7 +156,15 @@ Plans:
 3. Variation-bank: when a mask has multiple cells (PixelLab variations), `mask_to_atlas` returns a deterministic pick keyed on `(coord, variation_seed)`. Same `(coord, seed)` always returns the same cell across `rebuild()` invocations (no shimmering).
 4. Setting `variation_seed = N` produces a different deterministic pick than `variation_seed = N+1`, verified visually on a uniform painted region.
 
-**Plans**: TBD
+**Plans**: 6 plans
+
+Plans:
+- [ ] 03.5-01-PLAN.md — Wave 1: generator extension + 2 bundled PixelLab greybox PNGs (256×256, 8×8 atlas) + .import sidecars
+- [ ] 03.5-02-PLAN.md — Wave 2: PentaTileLayoutPixelLabTopDown subclass (PIXLAB-01)
+- [ ] 03.5-03-PLAN.md — Wave 2: PentaTileLayoutPixelLabSideScroller subclass (PIXLAB-02)
+- [ ] 03.5-04-PLAN.md — Wave 3: pixellab_first_cell_test + comprehensive_bitmask_test matrix extension to 8×18=144 + bitmask_bounds_test 8×8 PIXLAB extension + run_tests.ps1 (PIXLAB-03)
+- [ ] 03.5-05-PLAN.md — Wave 3: pixellab_visual_regression_test composed-canvas + checked-in spike-003 PixelLab samples + run_tests.ps1 (PIXLAB-04)
+- [ ] 03.5-06-PLAN.md — Wave 4: closeout — REQUIREMENTS Traceability + ROADMAP retitle + ROADMAP [x] + STATE.md cumulative LOC + Roadmap Evolution + VAR-PIXEL-01 deferral preservation
 
 ### Phase 4: Fallback Routing
 
