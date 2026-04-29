@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 3 context gathered — public-convention layouts pivot (TBT data-lift dropped, BorisTheBrave + Tilesetter as primary sources, 03-TBT-DEEP-AUDIT.md as Wave 0 deliverable)
-last_updated: "2026-04-29T06:51:49.056Z"
-last_activity: 2026-04-29 -- Phase 03 execution started
+stopped_at: Completed 03-02 — TBT design-inspiration audit (Wave 0b deliverable per D-84)
+last_updated: "2026-04-29T07:06:40.231Z"
+last_activity: 2026-04-29
 progress:
   total_phases: 8
   completed_phases: 3
   total_plans: 21
-  completed_plans: 15
-  percent: 71
+  completed_plans: 16
+  percent: 76
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-04-25 after v0.2 pivot to layout library
 ## Current Position
 
 Phase: 03 (Public-Convention Layouts (Blob47 + Tilesetter)) — EXECUTING
-Plan: 1 of 6
-Status: Executing Phase 03
-Last activity: 2026-04-29 -- Phase 03 execution started
+Plan: 2 of 6
+Status: Ready to execute
+Last activity: 2026-04-29
 
-Progress: [██████████] 100% (plans + UAT-class bug fixes) | UAT: 4/4 substantively covered (programmatic — Test 1 DualGrid16/Wang2*/Min3x3 visual now covered by comprehensive_bitmask_test pattern × layout matrix + per-cell solidity; Test 2 Min3x3 open-side collapse covered by all 16 mask states in pattern matrix; Test 3 Penta multi-mode synthesis covered by penta_ground_hollow_test against user's actual artist tile_set across ONE/FOUR/FIVE × H/V; Test 4 AUTO/AUTO_STRIP already passed programmatically). Editor smoke-test optional — automated suite reproduces every UAT scenario.
+Progress: [████████░░] 76%
 
 > Out-of-band progress: 5 of 8 greyboxed template PNGs + the generator script shipped in commit e86036f as part of the discovery pass. Counted as TEMPLATE-01 + TEMPLATE-03 covered. The remaining 3 templates (Blob47Godot, TilesetterWang15, TilesetterBlob47) ship in Phase 3 once their slot tables are transcribed from TileBitTools.
 
@@ -61,6 +61,7 @@ Progress: [██████████] 100% (plans + UAT-class bug fixes) | 
 | Phase 02 P05 | 209 | 2 tasks | 16 files |
 | Phase 02 P06 | 850 | 2 tasks | 9 files |
 | Phase 02-native-layouts P7 | 272 | 2 tasks | 4 files |
+| Phase 03 P02 | 9min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -125,6 +126,9 @@ Recent decisions affecting current work:
 - preload() const _PentaTileSynthesis added to map layer — fixes class_name symbol failure in headless/--script mode
 - LOC hard gate fired at Wave 7 closeout (1961 total / 1827 runtime LOC, 31% above ~1500 trigger) — Phase 2 ROADMAP left unchecked pending user design review; determinism test PASS with BASELINE_HASH=2986698704
 - Identity guardrail AT RISK — runtime LOC (1827) is 2-2.6x TileMapDual core (~700-900 LOC); hot-path complexity still simpler (no terrain-rule trie, no coordinate cache, no watcher system); note for Phase 5 final audit
+- AP-1..AP-10 anti-pattern register crystallized in 03-TBT-DEEP-AUDIT.md — every REJECT verdict cites an explicit identity guardrail; future plan-phases can reject TBT-derived ideas by AP-N reference rather than re-auditing.
+- Two backlog seeds locked with concrete un-defer triggers: layout tags vocabulary (≥12 layouts, v0.3+) and Project Settings verbosity key (≥2 verbosity surfaces, v0.3+). Both seeds rename TBT identifiers to PentaTile-namespace equivalents.
+- Save-custom-layout dialog REJECTED outright with no backlog file — reopening requires fresh design work per CLAUDE.md no-forward-compat rule.
 
 ### Pending Todos
 
@@ -163,9 +167,9 @@ Items acknowledged and carried forward as v2 requirements (see REQUIREMENTS.md v
 
 ## Session Continuity
 
-Last session: --stopped-at
-Stopped at: Phase 3 context gathered — public-convention layouts pivot (TBT data-lift dropped, BorisTheBrave + Tilesetter as primary sources, 03-TBT-DEEP-AUDIT.md as Wave 0 deliverable)
-Resume file: --resume-file
+Last session: 2026-04-29T07:06:40.225Z
+Stopped at: Completed 03-02 — TBT design-inspiration audit (Wave 0b deliverable per D-84)
+Resume file: None
 
 **Completed Phase:** 01 (Contract Skeleton + Penta Layouts) — 5/5 plans, 14/14 requirements, 26/26 automated tests PASS — 2026-04-26
 **Completed Phase:** 01.1 (PentaTile Rename + Penta Codename Establishment) — 3/3 plans, 0 formal REQ-IDs (rename phase), demo loads cleanly under new name, git remote tracks PentaTile origin — 2026-04-26

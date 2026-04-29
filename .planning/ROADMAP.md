@@ -203,7 +203,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 3.5 → 4 → 5
 | 1. Contract Skeleton + Penta Layouts | 5/5 | Complete (substantially superseded by Phase 2 architectural sweep) | 2026-04-26 |
 | 1.1. PentaTile Rename + Penta Codename Establishment | 3/3 | Complete | 2026-04-26 |
 | 2. Native Layouts + Architectural Simplification | 7/7 + retroactive AUTO_STRIP wave + UAT bug-fix sweep | **Complete.** 3 review passes clean (0 Critical, 0 Warning, 13 Info). UAT bug-fix sweep 2026-04-28 closed 7 bug classes across commits 6553380..205fb67 — 12 automated tests green, methodology codified in `02-UAT-LESSONS-LEARNED.md`. User confirmed visual UAT via the 16-mask-pattern demo scene 2026-04-28T22:00. LOC overage (1827 vs ~1500 informational trigger) carried forward; formal gate is Phase 5 final audit. | 2026-04-28 |
-| 3. TileBitTools-Sourced Layouts | 0/6 | Plans drafted (waiting on D-86 user decision in 03-01-PLAN.md Task 1) | - |
+| 3. TileBitTools-Sourced Layouts | 1/6 | Plan 02 complete (TBT design-inspiration audit shipped — 364 lines, AP-1..AP-10 anti-pattern register). Plans 01/03/04/05/06 in flight (D-86 Tilesetter primary-source gate still open). | - |
 | 3.5. PixelLab Layouts (variation-bank pick deferred to v2) | 0/TBD | Not started | - |
 | 4. Fallback Routing | 0/TBD | Not started | - |
 | 5. Demo Refresh + Documentation + Release | 0/TBD | Not started | - |
