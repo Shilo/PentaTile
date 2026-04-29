@@ -10,14 +10,18 @@
 2. [What is a Penta tileset?](#-what-is-a-penta-tileset)
 3. [Supported Layouts](#-supported-layouts)
 4. [The Penta-System Template](#-the-penta-system-template)
-5. [Comparison: PentaTile vs. TileMapDual](#-pentatile-vs-tilemapdual-api)
-6. [Choosing the Right Tool](#-choosing-the-right-tool)
-7. [Addon Layout](#-addon-layout)
-8. [Current API](#-current-api)
-9. [Demo](#-demo)
-10. [Implementation Notes](#-implementation-notes)
-11. [Roadmap](#-roadmap)
-12. [External Resources](#-external-resources)
+5. [Layouts](#-layouts)
+6. [Comparison: PentaTile vs. TileMapDual](#-pentatile-vs-tilemapdual-api)
+7. [Choosing the Right Tool](#-choosing-the-right-tool)
+8. [Addon Layout](#-addon-layout)
+9. [Current API](#-current-api)
+10. [Demo](#-demo)
+11. [Authoring a Custom Layout](#-authoring-a-custom-layout)
+12. [Upgrading from 0.1.x](#-upgrading-from-01x)
+13. [Identity & Footprint](#-identity--footprint)
+14. [Implementation Notes](#-implementation-notes)
+15. [Roadmap](#-roadmap)
+16. [External Resources](#-external-resources)
 
 ## 🚀 Why PentaTile?
 
@@ -78,6 +82,27 @@ A **Penta** atlas is a horizontal or vertical strip of 1–5 tiles (the 5-mode a
 5.  **OppositeCorners** (slot 4, authored at FIVE mode)
 
 Modes ONE through FOUR synthesize the missing archetypes from slot 0 at load time via `PentaTileSynthesis`. The two disconnected diagonal states (masks 6 and 9) resolve to the **OppositeCorners** archetype — synthesized in modes ONE..FOUR or hand-authored in mode FIVE. Single-layer dispatch only; no internal overlay layer (Phase 2 deleted that path in favor of the synthesized OppositeCorners archetype).
+
+## 🧱 Layouts
+
+PentaTile ships **8 built-in layouts**. Drop a `PentaTileMapLayer` into a scene, attach one of these layout Resources, and either bring your own atlas or use the layout's bundled fallback PNG (no `tile_set` needed) for instant prototyping.
+
+| Layout | Class | Atlas grid | Tile count | Mask | Convention source |
+|--------|-------|-----------|-----------|------|-------------------|
+| **Penta** (FOUR mode shown) | `PentaTileLayoutPenta` | strip 1×N (HORIZONTAL) or N×1 (VERTICAL) | 1–5 (modes ONE through FIVE) | 4-bit corner | Native — the addon's signature 5-archetype convention |
+| **DualGrid 16** | `PentaTileLayoutDualGrid16` | 4×4 | 16 | 4-bit corner (TL=1/TR=2/BL=4/BR=8) | <a href="https://www.youtube.com/watch?v=jEWFSv3ivTg" target="_blank" rel="noopener">Dual Grid ↗︎</a> |
+| **Wang 2-Edge** | `PentaTileLayoutWang2Edge` | 4×4 | 16 (single-grid) | 4-bit edge (N=1/E=2/S=4/W=8, CR31) | <a href="https://www.boristhebrave.com/permanent/24/06/cr31/stagecast/wang/intro.html" target="_blank" rel="noopener">CR31 / BorisTheBrave Wang ↗︎</a> |
+| **Wang 2-Corner** | `PentaTileLayoutWang2Corner` | 4×4 | 16 (single-grid) | 4-bit corner (NE=1/SE=2/SW=4/NW=8, CR31) | Same — different bit naming, same silhouettes as DualGrid 16 |
+| **Minimal 3×3** | `PentaTileLayoutMinimal3x3` | 3×3 | 9 (single-grid) | 4-bit edge (T=1/E=2/B=4/W=8, open-side collapse) | RPG Maker A2 / legacy Godot 3.x |
+| **Blob 47 (Godot)** | `PentaTileLayoutBlob47Godot` | 7×7 (47 tiles + gaps) | 47 | 8-bit Moore mask (256 → 47 collapse) | <a href="https://www.boristhebrave.com/2021/11/14/classification-of-tilesets/" target="_blank" rel="noopener">BorisTheBrave 47-blob ↗︎</a> |
+| **PixelLab Top-Down** | `PentaTileLayoutPixelLabTopDown` | 8×8 | 64 (single-grid; 16 archetypes × variation banks) | 4-bit corner; first-cell row-major pick | <a href="https://www.pixellab.ai/docs/tools/create-tileset" target="_blank" rel="noopener">PixelLab Aseprite plugin ↗︎</a> top-down output |
+| **PixelLab Side-Scroller** | `PentaTileLayoutPixelLabSideScroller` | 8×8 | 64 (single-grid; 16 archetypes × variation banks) | 4-bit corner; first-cell row-major pick | PixelLab Aseprite plugin side-scroller output |
+
+Variation handling on PixelLab layouts is currently **first-cell row-major pick** (deterministic). Per-cell deterministic-hash variation-bank selection is on the v0.3+ backlog (`VAR-PIXEL-01`, design-coupled with `VAR-01` Y-axis variation).
+
+Tilesetter (Wang 15 + Blob 47 in Tilesetter's atlas conventions) is on the v0.3+ backlog (`TBT-01-DEFERRED` / `TBT-02-DEFERRED`) — the Tilesetter primary-source slot tables were not located during plan-phase research; deferred rather than empirically fingerprinted.
+
+Custom layouts are supported via subclassing — see [Authoring a Custom Layout](#-authoring-a-custom-layout) (experimental).
 
 ## ⚔️ PentaTile vs. TileMapDual API
 
@@ -182,14 +207,94 @@ Public helper:
 
 Open `res://addons/penta_tile/demo/penta_tile_demo.tscn`.
 
-The demo includes:
+The demo is a **side-by-side spatial-grid showcase** of all 8 actually-shipped layouts (see [Layouts](#-layouts)):
 
-- a `PentaTileMapLayer` bound to a Penta FOUR-mode layout (`penta_layout_four_horizontal.tres`)
-- a demo TileSet with collision polygons on the four authored Penta tiles
-- generated visual-layer collisions enabled
-- hidden logic-layer collisions disabled
-- a `CharacterBody2D` using Godot's `icon.svg`, a capsule collision shape, gravity, arrow-key movement, and jump with Up/Space
-- runtime editing: left click places the default logic tile, right click erases a logic tile
+- 8 `PentaTileMapLayer` instances arranged in a 2×4 grid, each labeled with its layout name
+- Every instance has `tile_set = null` and `layout = <bundled-resource>` — the fallback `TileSet` is generated at runtime from each layout's `bitmask_template` via `get_fallback_tile_set()`
+- No authored TileSet anywhere in the demo — proves the prototyping UX end-to-end
+- Runtime drag-paint: left mouse button paints into whichever instance the cursor is over; right mouse button erases. Cross-instance gutters block paint between layers.
+- No platformer player — the demo is a pure layout showcase. (`get_fallback_tile_set()` ships zero physics layers, so there is nothing for a player to collide with on the bundled fallback art.)
+
+## 🛠️ Authoring a Custom Layout
+
+> **Experimental** (`@experimental` per Phase 4 doc-comment sweep).
+> The base class `PentaTileLayout` is annotated as experimental in the codebase — its virtual surface may evolve before the addon hits 1.0. Use the built-in 8 layouts where they fit; subclass only when a convention is genuinely missing.
+
+A custom layout subclasses `PentaTileLayout` and overrides three virtuals:
+
+| Virtual | Returns | Purpose |
+|---------|---------|---------|
+| `compute_mask(coord, sample_fn)` | `int` | Sample neighbors via `sample_fn(coord_offset)` (returns the source-atlas-coord at that cell, or `Vector2i(-1,-1)` if empty), pack the bits into your layout's mask integer (corner-mask, edge-mask, 8-bit Moore, etc.). |
+| `mask_to_atlas(mask)` | `PentaTileAtlasSlot` (or `null` to skip) | Map the mask integer to an atlas cell — return a `PentaTileAtlasSlot` with `atlas_coords: Vector2i`, `transform_flags: int = 0` (bit-pack rotations via `_pack_alternative()`), and `alternative_tile: int = 0`. |
+| `get_fallback_tile_set()` | `TileSet` (or `null`) | Optional. Returns a runtime-generated TileSet from `bitmask_template`. The base implementation handles the common case; override only if the layout needs a non-uniform atlas grid. |
+
+**Minimal example** (a hypothetical 1-tile "always-fill" layout):
+
+```gdscript
+@tool
+@experimental("Custom layouts are an experimental v0.2 feature; the virtual surface may change before 1.0.")
+class_name MyAlwaysFillLayout
+extends PentaTileLayout
+
+func compute_mask(_coord: Vector2i, _sample_fn: Callable) -> int:
+    return 1  # always the same mask
+
+func mask_to_atlas(_mask: int) -> PentaTileAtlasSlot:
+    var slot := PentaTileAtlasSlot.new()
+    slot.atlas_coords = Vector2i(0, 0)
+    return slot
+```
+
+Authoring tips:
+
+- Use `_pack_alternative(alt_id, transform_flags)` to OR rotation flags (`TRANSFORM_FLIP_H | FLIP_V | TRANSPOSE`) into the alternative-tile int. The helper asserts `alt_id < 4096` to guard the bit-collision pitfall.
+- For single-grid layouts, return a dispatched slot for `mask == 0` instead of `null` (Critical Pitfall #9 — isolated cells must render).
+- Co-locate a `bitmask_template: Texture2D` PNG next to the script for inspector preview + fallback support.
+- Override `is_dual_grid()` to return `true` if the layout uses dual-grid composition (DualGrid16, Penta) vs `false` for single-grid (Wang2Edge, Wang2Corner, Min3x3, Blob47, PixelLab*).
+
+See `addons/penta_tile/layouts/penta_tile_layout_minimal_3x3.gd` for a compact reference subclass (~50 LOC).
+
+## ⬆️ Upgrading from 0.1.x
+
+PentaTile v0.2.0 is a hard breaking-change release with no backwards-compatibility shims (per the addon's [no-compat policy](../../CLAUDE.md#breaking-changes-policy-hard-rule)). The full breakage list is in [CHANGELOG.md](CHANGELOG.md); the key migrations:
+
+| v0.1 surface | v0.2 replacement |
+|--------------|------------------|
+| Project name `TetraTile` | `PentaTile` (entire repo renamed; class prefixes, addon folder, plugin id, custom data layer keys all renamed) |
+| `addons/tetra_tile/` | `addons/penta_tile/` |
+| `TetraTileMapLayer` class | `PentaTileMapLayer` |
+| `atlas_contract: PentaTileAtlasContract` @export on the layer | `layout: PentaTileLayout` @export directly on the layer (contract wrapper deleted) |
+| Separate `PentaTileLayoutPentaHorizontal` / `PentaTileLayoutPentaVertical` classes | Single `PentaTileLayoutPenta` class with `axis: Axis` and `tile_count: TileCountMode` enums |
+| 4-tile binary atlas only | 8 layouts: Penta (1-5 modes), DualGrid16, Wang2Edge, Wang2Corner, Min3x3, Blob47Godot, PixelLab Top-Down, PixelLab Side-Scroller |
+| `template_image: Texture2D` on the layout | `bitmask_template: Texture2D` (renamed; same image now serves both inspector preview AND fallback TileSet source) |
+| `fallback_tile_set: TileSet` @export on the layout | Hidden — `get_fallback_tile_set()` virtual generates one at runtime from `bitmask_template` |
+| `decoder_image: Texture2D` (speculative) | Deleted (no consumer; YAGNI per no-forward-compat policy) |
+| `addons/penta_tile/templates/` folder | Deleted; bundled bitmask PNGs co-located next to layout `.gd` files |
+| Slot ordering `0=Fill, 1=InnerCorner, 2=Border, 3=OuterCorner` | New ordering `0=IsolatedCell, 1=Fill, 2=Border, 3=InnerCorner, 4=OppositeCorners`; OuterCorner is implicit (synthesized from slot 0) |
+| Runtime `_overlay_layer` for masks 6 / 9 | Deleted; Penta synthesizes the OppositeCorners archetype at load time, single-layer dispatch only |
+| Demo: platformer player + authored ground.tres | Spatial-grid showcase of all 8 layouts using bundled fallbacks; no player |
+
+Migration path: rename addon folder, replace `atlas_contract` with `layout`, swap layout subclass references (Penta H/V → `PentaTileLayoutPenta(axis=...)`), rename `template_image` → `bitmask_template` if you authored your own layouts. v0.1 atlases are **not** bit-compatible with the new slot ordering (slot 3 is now InnerCorner, was OuterCorner) — re-author atlases if you painted against the old slot table.
+
+## 🔍 Identity & Footprint
+
+> **Filled in by Plan C of Phase 5** (the manual identity audit). This placeholder will be replaced with a 3-axis audit summary (LOC, public surface, hot-path depth) and an anti-pattern register check against TileMapDual v5.0.2.
+
+PentaTile's identity is **hot-path minimalism + anti-pattern absence**, not raw LOC delta vs TileMapDual (per [D-05-11](.planning/phases/05-demo-refresh-documentation-release/05-CONTEXT.md)). The runtime path stays short:
+
+```
+_update_cells(coords) → layout.compute_mask(coord, sample_fn) → layout.mask_to_atlas(mask) → set_cell(coord, source_id, atlas_coords)
+```
+
+The addon explicitly does NOT include:
+
+- Terrain peering metadata or terrain-rule tries
+- Watcher / signal-fanout systems
+- Persistent coordinate caches
+- Parallel paint APIs alongside `set_cell()`
+- `EditorInspectorPlugin` polish
+
+The full v0.2.0 audit report is at [`.planning/phases/05-demo-refresh-documentation-release/05-LOC-AUDIT.md`](.planning/phases/05-demo-refresh-documentation-release/05-LOC-AUDIT.md). _(Plan C will produce this artifact; this section will summarize its findings before release.)_
 
 ## 📝 Implementation Notes
 
@@ -208,17 +313,23 @@ The logic layer is hidden with `self_modulate.a`, not `visible = false`, because
 
 ## 🗺️ Roadmap
 
-Future ideas remain intentionally separate from the V1 API:
+**v0.2.0 (current):** layout library — 8 built-in layouts (Penta, DualGrid16, Wang2Edge, Wang2Corner, Min3x3, Blob47Godot, PixelLab Top-Down, PixelLab Side-Scroller), bundled-fallback prototyping (no authored TileSet needed), full doc-comment sweep, demo refresh, GitHub release.
 
-- **PentaBake:** edit-time utility to procedurally compose a fifth edge/diagonal connector tile when useful.
-- **Y-axis variations:** support atlas rows for deterministic/random visual variation.
-- **Shader fallback:** single-pass shader option for diagonal compositing.
-- **Collision tooling:** research automatic collision generation and better collision presets. V1 supports TileSet-authored collision polygons on generated visual layers.
-- **Outer transition tile support:** support transitions between terrain types, such as grass to dirt.
-- **Top tiles:** support sets with designated top visuals for platformer-style grass caps.
-- **Non-rotating tilesets:** support perspectives where top/bottom/left/right are not interchangeable.
-- **MkDocs:** fuller documentation inspired by TileMapDual's docs.
-- **Tileset converter:** convert Wang/blob tilesets or single-tile inputs into PentaTile-compatible atlases.
+**v0.3+ backlog** (deferred from v0.2 for design-coupling or scope reasons):
+
+- **Tilesetter Wang 15 + Blob 47** layouts (`TBT-01-DEFERRED`, `TBT-02-DEFERRED`) — primary-source slot tables not located in v0.2 plan-phase research; revisit when a Tilesetter export sample is available
+- **PixelLab variation-bank pick** (`VAR-PIXEL-01`) — currently first-cell row-major; deterministic-hash bank selection deferred (design-coupled with Y-axis variation)
+- **Y-axis variation** (`VAR-01`) via deterministic per-cell hash + `TileData.probability` weights
+- **Top tiles** (`TOP-01`) — designated top-edge visuals for platformer caps
+- **Multi-terrain in one tileset** (`MULTITERR-01..05`) — independent autotiling for multiple terrains within one atlas
+- **RPG Maker A2 / A4 subtile compositor** — quarter-tile composition (separate pipeline)
+- **PentaBake** — edit-time utility to procedurally compose a fifth archetype tile
+- **Tileset converter** — Wang/blob/single-tile inputs → PentaTile atlas
+- **Editor line/rect/bucket tool preview during drag** — visible preview when a `layout` is bound (Phase 6, far-future)
+- **Shader fallback** — single-pass shader for diagonal compositing
+- **Outer transition tiles** (`TERRAIN-01`) — multi-terrain transitions (grass→dirt etc.)
+
+Full deferred-features inventory is in [`.planning/REQUIREMENTS.md`](.planning/REQUIREMENTS.md) § "v2 Requirements".
 
 ## 🔗 External Resources
 
