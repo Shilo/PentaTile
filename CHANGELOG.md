@@ -7,7 +7,7 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [Unreleased] — v0.2 in progress
+## [0.2.0] — 2026-04-29
 
 ### BREAKING — Project rename: TetraTile → PentaTile
 
