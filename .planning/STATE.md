@@ -4,14 +4,14 @@ milestone: v0.2.0
 milestone_name: milestone
 status: ready_to_plan
 stopped_at: v0.2.0 SHIPPED
-last_updated: "2026-04-29T20:04:14Z"
-last_activity: 2026-04-29 -- Phase 5 closed; v0.2.0 published
+last_updated: "2026-04-29T22:16:13Z"
+last_activity: 2026-04-29 -- Phase 8 added from research triage
 progress:
-  total_phases: 8
-  completed_phases: 8
+  total_phases: 10
+  completed_phases: 7
   total_plans: 37
   completed_plans: 37
-  percent: 100
+  percent: 70
 ---
 
 # Project State
@@ -21,7 +21,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-25 after v0.2 pivot to layout library)
 
 **Core value:** Painting tiles with the native `TileMapLayer` API produces correct dual-grid autotiled visuals — without the user maintaining caches, terrain metadata, or 16-tile blob sets.
-**Current focus:** Phase 5 — Demo Refresh + Documentation + Release (next planning step)
+**Current focus:** Phase 7 — Repo Restructure: Extract Tests + MkDocs Site + LLM-Friendly Docs Pipeline (next planning step), followed by Phase 8 research triage.
 
 ## Current Position
 
@@ -32,11 +32,13 @@ Last activity: 2026-04-29
 
 > Phase 7 (Repo Restructure: Extract Tests + MkDocs Site + LLM-Friendly Docs Pipeline) added 2026-04-29 as a v0.2.0 follow-up. Phase 6 (editor line/rect/bucket preview) remains far-future deferred. Next planning step: `/gsd-plan-phase 7`. MkDocs out-of-scope reversal reconciled in PROJECT.md + REQUIREMENTS.md (TOOL-04 promoted from v2 backlog into Phase 7 scope).
 
+> Phase 8 (Research Triage + v0.3 Scope Selection) added 2026-04-29 from user-supplied competitor research. It verifies claims, accepts identity-compatible improvements, rejects off-mission "ultimate terrain framework" scope, and recommends the next v0.3 package. Initial triage artifact: `.planning/phases/08-research-triage-v0-3-scope-selection/08-RESEARCH-TRIAGE.md`. Current next planning step remains `/gsd-plan-phase 7` by roadmap order; Phase 8 follows as the v0.3 selection gate.
+
 > Phase 3.5 closed 2026-04-29 with full scope: PIXLAB-01..04 Complete. PentaTileLayoutPixelLabTopDown + PentaTileLayoutPixelLabSideScroller ship as single-grid corner-mask twin subclasses with cached first-cell dispatch per D-89; 2 new bundled greybox PNGs (8×8 atlas, 256×256) co-located under addons/penta_tile/layouts/; 2 new tests (pixellab_first_cell_test + pixellab_visual_regression_test) green; matrix grew to 8 layouts × 18 patterns = 144 combos; bitmask_bounds_test extended; run_tests.ps1 lists 17 tests. VAR-PIXEL-01 (variation-bank pick) preserved in v2 backlog per D-91; ROADMAP retitled to drop the "+ Variation-Seed Wiring" misnomer.
 
 > Phase 4 closed 2026-04-29 with full in-scope coverage: PREVIEW-03 + PREVIEW-04 Complete (8 actually-shipped layouts verified under fallback path via `fallback_routing_test.gd` composed-canvas test + manual demo UAT per D-04-06 belt+suspenders); doc-comment sweep landed on all 12 addon scripts per Godot's official format (D-04-01..04), annotation-only — zero logic changes; cross-AI review pass executed under D-04-10 strict order with Gemini headless returning `status: clean` (0 findings) and the Codex headless pass DEFERRED at closeout due to a hard external Codex CLI quota wall (RESEARCH § 8 Pitfall #14; user elected to skip and continue per `AskUserQuestion`). All 4 closeout artifacts committed (FALLBACK-UAT.md + DOC-SWEEP.md + GEMINI-REVIEW-FIX.md + CODEX-REVIEW-FIX.md). Test suite stayed ALL GREEN (18 tests). Cumulative runtime LOC: 2884 (Phase 3.5 baseline 2663 + Phase 4 delta 221, all from added `##` doc-comment lines — Phase 4 was annotation-only). Identity guardrail AT RISK carry-forward — formal gate is Phase 5 final audit. The Codex prompt is preserved at `04-CODEX-PROMPT.md` for re-use when quota resets. Phase 5 (Demo Refresh + Documentation + Release) is the next planning step.
 
-Progress: [██████████] 100%
+Progress: [███████---] 70%
 
 > Out-of-band progress: 5 of 8 greyboxed template PNGs + the generator script shipped in commit e86036f as part of the discovery pass. Counted as TEMPLATE-01 + TEMPLATE-03 covered. The remaining 3 templates (Blob47Godot, TilesetterWang15, TilesetterBlob47) ship in Phase 3 once their slot tables are transcribed from TileBitTools.
 
@@ -97,6 +99,7 @@ Progress: [██████████] 100%
 
 ### Roadmap Evolution
 
+- 2026-04-29 (post-v0.2.0 research triage): **Phase 8 added — Research Triage + v0.3 Scope Selection.** User supplied comparative research spanning PentaTile, TileMapDual, TileBitTools, Better Terrain, Godot built-in, Unity, Tiled, RPG Maker, and procedural/GPU autotiling. Verification against primary sources found useful signals (deterministic variation, PixelLab bank pick, top tiles, Tilesetter follow-up, docs/distribution, benchmark-first performance) and stale/off-identity claims (PentaTile already has dual-grid support; global solvers, terrain docks, hex/iso, persistent caches, metadata/entity systems, GPU infinite worlds are not default scope). Added TRIAGE-01..06 requirements, Phase 8 ROADMAP details, and `08-RESEARCH-TRIAGE.md`.
 - 2026-04-26: Phase 2.1 inserted after Phase 2 (single-tile-layout) — ships `PentaTileLayoutSingleTile`. Adds 5 requirements (SINGLE-01..05). Companion artifact: `.planning/research/layouts/RPG_MAKER.md` audits the RPG Maker family and recommends offline-importer path for v0.3+ — out of scope for v0.2.0.
 - 2026-04-26 (later): **Architectural pivot — overlay-layer removal + unified Tetra synthesis.** The Phase 2.1 brainstorm session reframed Phase 2's Penta5 work. Instead of shipping `PentaTileLayoutPenta5Horizontal`/`Vertical` as separate classes (CONTEXT.md D-28..D-46), the existing Tetra layouts gain load-time synthesis of the 5th OppositeCorners archetype from the OuterCorner tile. The runtime `_overlay_layer` is **deleted entirely** — every v0.2 layout renders via single-layer 5-archetype dispatch. Tetra layouts auto-detect 4-vs-5 source tiles. Single-Tile (Phase 2.1) updated to slice into 5 archetypes (not 4). Adds 6 new requirements (PENTA-SYNTH-01..06), supersedes Phase 2's planned TETRA5-* IDs (which never landed in REQUIREMENTS.md). Multi-terrain Y-axis convention added to v2 backlog (MULTITERR-01..05) with explicit design-coupling note to VAR-01 (variation). Full supersession notice in `.planning/phases/02-native-layouts/02-DISCUSSION-LOG.md`. Coverage 50 → 56 requirements.
 - 2026-04-26 (later): **User policy update — breaking changes always allowed.** Recorded as feedback memory + CLAUDE.md "Breaking Changes Policy (HARD RULE)" + PROJECT.md constraint update. Never write backwards-compat shims. Never defer features for compat reasons. CHANGELOG entries are the only acceptable compat work.
@@ -226,6 +229,7 @@ Items acknowledged and carried forward as v2 requirements (see REQUIREMENTS.md v
 | Multi-terrain | Outer transition tiles (TERRAIN-01) | v2 | 2026-04-25 |
 | Performance | Shader fallback / large-map benchmarks (PERF-01/02) | v2 | 2026-04-25 |
 | Distribution | Asset Library / GUT test suite (DIST-01/02) | v2 | 2026-04-25 |
+| Research Triage | v0.3 scope selection and off-identity recommendation firewall (TRIAGE-01..06) | Phase 8 | 2026-04-29 |
 
 ## Session Continuity
 

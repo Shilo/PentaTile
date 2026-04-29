@@ -222,11 +222,22 @@ Greyboxed silhouette PNGs the artist paints over.
 
 Deferred to a future milestone but acknowledged. The original v0.2 feature pillars live here now since they pushed past this milestone.
 
+### Research Triage / Scope Selection (TRIAGE)
+
+Added 2026-04-29 from a user-supplied comparative research packet. These are Phase 8 planning requirements, not implementation requirements. The intent is to extract useful v0.3 work while protecting PentaTile's identity from becoming a general-purpose terrain engine.
+
+- **TRIAGE-01**: Verify external claims against primary sources and local artifacts before promoting them. Minimum source set: TileMapDual README, TileBitTools README, Better Terrain README, Godot 4.6 TileMap docs, PentaTile README/ROADMAP/REQUIREMENTS. Correct stale claims inline; especially note that PentaTile already shipped dual-grid support and v0.2.0 release outputs.
+- **TRIAGE-02**: Produce an accept/reject/defer matrix for the supplied research. Accepted near-term ideas must map to existing backlog IDs where possible (`VAR-01`, `VAR-PIXEL-01`, `TOP-01`, `TBT-01/02-DEFERRED`, `TOOL-01/02`, `PERF-02`, `DIST-01`) rather than spawning duplicate feature names.
+- **TRIAGE-03**: Rank v0.3 candidate packages by user value, implementation risk, dependency coupling, visual-test burden, and identity fit. The ranked matrix must include at least: variation + PixelLab banks; explicit top tiles; Tilesetter layouts; PentaBake/converter tooling; editor preview; docs/distribution; benchmark-first performance.
+- **TRIAGE-04**: Scope firewall: explicitly reject global constraint solvers/backtracking, terrain peering metadata/rule tries, Terrains dock/editor-wizard systems, persistent coordinate caches, custom paint APIs parallel to `set_cell()`, scriptable rule engines, JSON metadata/entity-spawning systems, hex/iso/grid-agnostic expansion, and GPU infinite-world shader architecture unless the project identity is deliberately renegotiated in PROJECT.md first.
+- **TRIAGE-05**: Refine existing backlog items with un-defer triggers and design constraints discovered during triage. Examples: deterministic variation must preserve `_pack_alternative()` bit packing; top tiles must be explicit per-mask layout data, not inferred from "tile below"; performance work must start with benchmark harnesses before caches or shaders.
+- **TRIAGE-06**: Deliver one recommended v0.3 package plus two alternates, including the exact next planning command. Output lives in `.planning/phases/08-research-triage-v0-3-scope-selection/`.
+
 ### Variation, Top Tiles, Non-Rotating Spillover
 
 - **VAR-01**: Y-axis variation via deterministic per-cell hash + `TileData.probability` weights (was original v0.2; pushed because layout library landed first). **DESIGN-COUPLED with MULTITERR-01 and VAR-PIXEL-01 below** — Y-axis-as-variation and Y-axis-as-terrain compete for the same axis; future brainstorm must resolve all three together (alternatives include packing variation into `alternative_tile`, multiple atlas sources per terrain, or explicit per-layout declaration of which Y-axis interpretation applies).
 - **VAR-PIXEL-01**: Variation-bank deterministic pick for PixelLab layouts — when a PixelLab atlas has multiple cells mapped to the same mask, pick one keyed on `(coord, variation_seed)` per PITFALLS.md §2 hash recipe. Moved here 2026-04-26 from Phase 3.5 active scope when `variation_seed` was deleted from `PentaTileAtlasContract` (which itself was deleted; see LAYER-01..03). Phase 3.5's PIXLAB-03 ships first-cell pick only; bank pick lands when variation work is reopened.
-- **TOP-01**: Top-tile support — designated top-edge visuals for platformer caps (was original v0.2; pushed; needs design discussion against the new layout shape).
+- **TOP-01**: Top-tile support — designated top-edge visuals for platformer caps (was original v0.2; pushed; needs design discussion against the new layout shape). Research-triage constraint: top tiles must be explicit per-mask/per-layout data. Do not infer them from "tile below is filled" or any platformer-specific heuristic.
 - **NONROT-01**: Any "non-rotating" features not covered by DualGrid16 / Wang2Corner / Wang2Edge layouts (most non-rotating cases are now solved).
 
 ### Multi-Terrain in One Tileset (MULTITERR)
@@ -262,7 +273,7 @@ Backlog item added 2026-04-26 from Phase 2.1 brainstorm. Goal: support multiple 
 ### Performance
 
 - **PERF-01**: Shader fallback — single-pass shader option for diagonal compositing.
-- **PERF-02**: Large-map perf benchmarks (>10k cells) with documented limits.
+- **PERF-02**: Large-map perf benchmarks (>10k cells) with documented limits. Research-triage constraint: benchmark before optimizing. Do not add persistent caches, worker-thread tile managers, or shader paths until measured PentaTile behavior proves a real need at a target map size.
 
 ### Tooling & Distribution
 
@@ -303,9 +314,14 @@ Explicitly excluded for v0.2.0. Documented to prevent scope creep.
 | Backwards compatibility for v0.1.0 atlases | Pre-1.0; breaking changes accepted (CLAUDE.md "Breaking Changes Policy") |
 | Forward-compat versioning machinery (`version: int` fields, schema markers, speculative extension points) | No-forward-compat policy added 2026-04-26; YAGNI applies hardest to versioning machinery |
 | `EditorInspectorPlugin` polish for layout authoring | Custom layouts work via subclassing but are documented as experimental — no editor UX |
+| Terrains dock / template wizard / bulk terrain-bit editor | TileBitTools and Better Terrain territory; conflicts with "no terrain peering metadata" and "no editor polish" identity |
 | Persistent coordinate cache | TileMapDual territory; demo-scale doesn't need it |
 | Watcher / signal-fanout systems | TileMapDual territory; lifecycle bug surface |
 | Custom drawing API parallel to `set_cell()` | Defeats the v0.1 native-API win |
+| Global constraint solver / recursive backtracking terrain matcher | Better Terrain territory; overfits multi-terrain problems and bloats PentaTile's binary-layout hot path |
+| Hex/isometric/grid-agnostic expansion | Valid TileMapDual differentiator but not a PentaTile v0.3 priority under current identity |
+| JSON metadata / entity spawning / scriptable rule-tile system | Godot already has custom data and scene tiles; this would turn PentaTile into a world-building framework, not a layout autotiler |
+| Worker-thread tile manager or GPU infinite-world autotiling path | Premature before PERF-02 benchmarks; far outside demo-scale quality bar |
 | `addons/penta_tile/ATTRIBUTION.md` | D-72 / D-73: nothing is lifted from TBT, so nothing requires attribution. Replaced by a 1-line README footnote acknowledging TBT as design inspiration only. |
 | Code or data lift from TileBitTools | D-73: TBT is design-inspiration only. Layouts implemented from each format's primary reference. The audit `03-TBT-DEEP-AUDIT.md` reads TBT source for ideas, NOT for code/data extraction. |
 
