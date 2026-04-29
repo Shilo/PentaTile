@@ -132,7 +132,15 @@ Plans:
 4. `addons/penta_tile/ATTRIBUTION.md` exists, credits TileBitTools by name with a link to https://github.com/dandeliondino/tile_bit_tools, copies the MIT license terms or links the upstream `LICENSE`, and identifies which TBT files were transcribed.
 5. The 3 missing template PNGs (`tilesetter_wang_15.png`, `tilesetter_blob_47.png`, `blob_47_godot.png`) are produced by `_generate_greybox_templates.py` (deterministic, regenerable) and committed alongside the layout Resources.
 
-**Plans**: TBD
+**Plans**: 6 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Wave 1 prereqs: D-86 user gate (checkpoint:decision) + 8-Moore single-grid pipeline patch + propagation regression test (D-87)
+- [ ] 03-02-PLAN.md — Wave 1 deliverable: 03-TBT-DEEP-AUDIT.md ADOPT/PARTIAL/REJECT pattern audit (D-84, no code/data lift)
+- [ ] 03-03-PLAN.md — Wave 1 doc rewrites: ROADMAP/REQUIREMENTS retitle + TBT-04/DOC-05 rewrite + README footnote (D-72, D-73; no ATTRIBUTION.md)
+- [ ] 03-04-PLAN.md — Wave 2: PentaTileLayoutBlob47Godot (BorisTheBrave 7×7 + 256→47 collapse + 47-entry dict) + collapse test + hollow test + bundled PNG (TBT-03, TEMPLATE-02 partial)
+- [ ] 03-05-PLAN.md — Wave 3 (D-86 conditional): PentaTileLayoutTilesetterWang15 + PentaTileLayoutTilesetterBlob47 + dispatch/collapse tests + bundled PNGs (TBT-01, TBT-02, TEMPLATE-02 finish)
+- [ ] 03-06-PLAN.md — Wave 4 closeout: comprehensive_bitmask_test + bitmask_bounds_test extended; REQUIREMENTS Traceability + ROADMAP [x] + STATE.md cumulative LOC + Phase 3 closure
 
 ### Phase 3.5: PixelLab Layouts + Variation-Seed Wiring
 
@@ -195,7 +203,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 3.5 → 4 → 5
 | 1. Contract Skeleton + Penta Layouts | 5/5 | Complete (substantially superseded by Phase 2 architectural sweep) | 2026-04-26 |
 | 1.1. PentaTile Rename + Penta Codename Establishment | 3/3 | Complete | 2026-04-26 |
 | 2. Native Layouts + Architectural Simplification | 7/7 + retroactive AUTO_STRIP wave + UAT bug-fix sweep | **Complete.** 3 review passes clean (0 Critical, 0 Warning, 13 Info). UAT bug-fix sweep 2026-04-28 closed 7 bug classes across commits 6553380..205fb67 — 12 automated tests green, methodology codified in `02-UAT-LESSONS-LEARNED.md`. User confirmed visual UAT via the 16-mask-pattern demo scene 2026-04-28T22:00. LOC overage (1827 vs ~1500 informational trigger) carried forward; formal gate is Phase 5 final audit. | 2026-04-28 |
-| 3. TileBitTools-Sourced Layouts | 0/TBD | Not started | - |
+| 3. TileBitTools-Sourced Layouts | 0/6 | Plans drafted (waiting on D-86 user decision in 03-01-PLAN.md Task 1) | - |
 | 3.5. PixelLab Layouts (variation-bank pick deferred to v2) | 0/TBD | Not started | - |
 | 4. Fallback Routing | 0/TBD | Not started | - |
 | 5. Demo Refresh + Documentation + Release | 0/TBD | Not started | - |
