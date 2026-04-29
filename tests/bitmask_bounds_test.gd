@@ -23,6 +23,9 @@
 ##   - Penta (1..5 tiles per axis): per-archetype expected silhouette.
 ##     Slot 0 = BL quadrant 16x16. Slot 1 = full 32x32. Slot 2 = bottom half
 ##     32x16. Slot 3 = L-shape (TL+BL+BR quadrants). Slot 4 = TL+BR quadrants.
+##   - Blob47Godot (7×7): 47 used + 2 unused cells (BorisTheBrave canonical
+##     packing — D-74). Used cells = full 32x32 solid; cells (5,6)/(6,6) are
+##     intentional transparent gaps (passed via `gap_cells` whitelist).
 ##
 ## Run headless:
 ##   Godot --headless --path . --script addons/penta_tile/tests/bitmask_bounds_test.gd
@@ -69,6 +72,18 @@ func _initialize() -> void:
 				grid,
 				_penta_silhouette)
 
+	# Blob47Godot (Phase 3 Plan 04) — 7×7 atlas, 47 used + 2 unused cells.
+	# Cells (5,6) and (6,6) are intentional transparent gaps (BorisTheBrave
+	# canonical packing — D-74). Every other cell MUST be a fully solid 32×32
+	# silhouette (mirrors gen_wang_2_corner — the mask differentiator is atlas
+	# position, not pixel composition).
+	var blob_47_godot_gaps: Array[Vector2i] = [Vector2i(5, 6), Vector2i(6, 6)]
+	_check_atlas("Blob47Godot",
+		"res://addons/penta_tile/layouts/penta_tile_layout_blob_47_godot.png",
+		Vector2i(7, 7),
+		_solid_silhouette,
+		blob_47_godot_gaps)
+
 	print("\n=== summary ===")
 	if _failures.is_empty():
 		print("ALL PASS")
@@ -83,7 +98,16 @@ func _initialize() -> void:
 # Verify every slot of an atlas matches its expected silhouette.
 # `silhouette_fn(grid, slot_index_x, slot_index_y) -> Array[Rect2i]`
 # returns a list of EXPECTED-OPAQUE rectangles (in slot-local pixel coords).
-func _check_atlas(label: String, path: String, grid: Vector2i, silhouette_fn: Callable) -> void:
+#
+# `gap_cells` — whitelist of intentional transparent atlas slots (e.g.
+# Blob47Godot's (5,6)/(6,6) unused cells in BorisTheBrave's canonical 7×7
+# packing). Cells listed in `gap_cells` are SKIPPED entirely during opacity
+# inspection; ALL other cells in the grid MUST be inspected. Per Phase 3
+# Plan 06 W-3 fix: the per-slot inspection loop is REQUIRED — there is NO
+# universal `Callable()` skip option. Skipping all per-slot inspection
+# would miss atlas-occupancy mismatches (a slot the silhouette_fn expects
+# opaque but ships transparent in the PNG, or vice-versa).
+func _check_atlas(label: String, path: String, grid: Vector2i, silhouette_fn: Callable, gap_cells: Array[Vector2i] = []) -> void:
 	print("\n--- " + label + " ---")
 	var tex: Texture2D = load(path)
 	if tex == null:
@@ -104,6 +128,11 @@ func _check_atlas(label: String, path: String, grid: Vector2i, silhouette_fn: Ca
 	#    (Trivially satisfied by the size check above — pixels beyond
 	#    img.get_width()/get_height() can't exist. Recorded for clarity.)
 
+	# Build a fast-lookup set of gap cells (skipped during inspection).
+	var gap_set: Dictionary = {}
+	for g: Vector2i in gap_cells:
+		gap_set[g] = true
+
 	var bounds_failures := 0
 	var fullness_failures := 0
 	var first_bounds_fail: Variant = null
@@ -111,6 +140,10 @@ func _check_atlas(label: String, path: String, grid: Vector2i, silhouette_fn: Ca
 
 	for sy in range(grid.y):
 		for sx in range(grid.x):
+			# Skip whitelisted intentional-gap cells entirely. EVERY other
+			# cell is inspected (per W-3: no universal Callable() skip).
+			if gap_set.has(Vector2i(sx, sy)):
+				continue
 			var x0: int = sx * _TILE
 			var y0: int = sy * _TILE
 			var expected_rects: Array = silhouette_fn.call(grid, sx, sy)
@@ -136,7 +169,16 @@ func _check_atlas(label: String, path: String, grid: Vector2i, silhouette_fn: Ca
 	if fullness_failures > 0:
 		_record(label, "%d pixels are TRANSPARENT inside the expected silhouette (incomplete fill) — first: %s" % [fullness_failures, first_fullness_fail])
 
-	print("  %s grid=%s slots=%d bounds_fails=%d fullness_fails=%d" % [label, str(grid), grid.x * grid.y, bounds_failures, fullness_failures])
+	var inspected: int = grid.x * grid.y - gap_set.size()
+	print("  %s grid=%s slots=%d (inspected=%d gaps=%d) bounds_fails=%d fullness_fails=%d" % [label, str(grid), grid.x * grid.y, inspected, gap_set.size(), bounds_failures, fullness_failures])
+
+
+# Generic solid 32×32 silhouette — used by single-grid layouts whose mask
+# differentiator is atlas POSITION rather than pixel composition (e.g.
+# Wang2Corner, Blob47Godot). Mirrors the gen_wang_2_corner generator's
+# convention.
+func _solid_silhouette(_grid: Vector2i, _sx: int, _sy: int) -> Array:
+	return [Rect2i(0, 0, _TILE, _TILE)]
 
 
 # Wang2Edge / Min3x3 silhouette: every atlas slot is a fully solid 32x32 fill.
