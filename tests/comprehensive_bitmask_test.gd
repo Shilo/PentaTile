@@ -201,10 +201,10 @@ func _test_combo(layout_def: Dictionary, pattern_def: Dictionary) -> void:
 		var min_painted := Vector2i(99999, 99999)
 		var max_painted := Vector2i(-99999, -99999)
 		for c: Vector2i in paint_cells:
-			min_painted.x = min(min_painted.x, c.x)
-			min_painted.y = min(min_painted.y, c.y)
-			max_painted.x = max(max_painted.x, c.x)
-			max_painted.y = max(max_painted.y, c.y)
+			min_painted.x = mini(min_painted.x, c.x)
+			min_painted.y = mini(min_painted.y, c.y)
+			max_painted.x = maxi(max_painted.x, c.x)
+			max_painted.y = maxi(max_painted.y, c.y)
 		var bbox_failures := 0
 		var first_bbox_fail: Variant = null
 		for cell: Vector2i in painted_visual:
@@ -225,10 +225,10 @@ func _test_combo(layout_def: Dictionary, pattern_def: Dictionary) -> void:
 		var min_paint := Vector2i(99999, 99999)
 		var max_paint := Vector2i(-99999, -99999)
 		for c: Vector2i in paint_cells:
-			min_paint.x = min(min_paint.x, c.x)
-			min_paint.y = min(min_paint.y, c.y)
-			max_paint.x = max(max_paint.x, c.x)
-			max_paint.y = max(max_paint.y, c.y)
+			min_paint.x = mini(min_paint.x, c.x)
+			min_paint.y = mini(min_paint.y, c.y)
+			max_paint.x = maxi(max_paint.x, c.x)
+			max_paint.y = maxi(max_paint.y, c.y)
 		var expected_min := Vector2i(min_paint.x * tile_size.x, min_paint.y * tile_size.y)
 		var expected_max := Vector2i((max_paint.x + 1) * tile_size.x - 1, (max_paint.y + 1) * tile_size.y - 1)
 
@@ -236,10 +236,10 @@ func _test_combo(layout_def: Dictionary, pattern_def: Dictionary) -> void:
 		var c_min := Vector2i(99999, 99999)
 		var c_max := Vector2i(-99999, -99999)
 		for cell: Vector2i in painted_visual:
-			c_min.x = min(c_min.x, cell.x)
-			c_min.y = min(c_min.y, cell.y)
-			c_max.x = max(c_max.x, cell.x)
-			c_max.y = max(c_max.y, cell.y)
+			c_min.x = mini(c_min.x, cell.x)
+			c_min.y = mini(c_min.y, cell.y)
+			c_max.x = maxi(c_max.x, cell.x)
+			c_max.y = maxi(c_max.y, cell.y)
 		if painted_visual.size() > 0:
 			var w: int = (c_max.x - c_min.x + 1) * tile_size.x
 			var h: int = (c_max.y - c_min.y + 1) * tile_size.y
@@ -251,10 +251,7 @@ func _test_combo(layout_def: Dictionary, pattern_def: Dictionary) -> void:
 					continue
 				var sub := atlas_img.get_region(Rect2i(ac * tile_size, tile_size))
 				canvas.blit_rect(sub, Rect2i(Vector2i.ZERO, tile_size), (cell - c_min) * tile_size)
-			# Apply dual-grid layer offset to the canvas's world-coord interpretation.
 			var canvas_origin := c_min * tile_size
-			if is_dual_grid:
-				canvas_origin += Vector2i(- tile_size.x / 2, - tile_size.y / 2)
 			# Find opaque-pixel bbox in WORLD coords.
 			var op_min := Vector2i(999999, 999999)
 			var op_max := Vector2i(-999999, -999999)
@@ -265,10 +262,10 @@ func _test_combo(layout_def: Dictionary, pattern_def: Dictionary) -> void:
 						any_opaque = true
 						var wx: int = canvas_origin.x + px
 						var wy: int = canvas_origin.y + py
-						op_min.x = min(op_min.x, wx)
-						op_min.y = min(op_min.y, wy)
-						op_max.x = max(op_max.x, wx)
-						op_max.y = max(op_max.y, wy)
+						op_min.x = mini(op_min.x, wx)
+						op_min.y = mini(op_min.y, wy)
+						op_max.x = maxi(op_max.x, wx)
+						op_max.y = maxi(op_max.y, wy)
 			if not any_opaque:
 				_record(label, "painted region rendered ZERO opaque pixels (expected bbox %s..%s)" % [expected_min, expected_max])
 			else:
