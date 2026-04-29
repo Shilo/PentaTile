@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
-status: executing
-stopped_at: Phase 2 COMPLETE — UAT-class bugs (7 classes across commits 6553380..205fb67) fixed, 12 automated tests green, methodology codified, and visual UAT confirmed by user via the 16-mask-pattern demo scene (Layer A bundled greybox + Layer B ground.tres, both rendering correctly). Ready to begin Phase 3 (TileBitTools-Sourced Layouts).
-last_updated: "2026-04-28T20:00:00.000Z"
+status: planning
+stopped_at: Phase 3 context gathered — public-convention layouts pivot (TBT data-lift dropped, BorisTheBrave + Tilesetter as primary sources, 03-TBT-DEEP-AUDIT.md as Wave 0 deliverable)
+last_updated: "2026-04-29T05:29:58.244Z"
 last_activity: 2026-04-28
 progress:
-  total_phases: 7
+  total_phases: 8
   completed_phases: 3
   total_plans: 15
   completed_plans: 15
@@ -163,9 +163,9 @@ Items acknowledged and carried forward as v2 requirements (see REQUIREMENTS.md v
 
 ## Session Continuity
 
-Last session: 2026-04-28T22:00:00.000Z
-Stopped at: Phase 2 COMPLETE. User confirmed visual UAT via the 16-mask-pattern demo scene (`addons/penta_tile/demo/penta_tile_demo.tscn` — two PentaTileMapLayer nodes, one against bundled greybox, one against `penta_tile_ground.tres`, each painting all 16 corner-mask configurations in a 4×4 grid). 12 automated tests green. ROADMAP Phase 2 = `[x]`. Next: run `/gsd-next` or `/gsd-plan-phase 3` to begin Phase 3 (TileBitTools-Sourced Layouts: Blob47Godot + TilesetterWang15 + TilesetterBlob47 + ATTRIBUTION.md).
-Resume file: None
+Last session: --stopped-at
+Stopped at: Phase 3 context gathered — public-convention layouts pivot (TBT data-lift dropped, BorisTheBrave + Tilesetter as primary sources, 03-TBT-DEEP-AUDIT.md as Wave 0 deliverable)
+Resume file: --resume-file
 
 **Completed Phase:** 01 (Contract Skeleton + Penta Layouts) — 5/5 plans, 14/14 requirements, 26/26 automated tests PASS — 2026-04-26
 **Completed Phase:** 01.1 (PentaTile Rename + Penta Codename Establishment) — 3/3 plans, 0 formal REQ-IDs (rename phase), demo loads cleanly under new name, git remote tracks PentaTile origin — 2026-04-26
