@@ -81,6 +81,7 @@ func mask_to_atlas(mask: int, _strip_index: int = 0) -> PentaTileAtlasSlot:
 	# mask=0 dispatches to (0, 0) which IS the "lonely tile" entry, so
 	# isolated cells render correctly.
 	var collapsed := _collapse_8bit_moore(mask)
+	assert(_MASK_TO_ATLAS.has(collapsed), "Blob47Godot: collapse produced unmapped mask %d (raw %d) — _MASK_TO_ATLAS transcription error" % [collapsed, mask])
 	var slot := PentaTileAtlasSlot.new()
 	slot.atlas_coords = _MASK_TO_ATLAS.get(collapsed, Vector2i(0, 0))
 	slot.transform_flags = 0
