@@ -30,6 +30,8 @@ Plan: 3 of 6
 Status: Ready to execute
 Last activity: 2026-04-29
 
+> Phase 03 — Wave 1 prereqs landed (8-Moore patch + D-86 gate resolved as option b — Tilesetter deferred to v0.3+). Plan 03-05 (Tilesetter layouts) is now SKIPPED for Phase 3; remaining plans 03-04 (Blob47Godot) and 03-06 (closeout) proceed.
+
 Progress: [████████░░] 81%
 
 > Out-of-band progress: 5 of 8 greyboxed template PNGs + the generator script shipped in commit e86036f as part of the discovery pass. Counted as TEMPLATE-01 + TEMPLATE-03 covered. The remaining 3 templates (Blob47Godot, TilesetterWang15, TilesetterBlob47) ship in Phase 3 once their slot tables are transcribed from TileBitTools.
@@ -131,6 +133,8 @@ Recent decisions affecting current work:
 - Two backlog seeds locked with concrete un-defer triggers: layout tags vocabulary (≥12 layouts, v0.3+) and Project Settings verbosity key (≥2 verbosity surfaces, v0.3+). Both seeds rename TBT identifiers to PentaTile-namespace equivalents.
 - Save-custom-layout dialog REJECTED outright with no backlog file — reopening requires fresh design work per CLAUDE.md no-forward-compat rule.
 - D-72/D-73 ratified across canonical docs: Phase 3 retitled 'Public-Convention Layouts (Blob47 + Tilesetter)' in ROADMAP/REQUIREMENTS; TBT-04 + DOC-05 rewritten to README footnote pattern; addons/penta_tile/ATTRIBUTION.md formally banned via Out-of-Scope rows; directory slug intentionally NOT renamed (RESEARCH § 11 Q7)
+- **2026-04-29 (Phase 3 D-86 gate resolution):** User selected option b) per `03-01-PLAN.md` Task 1 checkpoint. Tilesetter layouts deferred to v0.3+. Plan 03-05 is dropped from Phase 3. REQUIREMENTS.md TBT-01 + TBT-02 + the Tilesetter half of TEMPLATE-02 move to v2/v0.3+ backlog (Plan 06 closeout records `TBT-01-DEFERRED` / `TBT-02-DEFERRED` / `TEMPLATE-02-DEFERRED`). Phase 3 ships ONLY `PentaTileLayoutBlob47Godot` (Plan 04) plus the audit (Plan 02), doc rewrites (Plan 03), and 8-Moore patch (Plan 01).
+TILESETTER_DECISION: b
 
 ### Pending Todos
 

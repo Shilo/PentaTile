@@ -227,16 +227,26 @@ func _mark_affected_display_cells(affected: Dictionary, logic_cell: Vector2i) ->
 	affected[logic_cell + Vector2i(1, 1)] = true
 
 
-# NEW for D-06: Single-grid pipeline (logic and visual share the same grid).
-# Marks cell + 4 cardinal neighbors. Phase 1 has no consumer (Penta H/V are dual-grid);
-# Phase 2's Wang2Corner is the first consumer. Locked planner option (a) — ship the
-# pipeline fully wired so Phase 2 layouts are pure subclass adds.
+# Phase 3 D-87: Single-grid pipeline (logic and visual share the same grid).
+# Marks cell + 8 Moore neighbors (4 cardinals + 4 diagonals). The diagonal
+# extension is required for 47-blob layouts (Phase 3) whose `compute_mask`
+# reads NE/SE/SW/NW neighbors — without 8-Moore propagation, an already-
+# painted cell keeps a stale mask when a diagonal neighbor changes. For
+# 4-cardinal layouts (Wang2Edge / Min3x3 / Wang2Corner) the extra diagonal
+# cells in the affected set hit the line `if not sample_fn.call(display_cell)`
+# short-circuit in _paint_via_layout and render nothing — net behavior
+# unchanged. See .planning/phases/03-tilebittools-sourced-layouts/03-RESEARCH.md
+# § 5 Finding 1 for the worked-example bug this prevents.
 func _mark_affected_single_grid_cells(affected: Dictionary, logic_cell: Vector2i) -> void:
 	affected[logic_cell] = true
 	affected[logic_cell + Vector2i.UP] = true
 	affected[logic_cell + Vector2i.DOWN] = true
 	affected[logic_cell + Vector2i.LEFT] = true
 	affected[logic_cell + Vector2i.RIGHT] = true
+	affected[logic_cell + Vector2i(1, -1)]  = true   # NE
+	affected[logic_cell + Vector2i(1, 1)]   = true   # SE
+	affected[logic_cell + Vector2i(-1, 1)]  = true   # SW
+	affected[logic_cell + Vector2i(-1, -1)] = true   # NW
 
 
 # The dispatcher per affected display cell. Computes mask once, short-circuits
