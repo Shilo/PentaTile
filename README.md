@@ -278,7 +278,9 @@ Migration path: rename addon folder, replace `atlas_contract` with `layout`, swa
 
 ## 🔍 Identity & Footprint
 
-> **Filled in by Plan C of Phase 5** (the manual identity audit). This placeholder will be replaced with a 3-axis audit summary (LOC, public surface, hot-path depth) and an anti-pattern register check against TileMapDual v5.0.2.
+PentaTile's per-cell paint path is **4 stack frames deep** and traverses zero persistent caches, zero watchers, zero signal fanout, zero rule-trie walks, and zero property-copy hops. The audit (against TileMapDual v5.0.2, commit `9ff1e24f`) confirms 16 of 16 anti-pattern register items absent — the 6 CLAUDE.md "Identity Guardrails" rejects (terrain peering, multi-terrain transitions, watcher/signal-fanout, coordinate caches, parallel paint APIs, EditorInspectorPlugin polish) and the 10 AP-1..AP-10 entries from PITFALLS.md. Cumulative runtime LOC (2884 PentaTile vs 2126 TileMapDual) is reported as signal, not as a fail criterion (per [D-05-11](.planning/phases/05-demo-refresh-documentation-release/05-CONTEXT.md)). Identity at v0.2.0 is **hot-path minimalism + anti-pattern absence**, not raw LOC delta.
+
+[Full audit: `.planning/phases/05-demo-refresh-documentation-release/05-LOC-AUDIT.md`](.planning/phases/05-demo-refresh-documentation-release/05-LOC-AUDIT.md)
 
 PentaTile's identity is **hot-path minimalism + anti-pattern absence**, not raw LOC delta vs TileMapDual (per [D-05-11](.planning/phases/05-demo-refresh-documentation-release/05-CONTEXT.md)). The runtime path stays short:
 
@@ -293,8 +295,6 @@ The addon explicitly does NOT include:
 - Persistent coordinate caches
 - Parallel paint APIs alongside `set_cell()`
 - `EditorInspectorPlugin` polish
-
-The full v0.2.0 audit report is at [`.planning/phases/05-demo-refresh-documentation-release/05-LOC-AUDIT.md`](.planning/phases/05-demo-refresh-documentation-release/05-LOC-AUDIT.md). _(Plan C will produce this artifact; this section will summarize its findings before release.)_
 
 ## 📝 Implementation Notes
 
