@@ -163,7 +163,8 @@ Per D-25 — added during Phase 1 discuss session. Aseprite plugin native 8×8 a
 **: `PentaTileLayoutPixelLabTopDown` subclass — 8×8 atlas, single-grid, 4-bit corner mask. Cell-to-role layout from `tileset_transform.lua` `tileset_output`. Role-to-mask = `[4, 10, 13, 12, 9, 14, 15, 7, 2, 3, 11, 5, 0, 8, 6, 1]`.
 - [x] **PIXLAB-02**: `PentaTileLayoutPixelLabSideScroller` subclass — 8×8 atlas, single-grid, 4-bit corner mask. Cell-to-role layout from `tileset_transform.lua` `tileset_output_side`. Same role-to-mask bijection as PIXLAB-01
 .
-- [ ] **PIXLAB-03**: Both PixelLab layouts handle variation banks: when multiple cells map to the same mask, `mask_to_atlas` deterministically picks the FIRST cell. Variation-bank pick (deterministic hash across the bank for visual variety) is **deferred to v2 backlog** alongside VAR-01 and MULTITERR-01 (all coupled — see v2 Requirements). Phase 3.5 ships the layouts with first-cell pick only.
+- [x] **PIXLAB-03
+**: Both PixelLab layouts handle variation banks: when multiple cells map to the same mask, `mask_to_atlas` deterministically picks the FIRST cell. Variation-bank pick (deterministic hash across the bank for visual variety) is **deferred to v2 backlog** alongside VAR-01 and MULTITERR-01 (all coupled — see v2 Requirements). Phase 3.5 ships the layouts with first-cell pick only.
 - [ ] **PIXLAB-04**: Visual regression on a PixelLab Aseprite sample (8×8 PNG output) matches the Aseprite plugin's own canvas output for both top-down and side-scroller variants.
 
 ### Preview & Fallback (PREVIEW)

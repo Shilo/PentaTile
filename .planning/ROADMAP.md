@@ -162,7 +162,7 @@ Plans:
 - [ ] 03.5-01-PLAN.md — Wave 1: generator extension + 2 bundled PixelLab greybox PNGs (256×256, 8×8 atlas) + .import sidecars
 - [x] 03.5-02-PLAN.md — Wave 2: PentaTileLayoutPixelLabTopDown subclass (PIXLAB-01)
 - [x] 03.5-03-PLAN.md — Wave 2: PentaTileLayoutPixelLabSideScroller subclass (PIXLAB-02)
-- [ ] 03.5-04-PLAN.md — Wave 3: pixellab_first_cell_test + comprehensive_bitmask_test matrix extension to 8×18=144 + bitmask_bounds_test 8×8 PIXLAB extension + run_tests.ps1 (PIXLAB-03)
+- [x] 03.5-04-PLAN.md — Wave 3: pixellab_first_cell_test + comprehensive_bitmask_test matrix extension to 8×18=144 + bitmask_bounds_test 8×8 PIXLAB extension + run_tests.ps1 (PIXLAB-03) — 2026-04-29
 - [ ] 03.5-05-PLAN.md — Wave 3: pixellab_visual_regression_test composed-canvas + checked-in spike-003 PixelLab samples + run_tests.ps1 (PIXLAB-04)
 - [ ] 03.5-06-PLAN.md — Wave 4: closeout — REQUIREMENTS Traceability + ROADMAP retitle + ROADMAP [x] + STATE.md cumulative LOC + Roadmap Evolution + VAR-PIXEL-01 deferral preservation
 
