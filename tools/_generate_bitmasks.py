@@ -1,6 +1,6 @@
 """Generate greyboxed silhouette bitmask PNGs for each PentaTile layout.
 
-Run with: python addons/penta_tile/_generate_bitmasks.py
+Run with: python tools/_generate_bitmasks.py
 
 Produces transparent-background PNGs where each slot is filled with a grey
 silhouette indicating which logic-cell quadrants (corner masks) or edge
@@ -30,7 +30,8 @@ OUTLINE = (68, 68, 68, 255)        # #444 dark grey outline
 HINT = (170, 170, 170, 255)        # #aaa light grey for the always-on center hint
 TRANSPARENT = (0, 0, 0, 0)
 
-OUT_LAYOUTS = Path(__file__).parent / "layouts"
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+OUT_LAYOUTS = _REPO_ROOT / "addons" / "penta_tile" / "layouts"
 OUT_PENTA = OUT_LAYOUTS / "penta_tile_layout_penta"
 
 # ---- Helpers ----

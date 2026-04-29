@@ -193,7 +193,7 @@ Greyboxed silhouette PNGs the artist paints over.
 - [x] **TEMPLATE-02
 **: Same convention for TBT-decoded layouts (Phase 3): `penta_tile_layout_blob_47_godot.png`, `penta_tile_layout_tilesetter_wang_15.png`, `penta_tile_layout_tilesetter_blob_47.png` — each as a flat sibling to its `.gd` file.
 - [x] **TEMPLATE-03
-**: A bitmask-template generator script (renamed/relocated from `_generate_greybox_templates.py`) produces all bundled PNGs from data definitions — regenerable from source. New location TBD by Phase 2 plan (probably `addons/penta_tile/_generate_bitmasks.py` or repo root).
+**: A bitmask-template generator script (renamed/relocated from `_generate_greybox_templates.py`) produces all bundled PNGs from data definitions — regenerable from source. Lives at `tools/_generate_bitmasks.py` (relocated to repo root `tools/` so it does not ship with the addon).
 - [x] **TEMPLATE-04
 **: Each layout's bundled bitmask PNG slot positions match its `mask_to_atlas` table (verified by visual regression: paint the layout's `get_fallback_tile_set()` output and confirm visible tile shapes match).
 

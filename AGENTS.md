@@ -27,7 +27,6 @@ addons/penta_tile/
   penta_tile_map_layer.gd          # core PentaTileMapLayer node
   penta_tile_synthesis.gd          # synthesis machinery for Penta layouts
   penta_tile_atlas_slot.gd         # slot resource (atlas_coords + transform_flags)
-  _generate_bitmasks.py            # internal tooling — regenerates bundled bitmask PNGs
   layouts/                         # PentaTileLayout base + subclasses + co-located fallback PNGs
     penta_tile_layout.gd           # base PentaTileLayout
     penta_tile_layout_penta.gd     # merged Penta family (axis × tile_count enums)
@@ -40,6 +39,10 @@ addons/penta_tile/
     penta_tile_demo.tscn           # main demo scene (entry point)
     demo_runtime_painter.gd        # left-click paint, right-click erase, drag-paint
     penta_layout_*.tres            # demo layout resources
+brand/                             # project icon + logo (referenced by project.godot + @icon)
+tools/
+  _generate_bitmasks.py            # internal tooling — regenerates bundled bitmask PNGs
+  mkdocs_hooks.py                  # MkDocs build hooks
 tests/                             # determinism harness + visual regression tests
 docs/                              # MkDocs source site
 .planning/                         # GSD planning artifacts (committed to git)

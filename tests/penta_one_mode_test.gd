@@ -165,7 +165,7 @@ func _run() -> void:
 
 # Expected pixel pattern for the bundled ONE-mode one_horizontal.png slot 0.
 # Mirrors `draw_penta_isolated_cell` (BL-quadrant single-corner piece) in
-# addons/penta_tile/_generate_bitmasks.py — 32x32 tile with the BL quadrant
+# tools/_generate_bitmasks.py — 32x32 tile with the BL quadrant
 # (x:0..15, y:16..31) filled, other 3 quadrants transparent.
 # Returns true if pixel (x, y) should be opaque.
 func _expected_one_mode_slot0(x: int, y: int, ts: int) -> bool:

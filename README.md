@@ -1,8 +1,8 @@
-# <img src="addons/penta_tile/brand/penta_tile_icon.png" width="32" alt="PentaTile Icon"> PentaTile
+# <img src="brand/penta_tile_icon.png" width="32" alt="PentaTile Icon"> PentaTile
 
 **Just paint your tiles.** Intuitive Godot autotiling addon that takes the pain out of tilesets, with no manual terrain setup needed. Supports [5-archetype **Penta**](#-what-is-a-penta-tileset) and [popular layouts](#-supported-layouts). Paint with Godot's normal tools and PentaTile fills in the corners, edges, and transitions for you.
 
-<img src="addons/penta_tile/brand/penta_tile_logo.png" width="188" alt="PentaTile Logo">
+<img src="brand/penta_tile_logo.png" width="188" alt="PentaTile Logo">
 
 ## 📑 Table of Contents
 
@@ -156,7 +156,6 @@ addons/penta_tile/
   penta_tile_map_layer.gd                  # core PentaTileMapLayer node
   penta_tile_synthesis.gd                  # synthesis machinery for Penta layouts
   penta_tile_atlas_slot.gd                 # slot resource (atlas_coords + transform_flags)
-  _generate_bitmasks.py                    # internal tooling — regenerates bundled bitmask PNGs
   layouts/
     penta_tile_layout.gd                   # base PentaTileLayout
     penta_tile_layout_penta.gd             # Penta family (1–5 modes, horizontal & vertical)
@@ -169,6 +168,10 @@ addons/penta_tile/
     penta_tile_demo.tscn
     demo_runtime_painter.gd
     penta_layout_*.tres                    # demo layout resources
+brand/                                     # project icon + logo (referenced by project.godot + @icon)
+tools/
+  _generate_bitmasks.py                    # internal tooling — regenerates bundled bitmask PNGs
+  mkdocs_hooks.py                          # MkDocs build hooks
 tests/
   run_tests.ps1                            # Windows local test runner
   run_tests.sh                             # Linux / CI test runner
@@ -178,10 +181,10 @@ docs/
   index.md                                 # MkDocs source
 ```
 
-The release zip archives only `addons/penta_tile/`, so the root `tests/` and
-`docs/` directories are repository tooling and do not ship inside the addon
-package. The `layouts/penta_tile_layout_penta/` PNG bundle ships the canonical
-Penta templates for each axis × mode combination.
+The release zip archives only `addons/penta_tile/`, so the root `brand/`,
+`tools/`, `tests/`, and `docs/` directories are repository tooling and do not
+ship inside the addon package. The `layouts/penta_tile_layout_penta/` PNG
+bundle ships the canonical Penta templates for each axis × mode combination.
 
 ## 🔌 Current API
 

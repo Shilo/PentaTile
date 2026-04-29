@@ -10,7 +10,7 @@ metadata={
 
 [deps]
 
-source_file="res://addons/penta_tile/brand/penta_tile_logo.png"
+source_file="res://brand/penta_tile_logo.png"
 dest_files=["res://.godot/imported/penta_tile_logo.png-627d4da5699d0709dba9978636fb0bc0.ctex"]
 
 [params]
