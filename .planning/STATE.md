@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
-status: planning
+status: executing
 stopped_at: Completed 04-02-PLAN.md
-last_updated: "2026-04-29T13:51:38.168Z"
-last_activity: 2026-04-29
+last_updated: "2026-04-29T16:55:26.729Z"
+last_activity: 2026-04-29 -- Phase 04 execution started
 progress:
   total_phases: 8
   completed_phases: 5
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-25 after v0.2 pivot to layout library)
 
 **Core value:** Painting tiles with the native `TileMapLayer` API produces correct dual-grid autotiled visuals — without the user maintaining caches, terrain metadata, or 16-tile blob sets.
-**Current focus:** Phase 04 — Fallback Routing (Plan 03 next)
+**Current focus:** Phase 04 — fallback-routing
 
 ## Current Position
 
-Phase: 04
-Plan: 03
-Status: Ready to execute
-Last activity: 2026-04-29
+Phase: 04 (fallback-routing) — EXECUTING
+Plan: 1 of 5
+Status: Executing Phase 04
+Last activity: 2026-04-29 -- Phase 04 execution started
 
 > Phase 3.5 closed 2026-04-29 with full scope: PIXLAB-01..04 Complete. PentaTileLayoutPixelLabTopDown + PentaTileLayoutPixelLabSideScroller ship as single-grid corner-mask twin subclasses with cached first-cell dispatch per D-89; 2 new bundled greybox PNGs (8×8 atlas, 256×256) co-located under addons/penta_tile/layouts/; 2 new tests (pixellab_first_cell_test + pixellab_visual_regression_test) green; matrix grew to 8 layouts × 18 patterns = 144 combos; bitmask_bounds_test extended; run_tests.ps1 lists 17 tests. VAR-PIXEL-01 (variation-bank pick) preserved in v2 backlog per D-91; ROADMAP retitled to drop the "+ Variation-Seed Wiring" misnomer. Phase 4 (Fallback Routing) is the next planning step.
 
