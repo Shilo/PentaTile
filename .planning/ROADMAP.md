@@ -137,7 +137,7 @@ Plans:
 Plans:
 - [ ] 03-01-PLAN.md — Wave 1 prereqs: D-86 user gate (checkpoint:decision) + 8-Moore single-grid pipeline patch + propagation regression test (D-87)
 - [ ] 03-02-PLAN.md — Wave 1 deliverable: 03-TBT-DEEP-AUDIT.md ADOPT/PARTIAL/REJECT pattern audit (D-84, no code/data lift)
-- [ ] 03-03-PLAN.md — Wave 1 doc rewrites: ROADMAP/REQUIREMENTS retitle + TBT-04/DOC-05 rewrite + README footnote (D-72, D-73; no ATTRIBUTION.md)
+- [x] 03-03-PLAN.md — Wave 1 doc rewrites: ROADMAP/REQUIREMENTS retitle + TBT-04/DOC-05 rewrite + README footnote (D-72, D-73; no ATTRIBUTION.md)
 - [ ] 03-04-PLAN.md — Wave 2: PentaTileLayoutBlob47Godot (BorisTheBrave 7×7 + 256→47 collapse + 47-entry dict) + collapse test + hollow test + bundled PNG (TBT-03, TEMPLATE-02 partial)
 - [ ] 03-05-PLAN.md — Wave 3 (D-86 conditional): PentaTileLayoutTilesetterWang15 + PentaTileLayoutTilesetterBlob47 + dispatch/collapse tests + bundled PNGs (TBT-01, TBT-02, TEMPLATE-02 finish)
 - [ ] 03-06-PLAN.md — Wave 4 closeout: comprehensive_bitmask_test + bitmask_bounds_test extended; REQUIREMENTS Traceability + ROADMAP [x] + STATE.md cumulative LOC + Phase 3 closure
@@ -203,7 +203,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 3.5 → 4 → 5
 | 1. Contract Skeleton + Penta Layouts | 5/5 | Complete (substantially superseded by Phase 2 architectural sweep) | 2026-04-26 |
 | 1.1. PentaTile Rename + Penta Codename Establishment | 3/3 | Complete | 2026-04-26 |
 | 2. Native Layouts + Architectural Simplification | 7/7 + retroactive AUTO_STRIP wave + UAT bug-fix sweep | **Complete.** 3 review passes clean (0 Critical, 0 Warning, 13 Info). UAT bug-fix sweep 2026-04-28 closed 7 bug classes across commits 6553380..205fb67 — 12 automated tests green, methodology codified in `02-UAT-LESSONS-LEARNED.md`. User confirmed visual UAT via the 16-mask-pattern demo scene 2026-04-28T22:00. LOC overage (1827 vs ~1500 informational trigger) carried forward; formal gate is Phase 5 final audit. | 2026-04-28 |
-| 3. TileBitTools-Sourced Layouts | 1/6 | Plan 02 complete (TBT design-inspiration audit shipped — 364 lines, AP-1..AP-10 anti-pattern register). Plans 01/03/04/05/06 in flight (D-86 Tilesetter primary-source gate still open). | - |
+| 3. Public-Convention Layouts (Blob47 + Tilesetter) | 2/6 | Plan 02 complete (TBT design-inspiration audit shipped — 364 lines, AP-1..AP-10 anti-pattern register). Plan 03 complete (D-72/D-73 doc ratification — ROADMAP/REQUIREMENTS retitle + README footnote; ATTRIBUTION.md formally banned via Out-of-Scope rows). Plans 01/04/05/06 in flight (D-86 Tilesetter primary-source gate still open). | - |
 | 3.5. PixelLab Layouts (variation-bank pick deferred to v2) | 0/TBD | Not started | - |
 | 4. Fallback Routing | 0/TBD | Not started | - |
 | 5. Demo Refresh + Documentation + Release | 0/TBD | Not started | - |

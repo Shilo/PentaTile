@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-02 — TBT design-inspiration audit (Wave 0b deliverable per D-84)
-last_updated: "2026-04-29T07:06:40.231Z"
+stopped_at: Completed 03-03 — D-72/D-73 doc ratification (ROADMAP/REQUIREMENTS retitle + README footnote)
+last_updated: "2026-04-29T07:12:50.474Z"
 last_activity: 2026-04-29
 progress:
   total_phases: 8
   completed_phases: 3
   total_plans: 21
-  completed_plans: 16
-  percent: 76
+  completed_plans: 17
+  percent: 81
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-04-25 after v0.2 pivot to layout library
 ## Current Position
 
 Phase: 03 (Public-Convention Layouts (Blob47 + Tilesetter)) — EXECUTING
-Plan: 2 of 6
+Plan: 3 of 6
 Status: Ready to execute
 Last activity: 2026-04-29
 
-Progress: [████████░░] 76%
+Progress: [████████░░] 81%
 
 > Out-of-band progress: 5 of 8 greyboxed template PNGs + the generator script shipped in commit e86036f as part of the discovery pass. Counted as TEMPLATE-01 + TEMPLATE-03 covered. The remaining 3 templates (Blob47Godot, TilesetterWang15, TilesetterBlob47) ship in Phase 3 once their slot tables are transcribed from TileBitTools.
 
@@ -62,6 +62,7 @@ Progress: [████████░░] 76%
 | Phase 02 P06 | 850 | 2 tasks | 9 files |
 | Phase 02-native-layouts P7 | 272 | 2 tasks | 4 files |
 | Phase 03 P02 | 9min | 1 tasks | 1 files |
+| Phase 03 P03 | 3min | 2 tasks tasks | 3 files files |
 
 ## Accumulated Context
 
@@ -129,6 +130,7 @@ Recent decisions affecting current work:
 - AP-1..AP-10 anti-pattern register crystallized in 03-TBT-DEEP-AUDIT.md — every REJECT verdict cites an explicit identity guardrail; future plan-phases can reject TBT-derived ideas by AP-N reference rather than re-auditing.
 - Two backlog seeds locked with concrete un-defer triggers: layout tags vocabulary (≥12 layouts, v0.3+) and Project Settings verbosity key (≥2 verbosity surfaces, v0.3+). Both seeds rename TBT identifiers to PentaTile-namespace equivalents.
 - Save-custom-layout dialog REJECTED outright with no backlog file — reopening requires fresh design work per CLAUDE.md no-forward-compat rule.
+- D-72/D-73 ratified across canonical docs: Phase 3 retitled 'Public-Convention Layouts (Blob47 + Tilesetter)' in ROADMAP/REQUIREMENTS; TBT-04 + DOC-05 rewritten to README footnote pattern; addons/penta_tile/ATTRIBUTION.md formally banned via Out-of-Scope rows; directory slug intentionally NOT renamed (RESEARCH § 11 Q7)
 
 ### Pending Todos
 
@@ -167,8 +169,8 @@ Items acknowledged and carried forward as v2 requirements (see REQUIREMENTS.md v
 
 ## Session Continuity
 
-Last session: 2026-04-29T07:06:40.225Z
-Stopped at: Completed 03-02 — TBT design-inspiration audit (Wave 0b deliverable per D-84)
+Last session: 2026-04-29T07:12:40.511Z
+Stopped at: Completed 03-03 — D-72/D-73 doc ratification (ROADMAP/REQUIREMENTS retitle + README footnote)
 Resume file: None
 
 **Completed Phase:** 01 (Contract Skeleton + Penta Layouts) — 5/5 plans, 14/14 requirements, 26/26 automated tests PASS — 2026-04-26

@@ -151,7 +151,8 @@ Layouts whose slot tables are sourced from each format's PRIMARY REFERENCE — `
 - [ ] **TBT-01**: `PentaTileLayoutTilesetterWang15` subclass — 5×3 atlas, 15 unique tiles plus a stray fill tile. Slot-to-mask table transcribed from `tile_bit_tools/tilesetter_wang.tres`.
 - [ ] **TBT-02**: `PentaTileLayoutTilesetterBlob47` subclass — 11×5 atlas with discrete sub-block gaps, 47 unique tiles. Slot-to-mask table transcribed from `tile_bit_tools/tilesetter_blob.tres`.
 - [ ] **TBT-03**: `PentaTileLayoutBlob47Godot` subclass — TileBitTools' Godot blob template convention, 47 unique tiles. Slot-to-mask table transcribed from the matching TBT template `.tres`.
-- [ ] **TBT-04**: `README.md` "External Resources" section contains a 1-line footnote acknowledging TileBitTools (https://github.com/dandeliondino/tile_bit_tools) as design inspiration. Per D-72 + D-73, NO `addons/penta_tile/ATTRIBUTION.md` is created — nothing is lifted from TBT, so nothing requires legal attribution. The Phase 3 audit deliverable `.planning/phases/03-tilebittools-sourced-layouts/03-TBT-DEEP-AUDIT.md` reads TBT source as design reference only.
+- [x] **TBT-04
+**: `README.md` "External Resources" section contains a 1-line footnote acknowledging TileBitTools (https://github.com/dandeliondino/tile_bit_tools) as design inspiration. Per D-72 + D-73, NO `addons/penta_tile/ATTRIBUTION.md` is created — nothing is lifted from TBT, so nothing requires legal attribution. The Phase 3 audit deliverable `.planning/phases/03-tilebittools-sourced-layouts/03-TBT-DEEP-AUDIT.md` reads TBT source as design reference only.
 
 ### PixelLab Layouts (PIXLAB)
 
@@ -200,7 +201,8 @@ Greyboxed silhouette PNGs the artist paints over.
 - [ ] **DOC-02**: README has an "Upgrading from 0.1.x" section documenting the bundled-default contract as the primary migration path.
 - [ ] **DOC-03**: README has an "Authoring a Custom Layout" section showing how to subclass `PentaTileLayout` (marked experimental).
 - [ ] **DOC-04**: `CHANGELOG.md` entry documents all breaking changes for v0.2.0 — `PentaTileAtlasContract` deletion (replaced by direct `layout: PentaTileLayout` on the layer), `template_image` → `bitmask_template` rename, `fallback_tile_set` no longer @export'd, `decoder_image` deletion, `PentaTileLayoutPentaHorizontal`/`Vertical` merged into `PentaTileLayoutPenta`, new slot ordering (`0=IsolatedCell, 1=Fill, 2=Border, 3=InnerCorner, 4=OppositeCorners`; OuterCorner now implicit), 5-mode `tile_count` enum (ONE/TWO/THREE/FOUR/FIVE), AUTO_STRIP detection, overlay layer removal, all template PNG path changes (templates folder deleted; PNGs co-located in `layouts/`).
-- [ ] **DOC-05**: `README.md` "External Resources" section's TileBitTools design-inspiration footnote exists (covered by TBT-04 but called out here as a doc deliverable). Per D-72 + D-73, NO `addons/penta_tile/ATTRIBUTION.md` is created.
+- [x] **DOC-05**: `README.md` "External Resources" section's TileBitTools design-inspiration footnote exists (covered by TBT-04
+ but called out here as a doc deliverable). Per D-72 + D-73, NO `addons/penta_tile/ATTRIBUTION.md` is created.
 
 ### Release (REL)
 
