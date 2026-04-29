@@ -23,7 +23,7 @@ The original v0.2 feature pillars (Y-axis variation, top tiles, non-rotating til
 - [x] **Phase 1: Contract Skeleton + Penta Layouts** — Introduce `PentaTileAtlasContract` + `PentaTileLayout` base + `AtlasSlot`. Ship Penta Horizontal + Penta Vertical as the first two layout subclasses. v0.1 visuals continue unchanged via the bundled default contract OR the null-fallback path.
 - [x] **Phase 1.1: PentaTile Rename + Penta Codename Establishment** — Project-wide rename to `PentaTile` (source code, saved resources, planning + project docs, GitHub repo, local clone, Claude memory) before Phase 2 ships new files under the old name. "Penta" coined as the 5-archetype tileset codename via canonical README anchor + CLAUDE.md project invariant. CHANGELOG.md ships the v0.2 BREAKING entry.
 - [x] **Phase 2: Native Layouts + Penta Synthesis (1/2/3/4/5 auto-detect)** — Ship DualGrid16, Wang2Edge, Wang2Corner, Min3x3 subclasses. Plus the architectural pivot: Phase 1's `PentaTileLayoutPentaHorizontal`/`Vertical` are merged into a single `PentaTileLayoutPenta` class with `axis: Axis` enum and `tile_count: TileCountMode { AUTO, AUTO_STRIP, ONE, TWO, THREE, FOUR, FIVE }` enum — five progressive synthesis modes per strip with AUTO/AUTO_STRIP detection variants. Runtime overlay layer DELETED entirely (single-layer dispatch only). New slot ordering: `0=IsolatedCell, 1=Fill, 2=Border, 3=InnerCorner, 4=OppositeCorners`; OuterCorner is implicit (synthesized from slot 0). Closed 2026-04-28 after the UAT bug-fix sweep (7 bug classes across commits 6553380..205fb67) — see `.planning/phases/02-native-layouts/02-UAT-LESSONS-LEARNED.md`. Companion artifact: `.planning/research/layouts/RPG_MAKER.md` documents the deferred RPG Maker family for v0.3+.
-- [ ] **Phase 3: TileBitTools-Decoded Layouts** — Transcribe slot tables from TBT's MIT-licensed `tilesetter_blob.tres`, `tilesetter_wang.tres`, and the matching Godot blob template `.tres`. Ship Blob47Godot, TilesetterWang15, TilesetterBlob47. Generate the 3 missing template PNGs from the slot tables. Add `ATTRIBUTION.md`.
+- [ ] **Phase 3: TileBitTools-Sourced Layouts** — Transcribe slot tables from TBT's MIT-licensed `tilesetter_blob.tres`, `tilesetter_wang.tres`, and the matching Godot blob template `.tres`. Ship Blob47Godot, TilesetterWang15, TilesetterBlob47. Generate the 3 missing template PNGs from the slot tables. Add `ATTRIBUTION.md`.
 - [ ] **Phase 3.5: PixelLab Layouts + Variation-Seed Wiring** — Ship `PentaTileLayoutPixelLabTopDown` and `PentaTileLayoutPixelLabSideScroller` (8×8 atlas, single-grid, 4-bit corner mask, variation-bank). Wire `variation_seed` deterministic-hash bucket-pick. Add `PentaTileLayoutMinimal3x3` if not already shipped in Phase 2.
 - [ ] **Phase 4: Fallback Routing** — Wire `PentaTileMapLayer` to use `layout.fallback_tile_set` when `tile_set == null`. Verify all 8 layouts paint correctly with their bundled fallback. Visual regression on the demo scene.
 - [ ] **Phase 5: Demo Refresh + Documentation + Release** — One updated demo scene showcasing all 8 layouts, README sections (Layouts / Upgrading / Authoring a Custom Layout), CHANGELOG, plugin.cfg bump, GitHub Release zip with `v0.2.0` tag.
@@ -117,7 +117,7 @@ Plans:
 
 **Post-execution review** (3 passes, all clean): initial review (commit `eec027d`) found 6 Warnings (WR-01..WR-06); independent third-party audit added WR-07 (latent VERTICAL BLOCKER — `_make_slot` returned wrong axis); all 7 WR fixes landed across commits `ea0ba23` `ae5d787` `9ca342e` `d74df0e` `2ca04e0` `720f017` `79af1e3`. VERTICAL regression net + sub-test (c) added in commit `673ace0`. Re-review (`49852b9`) added IN-10. Third pass (`aa07ac1`) added IN-11/12/13, all 3 fixed in `c9a6aa9`. **Final review status:** 0 Critical / 0 Warning / 13 Info. **Outstanding gates:** (1) human visual UAT — 4 items in `02-HUMAN-UAT.md`, (2) LOC overage acceptance decision (informational at Phase 2; formal gate is Phase 5).
 
-### Phase 3: TileBitTools-Decoded Layouts
+### Phase 3: TileBitTools-Sourced Layouts
 
 **Goal**: Three layouts whose slot tables are transcribed from TileBitTools' MIT-licensed `.tres` files (Tilesetter Wang 15, Tilesetter Blob 47, Godot Blob 47) ship with attribution. Greyboxed template PNGs are generated for these three layouts from the slot tables.
 
@@ -195,7 +195,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 3.5 → 4 → 5
 | 1. Contract Skeleton + Penta Layouts | 5/5 | Complete (substantially superseded by Phase 2 architectural sweep) | 2026-04-26 |
 | 1.1. PentaTile Rename + Penta Codename Establishment | 3/3 | Complete | 2026-04-26 |
 | 2. Native Layouts + Architectural Simplification | 7/7 | Code-complete; 3 review passes clean (0 Critical, 0 Warning, 13 Info); awaiting human visual UAT (4 items) + LOC overage decision | - |
-| 3. TileBitTools-Decoded Layouts | 0/TBD | Not started | - |
+| 3. TileBitTools-Sourced Layouts | 0/TBD | Not started | - |
 | 3.5. PixelLab Layouts (variation-bank pick deferred to v2) | 0/TBD | Not started | - |
 | 4. Fallback Routing | 0/TBD | Not started | - |
 | 5. Demo Refresh + Documentation + Release | 0/TBD | Not started | - |
@@ -208,7 +208,7 @@ All 58 v1 requirements mapped to exactly one phase. No orphans, no duplicates.
 |-------|----------------------|
 | 1. Contract Skeleton + Penta Layouts (residual) | LAYOUT-01, LAYOUT-02, LAYOUT-05 (3) |
 | 2. Native Layouts + Architectural Simplification | NATIVE-01..03, MIN3x3-01, LAYER-01..05, LAYOUT-03/04/06/07, PENTA-01..03, PENTA-SYNTH-01..12, PREVIEW-01..02, TEMPLATE-01/03/04 (33) |
-| 3. TileBitTools-Decoded Layouts | TBT-01..04, TEMPLATE-02, DOC-05 (6) |
+| 3. TileBitTools-Sourced Layouts | TBT-01..04, TEMPLATE-02, DOC-05 (6) |
 | 3.5. PixelLab Layouts | PIXLAB-01..04 (4) |
 | 4. Fallback Routing | PREVIEW-03, PREVIEW-04 (2) |
 | 5. Demo Refresh + Documentation + Release | DEMO-01..03, DOC-01..04, REL-01..03 (10) |

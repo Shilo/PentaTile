@@ -60,7 +60,7 @@ This project uses Get Shit Done (GSD) for structured execution. The phases of v0
 1. **Contract Skeleton + Penta Layouts** ✅ DONE (partially superseded by Phase 2). Phase 1 originally shipped `PentaTileAtlasContract` + `PentaTileLayout` base + `AtlasSlot` + separate `PentaTileLayoutPentaHorizontal` / `PentaTileLayoutPentaVertical` classes. Phase 2 deleted the contract and merged the H/V pair into `PentaTileLayoutPenta`. Phase 1 artifacts archived under `.planning/phases/01-contract-skeleton-penta-layouts/`; the only Phase 1 outputs that survived intact are the `PentaTileLayout` base virtual surface + `AtlasSlot`.
 2. **Native Layouts** — DualGrid16, Wang2Edge, Wang2Corner, Min3x3 + Penta layouts gain load-time synthesis of the 5th `OppositeCorners` archetype (drops the runtime overlay layer entirely).
 2.1 **Single-Tile Layout (Prototyping)** — `PentaTileLayoutSingleTile` slices ONE source image into 5 archetypes at load time.
-3. **TileBitTools-Decoded Layouts** — Blob47Godot, TilesetterWang15, TilesetterBlob47 with attribution.
+3. **TileBitTools-Sourced Layouts** — Blob47Godot, TilesetterWang15, TilesetterBlob47 with attribution.
 3.5 **PixelLab Layouts + Variation-Bank Wiring** — PixelLabTopDown + PixelLabSideScroller (8×8 atlas, internal variation banks).
 4. **Fallback Routing** — `tile_set == null` → `layout.get_fallback_tile_set()`.
 5. **Demo Refresh + Documentation + Release** — updated demo, README, CHANGELOG, `v0.2.0` tag.

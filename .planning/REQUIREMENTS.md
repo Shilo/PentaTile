@@ -144,9 +144,9 @@ Auto-detection reads `TileSetAtlasSource.get_atlas_grid_size()` along the strip 
   5. **What "regression blocks merge" means**: if a future commit changes the hash, the test fails and CI (or manual check) blocks the merge until either (a) the regression is fixed, or (b) the baseline is intentionally updated with a justification commit.
   6. Planner is free to refine the protocol but must answer all 5 points before implementation.
 
-### TileBitTools-Decoded Layouts (TBT)
+### TileBitTools-Sourced Layouts (TBT)
 
-Layouts whose slot tables are transcribed from TileBitTools' MIT-licensed `.tres` files (with attribution).
+Layouts whose slot tables are transcribed (offline, by hand) from TileBitTools' MIT-licensed `.tres` files into hard-coded `mask_to_atlas` GDScript dispatch — no runtime decoding involved. Phase title was historically "Decoded Layouts" which was misleading; renamed 2026-04-28. Requirement ID prefix `TBT` is unchanged.
 
 - [ ] **TBT-01**: `PentaTileLayoutTilesetterWang15` subclass — 5×3 atlas, 15 unique tiles plus a stray fill tile. Slot-to-mask table transcribed from `tile_bit_tools/tilesetter_wang.tres`.
 - [ ] **TBT-02**: `PentaTileLayoutTilesetterBlob47` subclass — 11×5 atlas with discrete sub-block gaps, 47 unique tiles. Slot-to-mask table transcribed from `tile_bit_tools/tilesetter_blob.tres`.
