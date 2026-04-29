@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
 status: executing
-stopped_at: Plan 03.5-05 complete
-last_updated: "2026-04-29T10:10:58.948Z"
+stopped_at: "Phase 3.5 closeout — Plan 06 complete; Phase 4 ready to plan"
+last_updated: "2026-04-29T10:13:51.000Z"
 last_activity: 2026-04-29
 progress:
   total_phases: 8
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 27
-  completed_plans: 26
-  percent: 96
+  completed_plans: 27
+  percent: 100
 ---
 
 # Project State
@@ -21,18 +21,18 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-25 after v0.2 pivot to layout library)
 
 **Core value:** Painting tiles with the native `TileMapLayer` API produces correct dual-grid autotiled visuals — without the user maintaining caches, terrain metadata, or 16-tile blob sets.
-**Current focus:** Phase 03.5 — PixelLab Layouts + Variation-Seed Wiring
+**Current focus:** Phase 04 — Fallback Routing (next planning step)
 
 ## Current Position
 
-Phase: 03.5 (PixelLab Layouts + Variation-Seed Wiring) — EXECUTING
-Plan: 6 of 6
-Status: Ready to execute
+Phase: 04 (Fallback Routing) — Ready to plan
+Plan: Ready to plan
+Status: Ready to plan
 Last activity: 2026-04-29
 
-> Phase 03 closed 2026-04-29 with reduced scope per D-86 = (b). Blob47Godot shipped (TBT-03 + TEMPLATE-02 partial); audit deliverable + README footnote landed (TBT-04, DOC-05); 8-Moore single-grid propagation patch landed (D-87); Tilesetter pair + Tilesetter half of TEMPLATE-02 deferred to v0.3+ backlog (`TBT-01-DEFERRED` / `TBT-02-DEFERRED` / `TEMPLATE-02-DEFERRED`). Plan 06 (closeout) extended `comprehensive_bitmask_test` + `bitmask_bounds_test` with Blob47Godot, added 2 new 8-Moore-revealing patterns (plus_with_diagonals, diag_chain), recorded the deferred-backlog entries in REQUIREMENTS.md, and flipped Phase 3 ROADMAP entry to `[x]`.
+> Phase 3.5 closed 2026-04-29 with full scope: PIXLAB-01..04 Complete. PentaTileLayoutPixelLabTopDown + PentaTileLayoutPixelLabSideScroller ship as single-grid corner-mask twin subclasses with cached first-cell dispatch per D-89; 2 new bundled greybox PNGs (8×8 atlas, 256×256) co-located under addons/penta_tile/layouts/; 2 new tests (pixellab_first_cell_test + pixellab_visual_regression_test) green; matrix grew to 8 layouts × 18 patterns = 144 combos; bitmask_bounds_test extended; run_tests.ps1 lists 17 tests. VAR-PIXEL-01 (variation-bank pick) preserved in v2 backlog per D-91; ROADMAP retitled to drop the "+ Variation-Seed Wiring" misnomer. Phase 4 (Fallback Routing) is the next planning step.
 
-Progress: [██████████] 96%
+Progress: [██████████] 100%
 
 > Out-of-band progress: 5 of 8 greyboxed template PNGs + the generator script shipped in commit e86036f as part of the discovery pass. Counted as TEMPLATE-01 + TEMPLATE-03 covered. The remaining 3 templates (Blob47Godot, TilesetterWang15, TilesetterBlob47) ship in Phase 3 once their slot tables are transcribed from TileBitTools.
 
@@ -159,6 +159,7 @@ TILESETTER_DECISION: b
 - Phase 3.5 Plan 03 complete: PentaTileLayoutPixelLabSideScroller shipped (twin of top-down with side-scroller cell-to-role table). Mask=0 → (0,0) per D-104 (vs top-down (2,2)). _ROLE_TO_MASK identical to top-down per D-94, duplicated per D-98. Functional LOC=52, UID sidecar uid://c430mc3lmufs2. Commit 2a20bf9. PIXLAB-02 satisfied.
 - Phase 3.5 Plan 04: pixellab_first_cell_test ships with hand-derived expected tables locking D-89 first-cell row-major pick contract; verify-the-regression cycle confirmed (17 failures when _init_cache stashed). PIXLAB silhouette generator switched D-101 option A → option B (solid 32×32) per anticipated PATTERNS.md fallback after comprehensive_bitmask_test exposed single-grid solidity violation; bitmask_bounds_test PIXLAB callers reuse _solid_silhouette. Matrix combos grew 108 → 144. Full 16-test suite green.
 - Phase 3.5 Plan 05 complete: pixellab_visual_regression_test ships against real PixelLab AI samples (128x128, 8x8 atlas at 16px tiles) copied byte-identical from spike 003. Composed-canvas + bit-stability invariants per D-102 case 3. PackedByteArray.hash() does not exist in Godot 4.6 — replaced with direct PackedByteArray equality (Rule 1 auto-fix). Verify-the-regression cycle confirmed via visual diff (saved canvas PNG diff between working state and stashed mask_to_atlas → (0,0)). Full 17-test suite green. PIXLAB-04 closed.
+- 2026-04-29 (Phase 3.5 closed): **PixelLab Layouts shipped (PIXLAB-01..04 Complete; VAR-PIXEL-01 stays deferred per D-91).** PentaTileLayoutPixelLabTopDown + PentaTileLayoutPixelLabSideScroller ship as twin single-grid 4-bit corner-mask subclasses (D-93/D-96) with cached first-cell row-major dispatch (D-89/D-97). Cell-to-role tables come verbatim from spike 003's transcription of tileset_transform.lua:17-26 (top-down) and :28-36 (side-scroller); role-to-mask bijection [4, 10, 13, 12, 9, 14, 15, 7, 2, 3, 11, 5, 0, 8, 6, 1] is shared and duplicated per-subclass per D-98 (GDScript 2 cross-class const limitation). D-104 mask=0 dispatch: top-down → role 12 → cell (2, 2); side-scroller → role 12 → cell (0, 0). 2 new bundled greybox PNGs (256x256, 8x8 atlas) generated by 2 new functions in _generate_bitmasks.py (gen_pixel_lab_top_down + gen_pixel_lab_side_scroller; print count 15 → 17). 2 new tests added: pixellab_first_cell_test (D-89 cache contract, 32 assertions = 16 masks × 2 layouts) + pixellab_visual_regression_test (composed-canvas + bit-stable rebuild against real spike-003 PixelLab samples checked into addons/penta_tile/tests/). comprehensive_bitmask_test matrix grew 6×18=108 → 8×18=144 combos; bitmask_bounds_test extended with PIXLAB top-down + side-scroller silhouette helpers (D-101 option B solid 32×32 fallback after option A failed single-grid solidity assertion); run_tests.ps1 inventory grew 15 → 17 tests. Cumulative runtime LOC measured: 2663 (Phase 3 baseline ~2455 + ~208 cumulative since Phase 3 close, including ~207 LOC for 2 PIXLAB layouts at 105+102; methodology: `git ls-files 'addons/penta_tile/*.gd' 'addons/penta_tile/layouts/*.gd' | grep -v 'tests/' | grep -v 'demo/' | xargs wc -l`). Identity guardrail AT RISK carry-forward — formal gate is Phase 5 final audit. **VAR-PIXEL-01 deferral preserved**: bank-pick wiring stays in v2 backlog per D-91, mirroring Phase 3's TBT-01/TBT-02 deferral precedent. Phase title's "+ Variation-Seed Wiring" misnomer fixed in ROADMAP.md (retitled to "PixelLab Layouts (variation-bank pick deferred to v2 per D-91)"). No source code changes in Plan 06; planning-docs only.
 
 ### Pending Todos
 
@@ -197,13 +198,15 @@ Items acknowledged and carried forward as v2 requirements (see REQUIREMENTS.md v
 
 ## Session Continuity
 
-Last session: 2026-04-29T10:10:58.942Z
-Stopped at: Plan 03.5-05 complete
+Last session: 2026-04-29T10:13:51.000Z
+Stopped at: "Phase 3.5 closeout — Plan 06 complete; Phase 4 ready to plan"
 Resume file: None
 
 **Completed Phase:** 01 (Contract Skeleton + Penta Layouts) — 5/5 plans, 14/14 requirements, 26/26 automated tests PASS — 2026-04-26
 **Completed Phase:** 01.1 (PentaTile Rename + Penta Codename Establishment) — 3/3 plans, 0 formal REQ-IDs (rename phase), demo loads cleanly under new name, git remote tracks PentaTile origin — 2026-04-26
 **In-progress Phase:** 02 (Native Layouts + Architectural Simplification) — 7/7 plans executed + retroactive AUTO_STRIP dispatch wave (29cba37), 30/30 requirements satisfied programmatically, 3 code review passes clean (status: clean; 0 Critical / 0 Warning / 13 Info), 4 determinism sub-tests pass (BASELINE_HASH=2986698704, BASELINE_CELLS=46), VERTICAL regression net active, paint_test ALL PASS across 6 single-strip modes + 4 AUTO_STRIP cases + abstract guard. **Outstanding gates:** (1) human visual UAT — 2 items still pending in `02-HUMAN-UAT.md` (DualGrid16/Wang2*/Min3x3 visual correctness, Min3x3 collapse) + 1 partial (Penta multi-mode visual seam-check; programmatic dispatch ✓), (2) LOC overage decision — 1827 runtime LOC vs ~1500 trigger (informational at Phase 2; formal gate is Phase 5 final audit). AUTO/AUTO_STRIP detection UAT (test 4) now ✓ pass programmatically. ROADMAP Phase 2 entry intentionally `[ ]` until both gates resolved.
-**Next Phase:** 03 (TileBitTools-Sourced Layouts) — Blob47Godot, TilesetterWang15, TilesetterBlob47 + ATTRIBUTION.md (chains automatically once Phase 2 approved in --auto mode)
+**Next Phase:** 04 (Fallback Routing) — wires PentaTileMapLayer to use layout.get_fallback_tile_set() when tile_set == null; visual regression across all 10 layouts (5 Phase 2 + 1 Phase 3 + 2 Phase 3.5 = 8 actually-shipped; 2 Phase 3 Tilesetter pair deferred per D-86 b)
 
 **Planned Phase:** 3.5 (PixelLab Layouts + Variation-Seed Wiring) — 6 plans — 2026-04-29T09:32:12.962Z
+
+**Completed Phase:** 03.5 (PixelLab Layouts) — 6/6 plans, 4/4 in-scope requirements (PIXLAB-01..04), 17 automated tests green, VAR-PIXEL-01 stays in v2 backlog per D-91 — 2026-04-29
