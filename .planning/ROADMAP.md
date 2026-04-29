@@ -26,7 +26,7 @@ The original v0.2 feature pillars (Y-axis variation, top tiles, non-rotating til
 - [x] **Phase 3: Public-Convention Layouts (Blob47 only; Tilesetter deferred to v0.3+ per D-86 b)** — Shipped `PentaTileLayoutBlob47Godot` (BorisTheBrave 7×7 + algorithmic 256→47 collapse rule + 47-entry dispatch dict), 8-Moore single-grid propagation patch, TBT design-inspiration audit (`03-TBT-DEEP-AUDIT.md`), README "External Resources" footnote acknowledging TileBitTools (NO `addons/penta_tile/ATTRIBUTION.md` per D-73), and the closeout matrix-test extension. **Plan 05 SKIPPED** per D-86 user decision (option b — Tilesetter primary source not located in plan-phase research; deferred to v0.3+). TBT-01 / TBT-02 / Tilesetter half of TEMPLATE-02 carry forward as `TBT-01-DEFERRED` / `TBT-02-DEFERRED` / `TEMPLATE-02-DEFERRED` in REQUIREMENTS.md v2 backlog.
 - [x] **Phase 3.5: PixelLab Layouts (variation-bank pick deferred to v2 per D-91)** — Shipped `PentaTileLayoutPixelLabTopDown` and `PentaTileLayoutPixelLabSideScroller` (8×8 atlas, single-grid, 4-bit corner mask). Both share the locked role-to-mask bijection from spike 003 and dispatch via cached `_first_cell_by_mask` (first-cell row-major pick per D-89). The "+ Variation-Seed Wiring" suffix from the original phase title was a v0.2 misnomer — `variation_seed` property NOT exposed; bank-pick wiring deferred to v2 backlog as VAR-PIXEL-01 (design-coupled with VAR-01 + MULTITERR-01). Min3x3 already shipped in Phase 2 — no Phase 3.5 work needed. (Closed 2026-04-29.)
 - [x] **Phase 4: Fallback Routing + Doc Sweep + Cross-AI Review** — Three braided deliverables before v0.2.0 closes. (1) **Routing close-out:** PREVIEW-03/04 verified across all 8 actually-shipped layouts via composed-canvas test (`fallback_routing_test.gd`) + manual demo eyeball pass per D-04-06 belt+suspenders. (2) **Doc-comment sweep** of all 12 addon scripts per [Godot's official format](https://docs.godotengine.org/en/stable/tutorials/scripting/gdscript/gdscript_documentation_comments.html) — class-level + every public method + every `@export` property; `@experimental` on `PentaTileLayout` abstract base. (3) **Two-pass cross-AI review with fixes:** Gemini → fix → Codex → fix; severity-tiered fix policy (Critical/High auto, Medium gated, Low/Info logged); standard disqualification list rejected compat-shim / forward-compat / Phase 5 / v0.3+/v2 / ATTRIBUTION.md / Coined-Term / locked-decision findings. Gemini pass returned `status: clean` (0 findings). Codex pass DEFERRED at closeout due to a hard external CLI quota wall (RESEARCH § 8 Pitfall #14; user elected to skip and continue per `AskUserQuestion`); prompt preserved at `04-CODEX-PROMPT.md` for re-use when quota resets. Phase ships with single-pass cross-AI coverage. All 4 closeout artifacts committed (`04-FALLBACK-UAT.md` + `04-DOC-SWEEP.md` + `04-GEMINI-REVIEW-FIX.md` + `04-CODEX-REVIEW-FIX.md`); 18 automated tests green. Closed 2026-04-29.
-- [ ] **Phase 5: Demo Refresh + Documentation + Release** — One updated demo scene showcasing all 10 layouts (5 Phase 2 + 3 Phase 3 + 2 Phase 3.5), README sections (Layouts / Upgrading / Authoring a Custom Layout), CHANGELOG, plugin.cfg bump, GitHub Release zip with `v0.2.0` tag.
+- [ ] **Phase 5: Demo Refresh + Documentation + Release** — One updated demo scene showcasing all 8 actually-shipped layouts (5 Phase 2 + 1 Phase 3 + 2 Phase 3.5; Tilesetter pair stays deferred to v0.3+ per D-86 b), README sections (Layouts / Upgrading / Authoring a Custom Layout), CHANGELOG, plugin.cfg bump, GitHub Release zip with `v0.2.0` tag.
 
 ## Phase Details
 
@@ -198,20 +198,20 @@ Plans:
 
 ### Phase 5: Demo Refresh + Documentation + Release
 
-**Goal**: One updated demo scene showcasing all 10 built-in layouts (5 Phase 2 + 3 Phase 3 + 2 Phase 3.5), README sections documenting the library, CHANGELOG, and a tagged GitHub release.
+**Goal**: One updated demo scene showcasing all 8 actually-shipped layouts (5 Phase 2 + 1 Phase 3 + 2 Phase 3.5; Tilesetter pair stays deferred to v0.3+ per D-86 b), README sections documenting the library, CHANGELOG, and a tagged GitHub release.
 
 **Depends on**: Phase 1, Phase 2, Phase 3, Phase 4 (consuming phase — uses every output of the prior phases).
 
 **Requirements**: DEMO-01, DEMO-02, DEMO-03, DOC-01, DOC-02, DOC-03, DOC-04, REL-01, REL-02, REL-03.
 
 **Success Criteria** (what must be TRUE):
-1. The updated `penta_tile_demo.tscn` showcases all 10 layouts (5 Phase 2 + 3 Phase 3 + 2 Phase 3.5) — either via runtime layout switching (UI to swap the `layout` property) or side-by-side `PentaTileMapLayer` instances arranged spatially. A casual playtester can see each layout in action.
+1. The updated `penta_tile_demo.tscn` showcases all 8 actually-shipped layouts (5 Phase 2 + 1 Phase 3 + 2 Phase 3.5) — either via runtime layout switching (UI to swap the `layout` property) or side-by-side `PentaTileMapLayer` instances arranged spatially. A casual playtester can see each layout in action.
 2. The demo references the bundled fallback TileSets (via `get_fallback_tile_set()` codegen) so it works out of the box without any authored tilesets (proves the prototyping UX).
 3. Runtime drag-paint (existing `demo_runtime_painter.gd`) continues to work across all layouts in the updated demo without script changes beyond layout-switching glue.
-4. README has a "Layouts" section listing all 10 built-in layouts (5 Phase 2 + 3 Phase 3 + 2 Phase 3.5) with names, descriptions, atlas grids, tile counts, and which conventions they target. Plus "Upgrading from 0.1.x" and "Authoring a Custom Layout" (experimental).
+4. README has a "Layouts" section listing all 8 actually-shipped layouts (5 Phase 2 + 1 Phase 3 + 2 Phase 3.5) with names, descriptions, atlas grids, tile counts, and which conventions they target. Plus "Upgrading from 0.1.x" and "Authoring a Custom Layout" (experimental).
 5. `plugin.cfg` `version` field reads `0.2.0` exactly (no `-pre` / `-alpha` / `-dev` suffix). `CHANGELOG.md` has a v0.2.0 entry naming all breaking changes (`PentaTileAtlasContract` deletion, `template_image` → `bitmask_template` rename, `fallback_tile_set` @export removal, separate Penta H/V class merge, overlay-layer deletion, etc.).
-6. Downloading the v0.2.0 GitHub Release zip and extracting to a fresh Godot 4.6 project produces a working demo with no errors on first run; ATTRIBUTION.md is present at the addon root.
-7. Final LOC audit confirms `addons/penta_tile/` total surface area stays under TileMapDual's equivalent — the result included in the release notes.
+6. Downloading the v0.2.0 GitHub Release zip and extracting to a fresh Godot 4.6 project produces a working demo with no errors on first run.
+7. Final identity audit reports three axes (LOC, public surface, hot-path depth) plus an anti-pattern register check against TileMapDual v5.0.2. LOC is reported as signal, not a fail criterion (D-05-11). Audit summary lives in README § Identity & Footprint; full working artifact at `.planning/phases/05-demo-refresh-documentation-release/05-LOC-AUDIT.md`.
 
 **Plans**: 5 plans
 
@@ -265,7 +265,7 @@ All 58 v1 requirements mapped to exactly one phase. No orphans, no duplicates.
 
 ## Identity Guardrails
 
-The PROJECT.md identity constraint — "PentaTile must remain visibly smaller and simpler than TileMapDual" — is checked at four points across the roadmap:
+The PROJECT.md identity constraint — hot-path minimalism + anti-pattern absence (per D-05-11 reframe) — is checked at four points across the roadmap:
 
 - **End of Phase 1:** LOC checkpoint after the contract surface lands. The base class + AtlasSlot + PentaHorizontal/Vertical + integration in PentaTileMapLayer is the largest schema addition; if Phase 1 already pushes the budget, downstream phases have less room.
 - **End of Phase 3:** LOC checkpoint after the standard 8 blob/wang/penta layouts ship. Each layout is roughly 40–80 LOC; the cumulative footprint should still stay well under TileMapDual.
@@ -300,7 +300,7 @@ Architectural anti-patterns explicitly NOT introduced (per `.planning/research/l
 - Null-layout fallback path stays unchanged (already works).
 - Pitfall §7 (`visible = false` cleanup leak) stays mitigated.
 - No regression to runtime (in-game) rendering behavior.
-- LOC checkpoint: this phase must not break the identity guardrail ("visibly smaller and simpler than TileMapDual").
+- LOC checkpoint: this phase must not break the identity guardrail (hot-path minimalism + anti-pattern absence per D-05-11; LOC reported as signal, not verdict).
 
 **Plans:** 0 plans
 

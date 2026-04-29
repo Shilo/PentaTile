@@ -79,7 +79,7 @@ The active config is in `.planning/config.json`: interactive mode, standard gran
 
 ## Identity Guardrails
 
-The PROJECT.md identity constraint is **"PentaTile must remain visibly smaller and simpler than TileMapDual."** When making implementation decisions, reject:
+The PROJECT.md identity constraint is **hot-path minimalism + anti-pattern absence** (per D-05-11). PentaTile prioritizes a short runtime path and avoidance of TileMapDual-territory anti-patterns; LOC is reported as signal, not a fail criterion. When making implementation decisions, reject:
 
 - Terrain peering metadata or terrain rule tries (TileMapDual / Better Terrain territory)
 - Multi-terrain transitions (deferred to a future milestone)
