@@ -165,16 +165,6 @@ func _test_two_terrain_index() -> void:
 
 	var layer := _LayerScript.new()
 	layer.tile_set = ts
-	# Debug: verify tile data
-	for si in range(ts.get_source_count()):
-		var sid := ts.get_source_id(si)
-		var src := ts.get_source(sid) as TileSetAtlasSource
-		print("  source[%d] id=%d tiles=%d" % [si, sid, src.get_tiles_count() if src else 0])
-		if src and src.get_tiles_count() > 0:
-			var c0 := src.get_tile_id(0)
-			var td := src.get_tile_data(c0, 0)
-			print("    tile at ", c0, " terrain=", td.terrain if td else "null")
-
 	var group := _group_with_layouts(2)
 	layer.terrain_group = group
 	get_root().add_child(layer)
