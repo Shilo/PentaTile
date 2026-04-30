@@ -19,3 +19,10 @@ extends Resource
 ## Alt-tile id in the source's alternative grid. MUST be < 4096; the upper bits
 ## are reserved for [member transform_flags] per [b]Critical Pitfall #1[/b].
 @export var alternative_tile: int = 0
+
+## Optional override for which [Class TileSetAtlasSource] this slot's tile
+## lives in. When >= 0, [method PentaTileMapLayer._paint_via_layout] routes
+## to this source instead of the global default. When -1 (default), the
+## global source is used. Enables terrain tiles from separate atlas sources
+## within one [Class TileSet].
+@export var source_id: int = -1
