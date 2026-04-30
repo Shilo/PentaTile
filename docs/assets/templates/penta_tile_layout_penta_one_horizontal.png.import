@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://briuxshmssl3y"
-path="res://.godot/imported/penta_tile_icon.png-309c615d3959e741210436f2f47600ad.ctex"
+uid="uid://4766vjoem3qx"
+path="res://.godot/imported/penta_tile_layout_penta_one_horizontal.png-fe961a11fe79637bb7b9441ae1268a1f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://brand/penta_tile_icon.png"
-dest_files=["res://.godot/imported/penta_tile_icon.png-309c615d3959e741210436f2f47600ad.ctex"]
+source_file="res://docs/assets/templates/penta_tile_layout_penta_one_horizontal.png"
+dest_files=["res://.godot/imported/penta_tile_layout_penta_one_horizontal.png-fe961a11fe79637bb7b9441ae1268a1f.ctex"]
 
 [params]
 
