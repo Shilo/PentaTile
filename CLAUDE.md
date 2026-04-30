@@ -2,7 +2,7 @@
 
 ## Project
 
-PentaTile is a lightweight dual-grid autotiling addon for **Godot 4.6** built around a single public node, `PentaTileMapLayer`, that subclasses `TileMapLayer`. Users paint with the native `set_cell()` / `erase_cell()` API and the addon generates dual-grid visuals automatically through `_update_cells()`.
+PentaTile is a dual-grid autotiling addon for **Godot 4.6** built around a single public node, `PentaTileMapLayer`, that subclasses `TileMapLayer`. Users paint with the native `set_cell()` / `erase_cell()` API and the addon generates dual-grid visuals automatically through `_update_cells()`.
 
 The current codebase is v0.1.0 (4-tile binary atlas: Fill, Inner Corner, Border, Outer Corner). The active milestone is **v0.2.0 — "Layout Library + Preview Fallback"** which ships a library of pluggable `PentaTileLayout` Resources covering every popular Godot autotiling atlas convention (Penta, DualGrid16, Wang2Edge, Wang2Corner, Min3x3, TBT-decoded Blob/Wang, PixelLab, plus a Single-Tile prototyping layout). The original v0.2 pillars (Y-axis variation, top tiles, non-rotating tilesets) deferred to v2 backlog. See `.planning/ROADMAP.md` for current phases.
 
@@ -81,16 +81,14 @@ The active config is in `.planning/config.json`: interactive mode, standard gran
 
 ## Identity Guardrails
 
-The PROJECT.md identity constraint is **hot-path minimalism + anti-pattern absence** (per D-05-11). PentaTile prioritizes a short runtime path and avoidance of TileMapDual-territory anti-patterns; LOC is reported as signal, not a fail criterion. When making implementation decisions, reject:
+The PROJECT.md identity constraint is **"PentaTile prioritizes quality over raw size."** When making implementation decisions, reject:
 
-- Terrain peering metadata or terrain rule tries (TileMapDual / Better Terrain territory)
-- Multi-terrain transitions (deferred to a future milestone)
 - Watcher / signal-fanout systems (TileMapDual's leaks/crashes are cited evidence)
 - Persistent coordinate caches (demo-scale doesn't need them)
 - Custom drawing API parallel to `set_cell()` (defeats the v0.1 native-API win)
 - `EditorInspectorPlugin` polish (typed `@export` + `@export_group` is enough)
 
-LOC checkpoints fire at end of Phase 1, end of Phase 4, and end of Phase 5 (final audit vs. TileMapDual's surface area).
+LOC and surface-area metrics are tracked as data points, not as decision gates. The correct tile on screen matters more than the fewest lines of code.
 
 ## Quality Bar
 
@@ -174,4 +172,4 @@ Canonical "What is a Penta tileset?" definition lives in `README.md`.
 
 ## Next Step
 
-Run `/gsd-progress` to see current position. Phase 2 is code-complete (7/7 plans, 3 review passes clean) and awaiting visual UAT — see `.planning/phases/02-native-layouts/02-HUMAN-UAT.md`.
+Run `/gsd-progress` to see current position. v0.2.0 shipped; v0.3 development active — terrain/variation spike complete (Phase 9), multi-terrain implementation in discuss (Phase 10).

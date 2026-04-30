@@ -273,17 +273,17 @@ All 58 v1 requirements mapped to exactly one phase. No orphans, no duplicates.
 
 ## Identity Guardrails
 
-The PROJECT.md identity constraint — hot-path minimalism + anti-pattern absence (per D-05-11 reframe) — is checked at four points across the roadmap:
+The PROJECT.md identity constraint — quality over raw size — is checked at four points across the roadmap:
 
-- **End of Phase 1:** LOC checkpoint after the contract surface lands. The base class + AtlasSlot + PentaHorizontal/Vertical + integration in PentaTileMapLayer is the largest schema addition; if Phase 1 already pushes the budget, downstream phases have less room.
-- **End of Phase 3:** LOC checkpoint after the standard 8 blob/wang/penta layouts ship. Each layout is roughly 40–80 LOC; the cumulative footprint should still stay well under TileMapDual.
-- **End of Phase 3.5:** LOC contribution from the two PixelLab layouts plus the `variation_seed` deterministic-hash wiring (~80–120 LOC total for both layouts + variation pick). Re-check the cumulative footprint after the 11-layout milestone closes.
+- **End of Phase 1:** LOC checkpoint after the contract surface lands. The base class + AtlasSlot + PentaHorizontal/Vertical + integration in PentaTileMapLayer is the largest schema addition; LOC is tracked as a data point.
+- **End of Phase 3:** LOC checkpoint after the standard 8 blob/wang/penta layouts ship. LOC is tracked as a data point.
+- **End of Phase 3.5:** LOC contribution from the two PixelLab layouts plus the `variation_seed` deterministic-hash wiring (~80–120 LOC total for both layouts + variation pick).
 - **End of Phase 4:** Compare the runtime hot path (`_update_cells` → `layout.compute_mask` → `layout.mask_to_atlas` → `set_cell`) against v0.1's straight-line `match` to confirm no significant perf regression at demo scale.
-- **Phase 5 final audit:** Total `addons/penta_tile/` LOC compared against TileMapDual's equivalent surface; result included in the release notes.
+- **Phase 5 final audit:** Total `addons/penta_tile/` LOC measured; result included in the release notes as a data point.
 
 Per PROJECT.md, the quality bar is "works in my game" — visual regression on the demo is the primary verification mechanism, not a formal test suite. Demo-scale (~100–1k cells) is the only perf target; success criteria deliberately do NOT gate on perf.
 
-Architectural anti-patterns explicitly NOT introduced (per `.planning/research/layouts/MASK_UNIFICATION.md`, the TileBitTools audit, and the 2026-04-29 multi-terrain research): no `EditorInspectorPlugin` polish, no Godot terrain-solver delegation, no parallel painting API, no persistent coordinate cache, no watcher / signal-fanout systems, no unscoped multi-terrain transition solver, no quarter-tile compositor. Godot `TileData` terrain metadata may be read as input in a future focused MULTITERR phase.
+Architectural anti-patterns explicitly NOT introduced (per `.planning/research/layouts/MASK_UNIFICATION.md`, the TileBitTools audit, and the 2026-04-29 multi-terrain research): no `EditorInspectorPlugin` polish, no Godot terrain-solver delegation, no parallel painting API, no persistent coordinate cache, no watcher / signal-fanout systems, no quarter-tile compositor. Godot `TileData` terrain metadata may be read as input in a future focused MULTITERR phase.
 
 ### Phase 6: Editor Line/Rect/Bucket Tool Preview During Drag
 
@@ -308,7 +308,7 @@ Architectural anti-patterns explicitly NOT introduced (per `.planning/research/l
 - Null-layout fallback path stays unchanged (already works).
 - Pitfall §7 (`visible = false` cleanup leak) stays mitigated.
 - No regression to runtime (in-game) rendering behavior.
-- LOC checkpoint: this phase must not break the identity guardrail (hot-path minimalism + anti-pattern absence per D-05-11; LOC reported as signal, not verdict).
+- LOC checkpoint: LOC is reported as signal, not verdict.
 
 **Plans:** 0 plans
 
@@ -336,7 +336,7 @@ Plans:
 
 ### Phase 8: Research Triage + v0.3 Scope Selection
 
-**Goal:** Turn the supplied competitive-autotiling research into a verified, identity-filtered v0.3 candidate set. This is a design/planning phase, not an implementation phase: challenge claims against primary sources and the live repo, accept only ideas that fit PentaTile's "small hot path + native `set_cell()`" identity, reject off-mission suggestions explicitly, then produce the next-milestone scope recommendation.
+**Goal:** Turn the supplied competitive-autotiling research into a verified, identity-filtered v0.3 candidate set. This is a design/planning phase, not an implementation phase: challenge claims against primary sources and the live repo, produce the next-milestone scope recommendation.
 
 **Requirements**: TRIAGE-01..06.
 

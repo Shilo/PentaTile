@@ -2,7 +2,7 @@
 
 ## What This Is
 
-PentaTile is a lightweight dual-grid autotiling addon for Godot 4.6 that exposes a single public node, `PentaTileMapLayer`, on top of the engine's native `TileMapLayer` API. It is built for game developers (initially the author's own projects) who want a small, lean autotiler they can drop into a Godot project and drive with the standard painting and runtime APIs.
+PentaTile is a dual-grid autotiling addon for Godot 4.6 that exposes a single public node, `PentaTileMapLayer`, on top of the engine's native `TileMapLayer` API. It is built for game developers (initially the author's own projects) who want a small, lean autotiler they can drop into a Godot project and drive with the standard painting and runtime APIs.
 
 ## Core Value
 
@@ -85,7 +85,7 @@ Painting tiles with the native `TileMapLayer` API produces correct dual-grid aut
 - v0.2 pivots from "expand the contract for variation/top/non-rotating" to "ship a library of pluggable layout Resources covering every popular Godot autotiling atlas convention." The user's pain point shifted: the strict 4-tile atlas isn't just visually limiting, it's incompatible with atlases authored anywhere else (Tilesetter, OpenGameArt 47-blob, Godot stock terrain templates, etc.). Solving the layout zoo solves the lock-in.
 - Layout-library research lives in `.planning/research/layouts/` — TAXONOMY (24 layouts catalogued), EDITORS (Tiled / LDtk / Tilesetter / Unity / RPG Maker conventions), GODOT_TERRAIN (the engine's stock terrain mechanics + why PentaTile bypasses them), MASK_UNIFICATION (architecture: polymorphic layout Resource), TILESETTER_AND_GODOT (live-doc audit), TILEBITTOOLS (TBT addon audit + slot tables we transcribe), COMPARISON (the artist-facing side-by-side reference).
 - TileBitTools (MIT, dandeliondino) already decoded the Tilesetter slot tables. PentaTile transcribes those with attribution rather than empirically fingerprinting, eliminating a research bottleneck.
-- The user is comparing PentaTile against TileMapDual; PentaTile's selling point has been minimalism and the 4-tile contract. The layout library expands surface area to one base class + 10 subclasses (5 Phase 2 + 3 Phase 3 + 2 Phase 3.5). Original LOC estimate was ~520 total; actual runtime LOC at Phase 2 close is 1827 — above the ~1500 informational trigger. Hard gate is end of Phase 4; final audit at Phase 5 decides whether a focused trim pass is needed before v0.2.0 ships, vs accepting the LOC growth with a "still simpler than TileMapDual" rationale (see `.planning/phases/02-native-layouts/02-07-LOC-CHECKPOINT.md`).
+- The layout library expanded surface area to one base class + 10 subclasses (5 Phase 2 + 3 Phase 3 + 2 Phase 3.5). Original LOC estimate was ~520 total; actual runtime LOC at Phase 2 close is 1827. LOC is tracked as a data point, not a decision gate — visual quality is the priority.
 - Variation, top tiles, and non-rotating tilesets pushed to future milestones. Non-rotating is largely *delivered* by the new DualGrid16 / Wang2Corner / Wang2Edge layouts since those are explicitly per-direction-authored. Variation and top tiles need their own discussion against the new layout shape.
 
 ## Constraints
@@ -95,7 +95,7 @@ Painting tiles with the native `TileMapLayer` API produces correct dual-grid aut
 - **Distribution**: GitHub releases with plain semver tags (no `-pre`, `-alpha`, `-dev` suffixes). No Asset Library submission this milestone.
 - **Audience**: The author's own games. No public-API SLA. **Breaking changes are always allowed and explicitly encouraged when they enable improvements; never write backwards-compatibility shims, never defer features because they would break v0.1. Equally: never speculate about forward-compat — no `version: int` fields, schema markers, or speculative extension points "in case a future feature needs them."** Migration notes go in CHANGELOG and release notes; that's the only "compat" work in either direction.
 - **Performance**: Demo-scale target (~100–1k cells). Interactive painting and runtime drag-paint must remain fluid; large-map perf is not a milestone gate.
-- **Identity**: PentaTile prioritizes hot-path minimalism and anti-pattern absence over raw LOC delta vs TileMapDual. The runtime path stays short (`_update_cells → compute_mask → mask_to_atlas → set_cell`), and the addon does not adopt tile caches, watcher / signal-fanout systems, persistent coordinate caches, parallel paint APIs, or `EditorInspectorPlugin` polish. Terrain support, if pursued, reads Godot `TileData` terrain metadata as input while PentaTile remains the solver; it does not delegate generated visuals to Godot's terrain painter. LOC is reported as data, not a verdict (D-05-11).
+- **Identity**: PentaTile prioritizes quality over raw LOC. The addon does not adopt tile caches, watcher / signal-fanout systems, persistent coordinate caches, parallel paint APIs, or `EditorInspectorPlugin` polish. Terrain support, if pursued, reads Godot `TileData` terrain metadata as input while PentaTile remains the solver; it does not delegate generated visuals to Godot's terrain painter. LOC is reported as data, not a verdict.
 
 ## Key Decisions
 

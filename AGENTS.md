@@ -81,16 +81,14 @@ The active config is in `.planning/config.json`: interactive mode, standard gran
 
 ## Identity Guardrails
 
-The PROJECT.md identity constraint is **"PentaTile must remain visibly smaller and simpler than TileMapDual."** When making implementation decisions, reject:
+The PROJECT.md identity constraint is **"PentaTile prioritizes quality over raw size."** When making implementation decisions, reject:
 
-- Terrain peering metadata or terrain rule tries (TileMapDual / Better Terrain territory)
-- Multi-terrain transitions (deferred to a future milestone)
 - Watcher / signal-fanout systems (TileMapDual's leaks/crashes are cited evidence)
 - Persistent coordinate caches (demo-scale doesn't need them)
 - Custom drawing API parallel to `set_cell()` (defeats the v0.1 native-API win)
 - `EditorInspectorPlugin` polish (typed `@export` + `@export_group` is enough)
 
-LOC checkpoints fire at end of Phase 1, end of Phase 4, and end of Phase 5 (final audit vs. TileMapDual's surface area).
+LOC and surface-area metrics are tracked as data points, not as decision gates. The correct tile on screen matters more than the fewest lines of code.
 
 ## Quality Bar
 
