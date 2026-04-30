@@ -31,25 +31,33 @@ Implement terrain dispatch via `PentaTileTerrainGroup` Resource (Phase 9 archite
 
 ### compute_mask() Signature Extension
 - **D-09:** Add default `strip_index: int = 0` parameter to `compute_mask()` on `PentaTileLayout` base class and all 8 subclass overrides. Existing callers without strip_index continue working via default value.
-- **D-10:** Cross-terrain mask filtering: each terrain only sees same-terrain cells as "filled". A Wall cell next to a Floor cell sees the Floor as "empty" — the Wall renders its own edge tiles at the boundary. Both sides produce clean boundaries.
+- **D-10:** Single-grid cross-terrain mask filtering: each terrain only sees same-terrain cells as "filled". A Wall cell next to a Floor cell sees the Floor as "empty" — the Wall renders its own edge tiles at the boundary. Both sides produce clean boundaries. Dual-grid dispatch (D-11) handles boundary separation via per-corner layering instead of mask filtering.
 
 ### Dual-Grid Terrain Boundary Dispatch
 - **D-11:** Per-corner layered dispatch: each dual-grid display cell gets painted up to 4 times — once per terrain present in the 4 neighboring logic cells (TL/TR/BL/BR). The TL corner dispatches through the TL logic cell's terrain layout, TR through TR cell's terrain, etc.
-- **D-12:** Higher-precedence terrains paint on top. Terrain precedence is defined per `PentaTileTerrainGroup` (e.g., `terrain_precedence: Array[int]` where index = terrain_id, value = precedence weight). Higher value = paints later (on top).
-- **D-13:** Heavily document per-corner dispatch in code AND add a `.planning/phases/10-multi-terrain-variation-implementation/10-DUAL-GRID-FALLBACK.md` document describing the highest-precedence-terrain fallback approach in case per-corner layered dispatch needs simplification in practice.
+- **D-12:** Terrain precedence determined by `terrain_precedence: Array[int]` on `PentaTileTerrainGroup` where index = terrain_id, value = precedence weight. Higher value = paints later (on top). Separate from the layouts array ordering — paint order and terrain index are independent concerns. Higher-precedence terrain tiles overlay lower-precedence tiles at boundaries.
+- **D-13:** Per-corner layered dispatch is the committed implementation. A standalone fallback reference doc for highest-precedence-terrain simplification exists outside the phase plan artifacts.
+
+### PentaTileAtlasSlot source_id Field
+- **D-14:** Add `source_id: int = -1` field to `PentaTileAtlasSlot`. When `source_id >= 0`, `_paint_via_layout()` routes to that source instead of the global `_resolve_source_id()`. When `-1` (default), uses the global source. Enables terrain tiles from separate TileSetAtlasSource instances within one TileSet.
+
+### terrain_mode() Virtual
+- **D-15:** Add `terrain_mode() -> int` virtual to `PentaTileLayout` base class. Returns which Godot `TileSet.TerrainMode` each layout's mask system corresponds to (MATCH_SIDES, MATCH_CORNERS, or MATCH_CORNERS_AND_SIDES). Base returns -1 (unset). Used by the terrain index builder for peering-bits-to-mask conversion during candidate tile discovery. Override per subclass: DualGrid16/Penta → MATCH_CORNERS, Wang2Edge/Min3x3 → MATCH_SIDES, Wang2Corner/PixelLab → MATCH_CORNERS, Blob47Godot → MATCH_CORNERS_AND_SIDES.
 
 ### Testing
-- **D-14:** All testing must be automated. Zero manual UAT for this phase. Use composed-canvas tests (per established Phase 2 UAT methodology in CLAUDE.md § Test Methodology). Test coverage must include: terrain index correctness, boundary detection, mask dispatch per terrain, multi-terrain hollow/edge patterns, variation determinism, slope tile rendering, and the full 8-layout × N-terrain matrix.
+- **D-16:** All testing must be automated. Zero manual UAT for this phase. Use composed-canvas tests (per established Phase 2 UAT methodology in CLAUDE.md § Test Methodology). Test coverage must include: terrain index correctness, boundary detection, mask dispatch per terrain, multi-terrain hollow/edge patterns, variation determinism, slope tile rendering, and the full 8-layout × N-terrain matrix.
 
 ### the agent's Discretion
 - Transition override table format (`Dictionary[Vector2i(terrain_a, terrain_b), Dictionary[int, AtlasSlot]]` or equivalent)
 - Slope subclass specifics (8-tile atlas, 4-bit corner mask, 3-state empty/floor/wall neighbor sampling)
 - Penta per-terrain synthesis details (how `PentaTileSynthesis.synthesize_strip()` is called per terrain)
 - Fallback tiling for `PentaTileTerrainGroup` when transition tiles are missing (`auto_fallback_transitions` default behavior)
-- Exact peering-bits-to-mask conversion indices (must verify against Godot 4.6 source at implementation time — Spike 007 identifies CellNeighbor enum indexing as the main implementation risk)
+- Variation candidate discovery: how the terrain index identifies which tiles share the same peering-bit/mask configuration for pooling. Options include (a) scan TileData peering bits at index-build time and group by signature, or (b) require artist to place variants in consecutive columns and define a `variation_columns: int` per layout. The plan must pick one and specify the data flow.
+- Exact peering-bits-to-mask conversion indices (must verify against Godot 4.6 source at implementation time)
 - Precedence tiebreaker logic (when multiple terrains have equal precedence values)
 - Exact `source_id` field placement on `PentaTileAtlasSlot` and routing through `_paint_via_layout()` to `visual_layer.set_cell()`
 - PentaTileLayoutSlope file path, class name, and `@icon` resource
+- `atlas_coords.y` terrain encoding: when terrain_group is null, Y retains its existing meaning (strip row, PixelLab row, etc.). Terrain-as-Y only activates when terrain_group is bound. Layouts where Y has existing meaning within a single terrain must use custom data layer for terrain identity.
 
 ### Folded Todos
 - **`compute_mask(strip_index)` signature extension** — Folded into D-09. Extends base `compute_mask(coord, sample_fn)` with `strip_index=0` default parameter to enable cross-terrain mask filtering.
@@ -96,7 +104,7 @@ Implement terrain dispatch via `PentaTileTerrainGroup` Resource (Phase 9 archite
 ### New Files (created in this phase)
 - `addons/penta_tile/layouts/penta_tile_terrain_group.gd` — PentaTileTerrainGroup Resource class (~60 LOC).
 - `addons/penta_tile/layouts/penta_tile_layout_slope.gd` — PentaTileLayoutSlope subclass (~120 LOC).
-- `.planning/phases/10-multi-terrain-variation-implementation/10-DUAL-GRID-FALLBACK.md` — Documented highest-precedence-terrain fallback approach per D-13.
+- `tests/` — Terrain + variation automated tests (composed-canvas, full layout × pattern matrix).
 
 ### Project Identity and Constraints
 - `.planning/PROJECT.md` § Identity Guardrails — No watcher/signal-fanout, no persistent coordinate cache, no EditorInspectorPlugin, no version fields, no forwards-compat hooks. Must comply.
@@ -131,7 +139,7 @@ Implement terrain dispatch via `PentaTileTerrainGroup` Resource (Phase 9 archite
 <specifics>
 ## Specific Ideas
 
-- Documentation requirements: per-corner dual-grid dispatch must be heavily documented in code. A `.planning/phases/10-multi-terrain-variation-implementation/10-DUAL-GRID-FALLBACK.md` document must describe the highest-precedence-terrain fallback approach in case per-corner layered dispatch needs simplification in practice.
+- Documentation requirements: per-corner dual-grid dispatch must be heavily documented in code. 
 - All testing must be automated. Zero manual UAT for this phase. Tests must cover the full layout × terrain × pattern matrix.
 - Terrain encoding uses both mechanisms (atlas_coords.y + custom data) so that both paint-time encoding AND per-cell overrides are possible without API changes.
 - Variation picks must be deterministic per (coord, terrain_id, seed) — same input always produces same output across rebuilds.
@@ -144,7 +152,7 @@ Implement terrain dispatch via `PentaTileTerrainGroup` Resource (Phase 9 archite
 
 - GDScript port of spike 001-003 mask decoder (v0.4 tooling) — reviewed, out of scope for Phase 10.
 - RPG Maker quarter-tile composition (RPGM-01/02) — reserved for v0.3+.
-- Per-cell per-neighbor terrain weights (TileMapDual/BetterTerrain territory) — explicitly rejected; conflicts with identity guardrail.
+- BetterTerrain-style per-cell scoring loops — unnecessary complexity for v0.3.
 - TileBitTools Tilesetter layouts (TBT-01-DEFERRED, TBT-02-DEFERRED) — await v0.3+ planning.
 - Top-tile explicit per-mask layout data (TOP-01) — v2 backlog.
 - Multi-terrain outer transition tile support (TERRAIN-01) — distinct R&D track, not Phase 10.
