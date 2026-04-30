@@ -10,6 +10,10 @@
 ##   - .planning/research/layouts/TEMPLATE_CONVENTIONS.md §5 (dual-grid declaration)
 ##   - .planning/research/PITFALLS.md §3 (_pack_alternative recipe)
 ##
+## @experimental
+class_name PentaTileLayout
+extends Resource
+
 ## How variation tiles are selected for this layout.
 ## SINGLE: One tile per mask (current v0.2.0 behavior) — no variation.
 ## PROBABILITY: Weighted random from tiles sharing the same peering-bit config,
@@ -20,10 +24,6 @@ enum VariationMode {
 	PROBABILITY = 1,
 	STRIP = 2,
 }
-
-## @experimental
-class_name PentaTileLayout
-extends Resource
 
 ## Single PNG that serves as both the inspector preview and the source pixels
 ## for [method get_fallback_tile_set]. Renamed from Phase 1's
