@@ -28,10 +28,16 @@ func is_dual_grid() -> bool:
 	return false
 
 
+## Return the Godot [enum TileSet.TerrainMode] this layout's mask system
+## corresponds to. Wang2Edge uses 4-bit edge mask → MATCH_SIDES.
+func terrain_mode() -> int:
+	return TileSet.TERRAIN_MODE_MATCH_SIDES
+
+
 ## Compute the 4-bit cardinal-edge mask for [param coord] using N=1, E=2, S=4, W=8.
 ##
 ## [param sample_fn] reports which neighboring logic cells are painted.
-func compute_mask(coord: Vector2i, sample_fn: Callable) -> int:
+func compute_mask(coord: Vector2i, sample_fn: Callable, _strip_index: int = 0) -> int:
 	var mask := 0
 	if sample_fn.call(coord + _N): mask |= 1
 	if sample_fn.call(coord + _E): mask |= 2

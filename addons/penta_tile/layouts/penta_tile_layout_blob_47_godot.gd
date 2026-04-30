@@ -62,11 +62,17 @@ func is_dual_grid() -> bool:
 	return false
 
 
+## Return the Godot [enum TileSet.TerrainMode] this layout's mask system
+## corresponds to. Blob47Godot uses 8-bit Moore mask → MATCH_CORNERS_AND_SIDES.
+func terrain_mode() -> int:
+	return TileSet.TERRAIN_MODE_MATCH_CORNERS_AND_SIDES
+
+
 ## Compute the raw 8-bit Moore-neighborhood mask for [param coord].
 ##
 ## [param sample_fn] reports painted logic cells for N/E/S/W and diagonals; the
 ## raw mask is collapsed by [method _collapse_8bit_moore] before atlas dispatch.
-func compute_mask(coord: Vector2i, sample_fn: Callable) -> int:
+func compute_mask(coord: Vector2i, sample_fn: Callable, _strip_index: int = 0) -> int:
 	var mask := 0
 	if sample_fn.call(coord + _N):  mask |= 1
 	if sample_fn.call(coord + _E):  mask |= 2

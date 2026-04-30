@@ -83,10 +83,16 @@ func is_dual_grid() -> bool:
 	return false
 
 
+## Return the Godot [enum TileSet.TerrainMode] this layout's mask system
+## corresponds to. PixelLabTopDown uses 4-bit corner mask → MATCH_CORNERS.
+func terrain_mode() -> int:
+	return TileSet.TERRAIN_MODE_MATCH_CORNERS
+
+
 ## Compute the 4-bit corner mask for [param coord] using TL=1, TR=2, BL=4, BR=8.
 ##
 ## [param sample_fn] reports which neighboring logic cells are painted.
-func compute_mask(coord: Vector2i, sample_fn: Callable) -> int:
+func compute_mask(coord: Vector2i, sample_fn: Callable, _strip_index: int = 0) -> int:
 	var mask := 0
 	if sample_fn.call(coord + _TL): mask |= 1
 	if sample_fn.call(coord + _TR): mask |= 2

@@ -35,10 +35,16 @@ func is_dual_grid() -> bool:
 	return false
 
 
+## Return the Godot [enum TileSet.TerrainMode] this layout's mask system
+## corresponds to. Wang2Corner uses 4-bit corner mask → MATCH_CORNERS.
+func terrain_mode() -> int:
+	return TileSet.TERRAIN_MODE_MATCH_CORNERS
+
+
 ## Compute the 4-bit diagonal-corner mask for [param coord] using NE=1, SE=2, SW=4, NW=8.
 ##
 ## [param sample_fn] reports which diagonal logic cells are painted.
-func compute_mask(coord: Vector2i, sample_fn: Callable) -> int:
+func compute_mask(coord: Vector2i, sample_fn: Callable, _strip_index: int = 0) -> int:
 	var mask := 0
 	if sample_fn.call(coord + _NE): mask |= 1
 	if sample_fn.call(coord + _SE): mask |= 2

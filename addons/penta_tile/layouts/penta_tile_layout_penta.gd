@@ -140,6 +140,12 @@ func is_dual_grid() -> bool:
 	return true
 
 
+## Return the Godot [enum TileSet.TerrainMode] this layout's mask system
+## corresponds to. Penta uses 4-bit corner mask → MATCH_CORNERS.
+func terrain_mode() -> int:
+	return TileSet.TERRAIN_MODE_MATCH_CORNERS
+
+
 ## Penta requires runtime synthesis so ONE through FOUR authored modes still
 ## expose the full five-archetype dispatch table.
 func needs_synthesis() -> bool:
@@ -150,7 +156,7 @@ func needs_synthesis() -> bool:
 ##
 ## [param sample_fn] is the logic-cell presence query supplied by
 ## [PentaTileMapLayer].
-func compute_mask(coord: Vector2i, sample_fn: Callable) -> int:
+func compute_mask(coord: Vector2i, sample_fn: Callable, _strip_index: int = 0) -> int:
 	var mask := 0
 	if sample_fn.call(coord + _TL): mask |= 1
 	if sample_fn.call(coord + _TR): mask |= 2
