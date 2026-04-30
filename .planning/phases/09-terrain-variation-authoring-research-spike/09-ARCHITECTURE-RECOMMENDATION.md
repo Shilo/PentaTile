@@ -1,9 +1,10 @@
 # PentaTile Multi-Terrain & Variation Architecture Recommendation
 
-**Version:** 1.0
+**Version:** 1.1
 **Date:** 2026-04-30
 **Status:** Recommendation — implementation blocked pending user-side Godot terrain testing
 **Research basis:** `.planning/phases/09-terrain-variation-authoring-research-spike/09-RESEARCH-GODOT.md`, `09-RESEARCH-EXTERNAL.md`, Godot 4.6 terrain-sets PDF specification, `C:\Programming_Files\Godot\terrain_sets_docs.pdf`, VirtuMap `PentaTile_Integration_Research.md`
+**v1.1 changelog:** Cross-reference with terrain_sets_docs.pdf complete (see `09-PDF-REVIEW.md`). Fixed terrain index scan to iterate alternative tiles (GAP-01), added center bit enforcement (GAP-02), added Match Corners group-of-4 constraint note (GAP-03), clarified probability semantics as per-bitmask not per-terrain (GAP-04). No phase decisions changed.
 
 ---
 
@@ -77,9 +78,13 @@ Peering bits are set per-tile per-CellNeighbor direction (8 for MatchCornersAndS
 
 | Mode | Peering Bits | Required Tiles | Shapes Possible |
 |------|-------------|---------------|-----------------|
-| **Match Sides** | 4 (edges) | 16 | Straight lines, rectangles, turns (no diagonals) |
-| **Match Corners** | 4 (corners) | 16 | Large patches, caves (no 1-tile-wide lines) |
-| **Match Corners and Sides** | 8 (corners + edges) | 47 | All shapes except diagonal lines (most versatile) |
+| **Match Sides** | 4 (edges) | 16 | Straight lines, rectangles, turns. Cannot distinguish inside from outside corners. |
+| **Match Corners** | 4 (corners) | 16 | Large patches, caves. Must connect tiles in groups of 4 (single-tile-wide lines impossible). |
+| **Match Corners and Sides** | 8 (corners + edges) | 47 | All shapes except diagonal lines (most versatile). |
+
+**Match Corners constraint:** Godot requires tiles to connect in groups of 4 in this mode — no 1×1 or 1×N lines. Procedural generation must operate on ≥2×2 chunks. PentaTile reading terrain metadata can safely assume no isolated 1×1 cells exist in Match Corners data, reducing mask=0 special-case surface for Wang2Corner-style single-grid dispatch.
+
+**Match Sides inside/outside corner limitation:** Match Sides cannot distinguish inside from outside corners — the same bitmask produces identical tiles for concave and convex corners. Tilesets that need different artwork for inside vs outside corners require Match Corners and Sides mode. This means PentaTile's single-grid mask computation for Match Sides-mode tilesets doesn't need to track inside vs outside corner discrimination.
 
 ### 2.4 Multi-Terrain Transition Rules
 
@@ -232,27 +237,43 @@ func _build_terrain_index():
             var source := tile_set.get_source(source_id) as TileSetAtlasSource
             if not source: continue
             for coord in source.get_tiles_count():
-                var tile_data := source.get_tile_data(coord, 0)
-                var td_terrain := tile_data.terrain
-                
-                # Match: tile's native terrain OR tile's penta_terrain_id custom data
-                var penta_terrain := tile_data.get_custom_data("penta_terrain_id")
-                var resolved := -1
-                if typeof(penta_terrain) == TYPE_INT and penta_terrain >= 0:
-                    resolved = penta_terrain
-                elif td_terrain >= 0:
-                    resolved = td_terrain
-                else:
-                    resolved = 0  # default terrain
-                
-                if resolved == terrain_id:
-                    entry.tiles.append(coord)
+                var alt_count := source.get_alternative_tiles_count(coord)
+                # Scan base tile (alt=0) AND all alternative tiles (alt>=1)
+                # Godot allows alternatives to have completely different peering bit
+                # assignments from the base tile — they are the Godot 4 replacement
+                # for Godot 3.x "ignore bits."
+                for alt_id in range(alt_count):
+                    var tile_data := source.get_tile_data(coord, alt_id)
+                    var td_terrain := tile_data.terrain
+                    
+                    # Skip tiles without a center bit — Godot's docs warn: "If you
+                    # leave a tile's center bit empty, Godot will have to guess what
+                    # terrain the tile belongs to. This can lead to unexpected results."
+                    if td_terrain < 0:
+                        continue  # tile has no center bit — skip, don't silently assign
+                    
+                    # Match: tile's native terrain OR tile's penta_terrain_id custom data
+                    var penta_terrain := tile_data.get_custom_data("penta_terrain_id")
+                    var resolved := -1
+                    if typeof(penta_terrain) == TYPE_INT and penta_terrain >= 0:
+                        resolved = penta_terrain
+                    elif td_terrain >= 0:
+                        resolved = td_terrain
+                    else:
+                        resolved = 0  # default terrain
+                    
+                    if resolved == terrain_id:
+                        entry.tiles.append(coord)
         
         index[terrain_id] = entry
     _terrain_index = index
 ```
 
 **Key property:** The terrain index is **transient** — rebuilt on every `terrain_group` set, never persisted. No cache invalidation, no watchers, no signal fanout.
+
+**Alternative tile handling:** The scan iterates ALL alternative tiles (`source.get_alternative_tiles_count(coord)`), not just `alt_id=0`. This is critical because Godot allows each alternative tile to have completely different peering bit assignments from the base tile — the standard Godot 4 pattern for creating one tile with multiple bitmasks (replacing Godot 3.x "ignore bits").
+
+**Center bit enforcement:** Tiles with `terrain == -1` (no center bit) are excluded from the terrain index. Godot's documentation explicitly warns against leaving the center bit empty: "Godot will have to guess what terrain the tile belongs to. This can lead to unexpected results." Excluding them from the index prevents ambiguous tile classification.
 
 ### 4.5 Runtime Dispatch (Hot Path)
 
@@ -299,7 +320,7 @@ func _paint_via_layout(cell: Vector2i, display_cell: Vector2i):
 
 PentaTile already has deterministic variation via `rand_weighted()` with hash seeding. Multi-terrain extends this:
 
-1. **Per-terrain variation pools:** Each `TerrainEntry.tiles` contains all atlas coordinates belonging to that terrain. The variation picker can select from this pool rather than from a single mask→slot lookup.
+1. **Per-terrain variation pools:** Each `TerrainEntry.tiles` contains all atlas coordinates belonging to that terrain. At render time, tiles are further filtered by peering-bit configuration (same mask/template position). Variation selection operates among tiles that share the **same bitmask** (i.e., the same mask_to_atlas slot), matching Godot's own semantics: "Probability is only relevant when multiple tiles have the same bitmask." Tiles with different peering bit configurations are never in competition even if they share a terrain.
 
 2. **Variation mode flag on PentaTileLayout:**
 ```gdscript
@@ -307,7 +328,7 @@ PentaTile already has deterministic variation via `rand_weighted()` with hash se
 @export var variation_mode: VariationMode = VariationMode.SINGLE
 enum VariationMode {
     SINGLE,        # One tile per mask (current behavior) — no variation
-    PROBABILITY,   # Weighted random from all tiles matching this terrain (reads TileData.probability)
+    PROBABILITY,   # Weighted random from tiles sharing the SAME bitmask/peering-bit config (reads TileData.probability)
     STRIP,         # Pick randomly from a horizontal strip in the atlas (PixelLab-style)
 }
 ```
@@ -443,6 +464,8 @@ PixelLab layouts are single-grid 4-bit corner-mask layouts. Their 8×8 atlas alr
 - New method: `PentaTileMapLayer._build_terrain_index()`
 - Called from `set_terrain_group()` setter
 - Scans all TileSetAtlasSources for tiles matching each terrain ID
+- **Must iterate ALL alternative tiles** (`get_alternative_tiles_count()`), not just alt_id=0 — Godot alternative tiles can have independent peering bit assignments
+- **Must skip tiles without a center bit** (`terrain == -1`) — Godot docs warn center bit is mandatory
 - Stores transient `Dictionary[int, TerrainEntry]`
 - Edge case: TileSet changed externally → index rebuilt on next `_update_cells()` call (if `tile_set` was replaced)
 
@@ -543,6 +566,9 @@ The PDF `C:\Programming_Files\Godot\terrain_sets_docs.pdf` (42 pages) is the off
 6. **Alternative tiles can fill missing bitmasks** — one tile texture can have multiple alternative tiles, each with different peering bit assignments (like Godot 3.x "ignore bits").
 7. **Terrains in different sets cannot match** — cross-set transitions aren't supported.
 8. **Animation frames are per-terrain-tile** — terrain tiles can be animated, with frames sharing the same terrain bitmask.
+9. **Alternative tiles can have independent peering bit assignments** — one source tile can have multiple alternative tiles (alt_id > 0), each with completely different terrain/peering configurations. This is Godot 4's replacement for Godot 3.x "ignore bits" and means terrain indexes must scan ALL alternative tiles, not just alt_id=0.
+10. **Center bit is mandatory** — Godot docs warn: "If you leave a tile's center bit empty, Godot will have to guess what terrain the tile belongs to. This can lead to unexpected results." Tiles without a center bit (terrain == -1) should be excluded from terrain indexes.
+11. **Probability only matters when multiple tiles share the same bitmask** — it's not a per-terrain weight but a per-bitmask-configuration weight. Tiles with different peering bit assignments never compete for the same slot.
 
 These facts are fully accounted for in the proposed architecture. PentaTile reads the data model (tile properties) without depending on the editor-only solver.
 
