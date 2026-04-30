@@ -45,7 +45,19 @@ Implement terrain dispatch via `PentaTileTerrainGroup` Resource (Phase 9 archite
 - **D-15:** Add `terrain_mode() -> int` virtual to `PentaTileLayout` base class. Returns which Godot `TileSet.TerrainMode` each layout's mask system corresponds to (MATCH_SIDES, MATCH_CORNERS, or MATCH_CORNERS_AND_SIDES). Base returns -1 (unset). Used by the terrain index builder for peering-bits-to-mask conversion during candidate tile discovery. Override per subclass: DualGrid16/Penta → MATCH_CORNERS, Wang2Edge/Min3x3 → MATCH_SIDES, Wang2Corner/PixelLab → MATCH_CORNERS, Blob47Godot → MATCH_CORNERS_AND_SIDES.
 
 ### Testing
-- **D-16:** All testing must be automated. Zero manual UAT for this phase. Use composed-canvas tests (per established Phase 2 UAT methodology in CLAUDE.md § Test Methodology). Test coverage must include: terrain index correctness, boundary detection, mask dispatch per terrain, multi-terrain hollow/edge patterns, variation determinism, slope tile rendering, and the full 8-layout × N-terrain matrix.
+- **D-16:** All testing must be automated. Zero manual UAT for this phase. Tests are written alongside each sub-phase and must pass before moving to the next. Use composed-canvas tests (per established Phase 2 UAT methodology in CLAUDE.md § Test Methodology). Test coverage must cover every sub-phase deliverable:
+
+  **Sub-phase A (TerrainGroup):** PentaTileTerrainGroup resource serializes/deserializes correctly; null terrain_group preserves single-layout v0.2.0 behavior; terrain_group setter rebuilds index; assigning terrain_group triggers full rebuild with correct visuals.
+
+  **Sub-phase B (Terrain Index):** Index correctly maps terrain_id → (layout, tile_list); all alternative tiles scanned (not just alt_id=0); tiles without center bit excluded; multiple terrain IDs in one TileSet resolve to correct terrain entries; index rebuilt when terrain_group or tile_set changes; stale index edge case handled.
+
+  **Sub-phase C (Custom Data Layer + Passthrough):** `_resolve_terrain_id()` resolution order (custom data → TileData.terrain → default); atlas_coords.y terrain encoding dispatches to correct layout; `set_cell_passthrough()` cells skip solver and copy directly logic→visual; `penta_terrain_id` override overrides atlas_coords.y; source_id on AtlasSlot routes to correct source; source_id=-1 falls back to global source.
+
+  **Sub-phase D (Slope Layout):** PentaTileLayoutSlope dispatches 3-state (empty/floor/wall) masks; 8-tile atlas renders correct slope tiles for all 16 mask values; slope terrain integrates into terrain_group with standard terrain dispatch; slope boundary with non-slope terrain renders clean edges.
+
+  **Sub-phase E (Variation):** SINGLE mode produces one tile per mask (current behavior preserved); PROBABILITY mode pools candidates sharing same mask config and picks via weighted random; STRIP mode picks from horizontal strip; variation pick is deterministic per (coord, terrain_id, seed); variation produces no shimmer on rebuild; variation_mode enum serializes correctly.
+
+  **Sub-phase F (Fallback + Integration):** `get_fallback_tile_set()` extended for terrain_group (first layout's fallback); `compute_mask(strip_index)` signature works on all 8 subclasses + base; `terrain_mode()` returns correct Godot TerrainMode for each subclass; terrain_precedence ordering produces correct paint stacking; per-corner dual-grid dispatch renders correct tiles at terrain boundaries; full 8-layout × N-terrain × 13-pattern matrix (1×1, 1×2, 2×1, 2×2, 3×3, 5×5, line_h_5, line_v_5, L_shape, T_shape, plus_shape, hollow_ring, 3_isolated) per test methodology; reproducible rebuilds (same terrain_group assignment → same visual output).
 
 ### the agent's Discretion
 - Transition override table format (`Dictionary[Vector2i(terrain_a, terrain_b), Dictionary[int, AtlasSlot]]` or equivalent)
