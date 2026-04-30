@@ -1,0 +1,130 @@
+{
+  "spike": "004",
+  "gaps": {
+    "terrain_strip_dispatch": {
+      "description": "Multi-terrain strip dispatch via atlas_coords.y encoding",
+      "feasibility": "HIGH",
+      "complexity": 4,
+      "virtumap_must": true,
+      "penta_loc_delta": 60,
+      "breaking": false,
+      "blocks": [],
+      "blocked_by": [],
+      "verdict": "Extend existing AUTO_STRIP pattern. Add strip_index param to compute_mask().",
+      "detail": "PentaTileLayoutPenta already dispatches per-strip via AUTO_STRIP mode. The visual rendering is already per-strip. What's missing: conveying WHICH strip a logic cell belongs to. VirtuMap would encode terrain as atlas_coords.y (e.g., FLOOR=(0,0), WALL=(0,1), HULL=(0,2)). PentaTile reads this at compute time."
+    },
+    "slope_layout": {
+      "description": "PentaTileLayoutSlope subclass for 45-degree slopes",
+      "feasibility": "HIGH",
+      "complexity": 5,
+      "virtumap_must": true,
+      "penta_loc_delta": 120,
+      "breaking": false,
+      "blocks": [],
+      "blocked_by": [
+        "spike_005_findings"
+      ],
+      "verdict": "New single-grid layout subclass. Synthesize or author slope triangles.",
+      "detail": "Slopes are the only terrain type that requires a DIFFERENT layout than the surrounding terrain. A wall cell uses the WALL strip; a slope cell uses the SLOPE strip. The slope layout must handle 4-bit corner masks where one corner is 'slope-occupied' vs 'empty'. The existing single-grid pipeline handles this \u2014 slope just becomes another layout subclass in that pipeline."
+    },
+    "atlas_passthrough": {
+      "description": "Source-ID gating for fixture/overlay cells",
+      "feasibility": "HIGH",
+      "complexity": 3,
+      "virtumap_must": true,
+      "penta_loc_delta": 90,
+      "breaking": false,
+      "blocks": [],
+      "blocked_by": [],
+      "verdict": "Add _PentaTilePassthrough child layer. Gate on source_id in _update_cells.",
+      "detail": "The simplest solution: second visual child layer at Vector2.ZERO offset. _update_cells skips layout dispatch for cells whose source_id != layout_source. These cells paint directly to the passthrough layer at the display coord. This means virtumap fixture tiles render at their exact logic coordinates without dual-grid half-tile offsets."
+    },
+    "precedence_groups": {
+      "description": "Overlapping terrain rendering with priority ordering",
+      "feasibility": "MEDIUM",
+      "complexity": 7,
+      "virtumap_must": false,
+      "penta_loc_delta": 150,
+      "breaking": true,
+      "blocks": [],
+      "blocked_by": [
+        "terrain_strip_dispatch"
+      ],
+      "verdict": "v2 target. Multiple visual child layers per precedence tier.",
+      "detail": [
+        "When HULL (hull) overlaps WALL (wall) at the same cell, hull should render above wall. This requires multiple visual child layers with z-ordering. Each precedence group gets its own _PentaTileVisual_N child. At paint time, the cell's terrain group determines which child receives the tile. ",
+        "This is architecturally significant: the single-visual-layer assumption permeates _sync_visual_layers, _ensure_synthesized_tile_set, and the paint pipeline. v1 approach: use one PentaTileMapLayer per terrain type (what VirtuMap already does with TileMapLayer per terrain)."
+      ]
+    },
+    "bulk_paint_api": {
+      "description": "set_cells() batch method for procedural generation",
+      "feasibility": "HIGH",
+      "complexity": 6,
+      "virtumap_must": false,
+      "penta_loc_delta": 80,
+      "breaking": false,
+      "blocks": [],
+      "blocked_by": [],
+      "verdict": "Add public set_cells() that batches then calls _update_cells once.",
+      "detail": "VirtuMap generates hundreds of cells per ship (48x24 grid \u2192 1152 cells, about 60% painted \u2192 ~700 cells). Calling set_cell() 700 times triggers 700 _update_cells() callbacks (one per painted coord). A batch method that calls set_cell in a loop then triggers _update_cells for the union of affected rects would amortize the callback cost."
+    },
+    "multi_source_output": {
+      "description": "source_id field on PentaTileAtlasSlot for multi-source TileSets",
+      "feasibility": "HIGH",
+      "complexity": 5,
+      "virtumap_must": false,
+      "penta_loc_delta": 50,
+      "breaking": false,
+      "blocks": [],
+      "blocked_by": [],
+      "verdict": "Add source_id field with default=-1 (use global). Route in _paint_with_slot.",
+      "detail": "PentaTileAtlasSlot currently has no source_id \u2014 it assumes all output goes to _resolve_source_id(). Some layouts (PixelLab with per-variation sources, VirtuMap with per-terrain sources) need per-slot source routing. Add optional source_id: int = -1 to AtlasSlot. When >= 0, _paint_with_slot uses it; when -1, falls back to _resolve_source_id()."
+    }
+  },
+  "path": [
+    {
+      "phase": "0 \u2014 Schema Changes (PentaTile v0.3)",
+      "items": [
+        "source_id on PentaTileAtlasSlot",
+        "strip_index param on compute_mask()"
+      ],
+      "rationale": "Non-breaking schema additions that unblock all downstream features."
+    },
+    {
+      "phase": "1 \u2014 Passthrough + Terrain Dispatch (PentaTile v0.3)",
+      "items": [
+        "Atlas passthrough (source-ID gating + _PentaTilePassthrough layer)",
+        "Multi-strip terrain dispatch (atlas_coords.y \u2192 strip_index)"
+      ],
+      "rationale": "Minimum viable VirtuMap integration: WALL/PLATFORM/BEAM become Penta strips, FLOOR/fixtures become passthrough cells."
+    },
+    {
+      "phase": "2 \u2014 Slope Layout (PentaTile v0.3)",
+      "items": [
+        "PentaTileLayoutSlope subclass",
+        "Slope synthesis or authored slope quadrant slots"
+      ],
+      "rationale": "SLOPE terrain set needs its own layout. Can ship independently."
+    },
+    {
+      "phase": "3 \u2014 VirtuMap Adapter Rewrite (VirtuMap v1.3?)",
+      "items": [
+        "Replace set_cells_terrain_connect calls with set_cell",
+        "Encode terrain as atlas_coords.y",
+        "Remove terrain peering bit authoring from tileset",
+        "Replace Phase 17 backfill with PentaTile deterministic fallback"
+      ],
+      "rationale": "VirtuMap side of the integration. Removes 6 terrain sets, 940 clicks of peering bit authoring."
+    },
+    {
+      "phase": "4 \u2014 Advanced Features (PentaTile v0.4+ / VirtuMap v2)",
+      "items": [
+        "Precedence groups (multi-layer visual output)",
+        "Bulk paint API (set_cells batch)",
+        "Multi-source output routing",
+        "Variation-bank wiring for terrain variation"
+      ],
+      "rationale": "Quality-of-life and performance features. Not blocking VirtuMap integration."
+    }
+  ]
+}

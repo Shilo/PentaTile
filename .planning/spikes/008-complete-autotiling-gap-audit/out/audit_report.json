@@ -1,0 +1,252 @@
+{
+  "spike": "008",
+  "verdict": "VALIDATED",
+  "shipped_count": 12,
+  "gaps_count": 16,
+  "anti_features_count": 6,
+  "v0_3_loc_total": 0,
+  "features": [
+    {
+      "id": "variation",
+      "name": "Deterministic variation",
+      "completeness": 0,
+      "demand": 5,
+      "risk": 2,
+      "scope": "v0.3",
+      "priority": 4.4,
+      "note": "PITFALLS \u00a72 recipe; TileData.probability"
+    },
+    {
+      "id": "multiterrain",
+      "name": "Multi-terrain dispatch",
+      "completeness": 0,
+      "demand": 5,
+      "risk": 3,
+      "scope": "v0.3",
+      "priority": 4.1,
+      "note": "Spike 006 design; atlas_coords.y encoding"
+    },
+    {
+      "id": "passthrough",
+      "name": "Atlas passthrough",
+      "completeness": 0,
+      "demand": 3,
+      "risk": 1,
+      "scope": "v0.3",
+      "priority": 3.9,
+      "note": "Source-ID gating; spike 004"
+    },
+    {
+      "id": "sourceid",
+      "name": "source_id on AtlasSlot",
+      "completeness": 0,
+      "demand": 3,
+      "risk": 1,
+      "scope": "v0.3",
+      "priority": 3.9,
+      "note": "Schema addition; non-breaking"
+    },
+    {
+      "id": "editorpreview",
+      "name": "Editor tool preview (line/rect)",
+      "completeness": 0,
+      "demand": 4,
+      "risk": 3,
+      "scope": "v0.3",
+      "priority": 3.7,
+      "note": "Ghost material approach; ~30 LOC"
+    },
+    {
+      "id": "toptiles",
+      "name": "Top-tile support",
+      "completeness": 0,
+      "demand": 4,
+      "risk": 3,
+      "scope": "v2",
+      "priority": 3.7,
+      "note": "Explicit per-mask; platformer caps"
+    },
+    {
+      "id": "decoder",
+      "name": "Mask decoder (template\u2192slot)",
+      "completeness": 0,
+      "demand": 3,
+      "risk": 2,
+      "scope": "v0.3",
+      "priority": 3.6,
+      "note": "GDScript port of spikes 001-003"
+    },
+    {
+      "id": "stripindex",
+      "name": "compute_mask(strip_index)",
+      "completeness": 0,
+      "demand": 3,
+      "risk": 2,
+      "scope": "v0.3",
+      "priority": 3.6,
+      "note": "Multi-terrain mask compute; spike 006"
+    },
+    {
+      "id": "slope",
+      "name": "Slope layout",
+      "completeness": 0,
+      "demand": 3,
+      "risk": 3,
+      "scope": "v0.3",
+      "priority": 3.3,
+      "note": "Spike 005 design; 8-tile atlas"
+    },
+    {
+      "id": "terrainmode",
+      "name": "terrain_mode() virtual",
+      "completeness": 0,
+      "demand": 3,
+      "risk": 3,
+      "scope": "v0.3",
+      "priority": 3.3,
+      "note": "Layout\u2192Godot TerrainMode mapping; spike 007"
+    },
+    {
+      "id": "tilesetter",
+      "name": "Tilesetter Wang15 + Blob47",
+      "completeness": 0,
+      "demand": 3,
+      "risk": 3,
+      "scope": "v0.4",
+      "priority": 3.3,
+      "note": "Deferred D-86; primary source TBD"
+    },
+    {
+      "id": "batchapi",
+      "name": "set_cells() batch method",
+      "completeness": 0,
+      "demand": 2,
+      "risk": 2,
+      "scope": "v0.4",
+      "priority": 3.2,
+      "note": "Procedural gen optimization"
+    },
+    {
+      "id": "precedence",
+      "name": "Precedence groups",
+      "completeness": 0,
+      "demand": 3,
+      "risk": 4,
+      "scope": "v0.4",
+      "priority": 3.0,
+      "note": "Multi-layer visual output; spike 004"
+    },
+    {
+      "id": "rpgmaker",
+      "name": "RPG Maker A2/A4 subtile compositor",
+      "completeness": 0,
+      "demand": 2,
+      "risk": 5,
+      "scope": "v2",
+      "priority": 2.3,
+      "note": "Quarter-tile pipeline; v0.3+ importer"
+    },
+    {
+      "id": "perfshader",
+      "name": "Shader fallback (diagonal compositing)",
+      "completeness": 0,
+      "demand": 1,
+      "risk": 4,
+      "scope": "v2",
+      "priority": 2.2,
+      "note": "Premature without benchmarks"
+    },
+    {
+      "id": "collisiontool",
+      "name": "Collision authoring tools",
+      "completeness": 0,
+      "demand": 1,
+      "risk": 4,
+      "scope": "v2",
+      "priority": 2.2,
+      "note": "TileSet physics is sufficient"
+    }
+  ],
+  "shipped": [
+    {
+      "name": "DualGrid16",
+      "desc": "16-tile dual-grid corner mask"
+    },
+    {
+      "name": "Wang2Edge",
+      "desc": "16-tile single-grid edge mask"
+    },
+    {
+      "name": "Wang2Corner",
+      "desc": "16-tile single-grid corner-diagonal mask"
+    },
+    {
+      "name": "Min3x3",
+      "desc": "9-tile open-side collapse edge mask"
+    },
+    {
+      "name": "Penta (ONE\u2192FIVE)",
+      "desc": "5-mode load-time synthesis"
+    },
+    {
+      "name": "Blob47Godot",
+      "desc": "47-tile 8-bit Moore collapse"
+    },
+    {
+      "name": "PixelLabTopDown",
+      "desc": "8\u00d78 atlas corner mask"
+    },
+    {
+      "name": "PixelLabSideScroller",
+      "desc": "8\u00d78 atlas corner mask (side variant)"
+    },
+    {
+      "name": "Fallback TileSet",
+      "desc": "Auto-generated from bitmask_template"
+    },
+    {
+      "name": "AUTO/AUTO_STRIP",
+      "desc": "Dimension-only + per-strip detection"
+    },
+    {
+      "name": "Synthesis caching",
+      "desc": "Signature-based idempotent rebuild"
+    },
+    {
+      "name": "Configuration warnings",
+      "desc": "Inspector feedback on atlas issues"
+    }
+  ],
+  "anti_features": [
+    {
+      "id": "terrain_solver",
+      "name": "Godot terrain solver delegation",
+      "reason": "Non-deterministic; breaks mask contract; MULTITERR-07"
+    },
+    {
+      "id": "coord_cache",
+      "name": "Persistent coordinate cache",
+      "reason": "Demo-scale doesn't need it; adds lifecycle bugs"
+    },
+    {
+      "id": "signal_fanout",
+      "name": "Watcher/signal-fanout systems",
+      "reason": "Signal storm risk; identity guardrail"
+    },
+    {
+      "id": "custom_paint",
+      "name": "Custom paint API (parallel to set_cell)",
+      "reason": "Defeats native-API win"
+    },
+    {
+      "id": "inspector_plugin",
+      "name": "EditorInspectorPlugin polish",
+      "reason": "3800 LOC for TileBitTools; identity guardrail"
+    },
+    {
+      "id": "hex_iso",
+      "name": "Hex/iso grid support",
+      "reason": "Identity expansion beyond scope"
+    }
+  ]
+}
