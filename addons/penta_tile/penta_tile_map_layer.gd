@@ -348,17 +348,35 @@ func _paint_via_layout(display_cell: Vector2i, active_layout: PentaTileLayout, s
 	if not active_layout.is_dual_grid() and not sample_fn.call(display_cell):
 		return
 
-	var mask := active_layout.compute_mask(display_cell, sample_fn)
+	# --- TERRAIN-AWARE DISPATCH (Phase 10 — Plan 02) ---
+	var resolved_layout: PentaTileLayout = active_layout
+	var paint_source: int = source
+	var terrain_id := 0
+	var mask := 0
+
+	if terrain_group != null:
+		terrain_id = _resolve_terrain_id(display_cell)
+		var entry: Dictionary = _terrain_index.get(terrain_id, {})
+		if entry.is_empty() or entry.get("layout") == null:
+			# No layout for this terrain — fall back to terrain 0
+			entry = _terrain_index.get(0, {})
+		resolved_layout = entry.get("layout") if not entry.is_empty() else active_layout
+		# Recompute mask with terrain-aware neighbor filtering (D-10)
+		# Pass terrain_id as strip_index so compute_mask can filter by terrain
+		mask = resolved_layout.compute_mask(display_cell, sample_fn, terrain_id)
+	else:
+		mask = resolved_layout.compute_mask(display_cell, sample_fn)
+
 	# DUAL-GRID universal short-circuit (PITFALLS §4): a display cell with no
 	# painted corners doesn't render. Single-grid logic cells with mask=0
 	# (isolated cells with no painted neighbors, 1x1 paints, or 1xN lines in
 	# Wang2Corner where no diagonals exist) MUST still render — the layout's
 	# mask_to_atlas dispatches them to a default atlas slot.
-	if active_layout.is_dual_grid() and mask == 0:
+	if resolved_layout.is_dual_grid() and mask == 0:
 		return
 
 	var atlas_sample_fn := Callable(self, "_sample_logic_atlas_coords")
-	var strip_index := active_layout.resolve_display_strip(display_cell, atlas_sample_fn)
+	var strip_index := resolved_layout.resolve_display_strip(display_cell, atlas_sample_fn)
 
 	# Clamp strip_index to the actual strip count in the synthesized atlas.
 	# resolve_display_strip returns the painted neighbor's source-atlas .x or .y
@@ -376,7 +394,7 @@ func _paint_via_layout(display_cell: Vector2i, active_layout: PentaTileLayout, s
 			if _strip_count > 0 and strip_index >= _strip_count:
 				strip_index = 0
 
-	var slot := active_layout.mask_to_atlas(mask, strip_index)
+	var slot := resolved_layout.mask_to_atlas(mask, strip_index)
 	if slot == null:
 		return
 	_paint_with_slot(_primary_layer, slot, display_cell, source)
@@ -506,6 +524,47 @@ func _build_terrain_index() -> void:
 func _on_terrain_group_changed() -> void:
 	_build_terrain_index()
 	_queue_rebuild()
+
+
+## Resolve which terrain_id a logic cell belongs to.
+##
+## Resolution order (D-04):
+##   1. Read [code]penta_terrain_id[/code] from the logic cell's custom data —
+##      if >= 0, use that.
+##   2. Read [member TileData.terrain] from the cell's base tile ([code]alt_id=0[/code]) —
+##      if >= 0, use that.
+##   3. Default to 0 (first terrain in [member terrain_group].[member PentaTileTerrainGroup.layouts]).
+##
+## Returns 0 when [member terrain_group] is [code]null[/code] or the cell is empty.
+func _resolve_terrain_id(cell: Vector2i) -> int:
+	if terrain_group == null:
+		return 0
+	var source_id := get_cell_source_id(cell)
+	if source_id == -1:
+		return 0
+	# Step 1: custom data layer override (D-03 / D-04)
+	var custom := get_cell_tile_data(cell)
+	if custom != null:
+		var penta_terrain = custom.get_custom_data("penta_terrain_id")
+		if typeof(penta_terrain) == TYPE_INT and penta_terrain >= 0:
+			return penta_terrain
+	# atlas_coords.y encoding (D-05): when terrain_group is bound,
+	# Y component of the painted atlas coord stores the terrain_id.
+	# Checked AFTER custom data (custom data takes priority).
+	if terrain_group != null:
+		var ac := get_cell_atlas_coords(cell)
+		if ac.y >= 0 and ac.y < terrain_group.layouts.size():
+			return ac.y
+	# Step 2: Godot native terrain property (D-04)
+	var source := tile_set.get_source(source_id) as TileSetAtlasSource
+	if source != null:
+		var atlas_coords := get_cell_atlas_coords(cell)
+		if source.has_tile(atlas_coords):
+			var tile_data := source.get_tile_data(atlas_coords, 0)
+			if tile_data != null and tile_data.terrain >= 0:
+				return tile_data.terrain
+	# Step 3: default terrain (D-04)
+	return 0
 
 
 # Wave 2 overlay deletion: _ensure_visual_layers now creates only _primary_layer.
