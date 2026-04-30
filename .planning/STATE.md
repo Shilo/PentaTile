@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v0.3
 milestone_name: Terrain + Variation + VirtuMap Integration
 status: planning
-stopped_at: Phase 10 context gathered
-last_updated: "2026-04-30T19:37:31.195Z"
-last_activity: 2026-04-30 — Spike cluster (004-008) validated + Phase 9 execution finished + Phase 10/11 added
+stopped_at: Phase 10 planned (4 plans in 4 waves)
+last_updated: "2026-04-30T20:15:00.000Z"
+last_activity: 2026-04-30 — Phase 10 planning complete (4 plans, 10 tasks, 4 waves)
 progress:
   total_phases: 4
   completed_phases: 2
-  total_plans: 7
+  total_plans: 11
   completed_plans: 7
-  percent: 100
+  percent: 64
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-25 after v0.2 pivot to layout library)
 
 **Core value:** Painting tiles with the native `TileMapLayer` API produces correct dual-grid autotiled visuals — without the user maintaining caches, terrain metadata, or 16-tile blob sets.
-**Current focus:** Phase 10 — Multi-Terrain + Variation Implementation (ready for planning)
+**Current focus:** Phase 10 — Multi-Terrain + Variation Implementation (planned, ready to execute)
 
 ## Current Position
 
-Phase: 10 (multi-terrain-variation-implementation) — READY
-Plan: 0 of TBD
-Status: Phase 9 complete; Phase 10 planning next
-Last activity: 2026-04-30 — Spike cluster (004-008) validated + Phase 9 execution finished + Phase 10/11 added
+Phase: 10 (multi-terrain-variation-implementation) — PLANNED
+Plan: 4 of 4
+Status: Planning complete — 4 plans in 4 waves. Next: /gsd-execute-phase 10
+Last activity: 2026-04-30 — Phase 10 planned (4 plans, 10 tasks, 4 waves)
 
 > Phase 9 (Terrain + Variation Authoring Research Spike) completed 2026-04-30. 3/3 plans executed. Produced formal architecture recommendation at `.planning/phases/09-terrain-variation-authoring-research-spike/09-ARCHITECTURE-RECOMMENDATION.md` — `PentaTileTerrainGroup` Resource + `penta_terrain_id` custom data layer + transient terrain index + 6-phase implementation blueprint (~440 LOC). Godot terrain sets PDF fully extracted. All 6 phase decisions verified. Spikes 004-008 provided validated designs for slopes (single-grid, 8-tile atlas), multi-terrain dispatch (atlas_coords.y encoding), Godot peering bits conversion, and atlas passthrough.
 
