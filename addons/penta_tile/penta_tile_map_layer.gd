@@ -178,6 +178,16 @@ func _set(property: StringName, value: Variant) -> bool:
 		_build_terrain_index()
 		_queue_rebuild()
 
+## Global seed for deterministic variation. Change this to get different
+## variation picks across the entire layer. Same seed + same cell + same
+## terrain = same variant (D-07). Default 0 produces consistent output.
+@export var variation_seed: int = 0:
+	set(value):
+		if variation_seed == value:
+			return
+		variation_seed = value
+		_queue_rebuild()
+
 var _primary_layer: TileMapLayer
 
 # Debug-build instrumentation (Phase 1 Wave 0 — verifies CONTRACT-05 idempotence).
@@ -334,6 +344,19 @@ func _mark_affected_single_grid_cells(affected: Dictionary, logic_cell: Vector2i
 # base PentaTileLayout returns 0). Threaded into mask_to_atlas so per-strip
 # dispatch lands at Vector2i(slot, strip_index) in the synthesized atlas.
 func _paint_via_layout(display_cell: Vector2i, active_layout: PentaTileLayout, source: int, sample_fn: Callable) -> void:
+	# --- Phase 10: Passthrough skip (C sub-phase) ---
+	# Cells marked via set_cell_passthrough() copy directly logic→visual
+	# without running the autotile solver. Guards against T-10-11: solver
+	# must never modify passthrough cells.
+	if _passthrough_cells.get(display_cell, false):
+		var ps: int = get_cell_source_id(display_cell)
+		if ps >= 0:
+			_primary_layer.erase_cell(display_cell)
+			_primary_layer.set_cell(display_cell, ps,
+				get_cell_atlas_coords(display_cell),
+				get_cell_alternative_tile(display_cell))
+		return
+
 	# --- Phase 10: Dual-grid terrain dispatch branch (D-11) ---
 	# When terrain_group is active and the layout is dual-grid, each display
 	# cell dispatches per-corner: TL through TL logic cell's terrain layout,
@@ -406,6 +429,27 @@ func _paint_via_layout(display_cell: Vector2i, active_layout: PentaTileLayout, s
 	var slot := resolved_layout.mask_to_atlas(mask, strip_index)
 	if slot == null:
 		return
+
+	# --- Phase 10: Variation mode dispatch (E) ---
+	if terrain_group != null:
+		if resolved_layout.variation_mode == PentaTileLayout.VariationMode.PROBABILITY:
+			var variant_coord: Vector2i = _pick_variation_tile(display_cell, resolved_layout, mask, terrain_id)
+			if variant_coord != Vector2i(-1, -1) and slot != null:
+				slot.atlas_coords = variant_coord
+		elif resolved_layout.variation_mode == PentaTileLayout.VariationMode.STRIP:
+			# STRIP mode: pick random column within atlas row (PixelLab-style).
+			# strip_index is terrain_id; pick random X within atlas row.
+			var strip_rng := RandomNumberGenerator.new()
+			strip_rng.seed = hash(Vector4i(display_cell.x, display_cell.y, terrain_id, variation_seed))
+			if source >= 0 and tile_set != null:
+				var src: TileSetAtlasSource = tile_set.get_source(source) as TileSetAtlasSource
+				if src != null:
+					var grid_size: Vector2i = src.get_atlas_grid_size()
+					var strip_row: int = terrain_id % max(1, grid_size.y)
+					var cols: int = max(1, grid_size.x)
+					var col: int = strip_rng.randi() % cols
+					slot.atlas_coords = Vector2i(col, strip_row)
+
 	_paint_with_slot(_primary_layer, slot, display_cell, source)
 
 
@@ -496,6 +540,51 @@ func _paint_dual_grid_terrain(display_cell: Vector2i, source: int) -> void:
 		_paint_with_slot(_primary_layer, slot, display_cell, paint_source)
 
 
+## Pick a variation tile via deterministic weighted random (D-07).
+## Scans terrain index for tiles sharing the same terrain, reads
+## TileData.probability as weight, picks via
+## hash(Vector4i(cell.x, cell.y, terrain_id, variation_seed)).
+func _pick_variation_tile(display_cell: Vector2i, _layout: PentaTileLayout, _mask: int, terrain_id: int) -> Vector2i:
+	var entry: Dictionary = _terrain_index.get(terrain_id, {})
+	var candidates: Array = entry.get("tiles", []) if not entry.is_empty() else []
+	if candidates.is_empty():
+		return Vector2i(-1, -1)
+
+	var source_id: int = _resolve_source_id()
+	if source_id < 0 or tile_set == null:
+		return Vector2i(-1, -1)
+	var source: TileSetAtlasSource = tile_set.get_source(source_id) as TileSetAtlasSource
+	if source == null:
+		return Vector2i(-1, -1)
+
+	# Collect candidates with probability weights.
+	# The terrain index already filters by terrain membership, so all
+	# candidates in the entry's tile list are valid variants for that terrain.
+	# Read TileData.probability for weighted selection.
+	var matching: Array[Vector2i] = []
+	var weights: Array[float] = []
+
+	for coord: Vector2i in candidates:
+		var tile_data: TileData = source.get_tile_data(coord, 0)
+		if tile_data == null:
+			continue
+		var prob: float = tile_data.probability
+		if prob <= 0.0:
+			prob = 1.0  # Clamp: 0 or negative probability → 1.0 (T-10-09 mitigation)
+		matching.append(coord)
+		weights.append(prob)
+
+	if matching.is_empty():
+		return Vector2i(-1, -1)
+
+	# Deterministic hash (D-07, PITFALLS §2)
+	var seed_value: int = hash(Vector4i(display_cell.x, display_cell.y, terrain_id, variation_seed))
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_value
+	var pick: int = rng.rand_weighted(weights)
+	return matching[pick]
+
+
 # Paints the primary slot. The slot carries atlas_coords directly (no _atlas_coords
 # axis dispatch — D-19 removed that helper; the layout owns the axis via _make_slot).
 func _paint_with_slot(layer: TileMapLayer, slot: PentaTileAtlasSlot, display_cell: Vector2i, source: int) -> void:
@@ -566,6 +655,11 @@ func _resolve_source_id() -> int:
 # Never persisted, never a Resource — index is transient and rebuilt on
 # every terrain_group / tile_set change.
 var _terrain_index: Dictionary = {}
+
+# Internal tracking for passthrough cells (set_cell_passthrough).
+# Cells in this dict bypass the autotile solver in _paint_via_layout
+# and are copied directly logic→visual. Survives rebuilds.
+var _passthrough_cells: Dictionary = {}
 
 
 ## Scan all [Class TileSetAtlasSource]s in [member tile_set] for tiles belonging
@@ -665,6 +759,26 @@ func _resolve_terrain_id(cell: Vector2i) -> int:
 				return tile_data.terrain
 	# Step 3: default terrain (D-04)
 	return 0
+
+
+## Place a raw atlas cell directly on the visual layer without running the
+## autotile solver. Decorations, fixtures, and atlases that bypass autotiling
+## use this path. Passthrough cells are tracked internally and survive rebuilds
+## unchanged — _paint_via_layout detects the passthrough flag and copies the
+## cell directly logic→visual.
+func set_cell_passthrough(cell: Vector2i, source_id: int, atlas_coords: Vector2i, alternative_tile: int = 0) -> void:
+	# Paint on logic layer (for persistence across rebuilds)
+	set_cell(cell, source_id, atlas_coords, alternative_tile)
+	# Track passthrough cells internally (Godot 4.x TileMapLayer has no per-cell
+	# custom data setter — _set_cell_data() is an internal engine method)
+	_passthrough_cells[cell] = true
+	# Also paint directly on visual layer for immediate visibility
+	_ensure_visual_layers()
+	var p_source: int = _resolve_source_id()
+	if p_source < 0:
+		return
+	if _primary_layer != null and is_instance_valid(_primary_layer):
+		_primary_layer.set_cell(cell, p_source, atlas_coords, alternative_tile)
 
 
 # Wave 2 overlay deletion: _ensure_visual_layers now creates only _primary_layer.
