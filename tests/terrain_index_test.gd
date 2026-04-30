@@ -31,6 +31,7 @@ func _initialize() -> void:
 	await _test_center_bit_exclusion()
 	await _test_multi_source_scanning()
 	await _test_reassign_triggers_rebuild()
+	await _test_resolve_terrain_id()
 
 	print("\n=== summary ===")
 	if _failures.is_empty():
@@ -363,6 +364,61 @@ func _test_reassign_triggers_rebuild() -> void:
 
 	idx = layer.get("_terrain_index")
 	_assert_eq("reassign rebuild: 2 entries", idx.size() if idx != null else 0, 2)
+
+	layer.queue_free()
+
+
+# Returns true if the layer has the _resolve_terrain_id method.
+func _has_resolve_terrain_id(layer: Node) -> bool:
+	return layer.has_method("_resolve_terrain_id")
+
+
+func _test_resolve_terrain_id() -> void:
+	print("\n  --- resolve_terrain_id ---")
+
+	# RED-PHASE GATE: verify _resolve_terrain_id method exists.
+	var layer := _LayerScript.new()
+	_assert("_resolve_terrain_id method exists", _has_resolve_terrain_id(layer))
+
+	# Test 1: custom data _resolve_terrain_id returns penta_terrain_id when >= 0.
+	var ts := TileSet.new()
+	ts.tile_size = Vector2i(32, 32)
+	ts.add_terrain_set(0)
+	ts.set_terrain_set_mode(0, TileSet.TERRAIN_MODE_MATCH_SIDES)
+	var src := TileSetAtlasSource.new()
+	src.texture_region_size = Vector2i(32, 32)
+	var img := Image.create(32, 32, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0.5, 0.5, 0.5, 1.0))
+	src.texture = ImageTexture.create_from_image(img)
+	src.create_tile(Vector2i(0, 0))
+	ts.add_source(src, 0)
+
+	layer.tile_set = ts
+	var group := _TerrainGroupSc.new()
+	group.layouts.append(_Wang2EdgeSc.new())  # terrain 0
+	group.layouts.append(_Wang2EdgeSc.new())  # terrain 1
+	layer.terrain_group = group
+	get_root().add_child(layer)
+	await process_frame
+	await process_frame
+
+	# Paint a cell with atlas_coords.y = 1 (terrain encoding via D-05).
+	layer.set_cell(Vector2i(0, 0), 0, Vector2i(0, 1))
+	await process_frame
+	await process_frame
+
+	# Call _resolve_terrain_id on the layer.
+	var tid: int = layer.call("_resolve_terrain_id", Vector2i(0, 0)) if _has_resolve_terrain_id(layer) else -1
+	print("  _resolve_terrain_id((0,0)) = ", tid)
+	_assert_eq("atlas_coords.y=1 resolves to terrain 1", tid, 1)
+
+	# Test 2: cell with no terrain fallback returns 0.
+	layer.set_cell(Vector2i(1, 0), 0, Vector2i(0, 0))
+	await process_frame
+	await process_frame
+	var tid2: int = layer.call("_resolve_terrain_id", Vector2i(1, 0)) if _has_resolve_terrain_id(layer) else -1
+	print("  _resolve_terrain_id((1,0)) = ", tid2)
+	_assert_eq("atlas_coords.y=0 resolves to terrain 0", tid2, 0)
 
 	layer.queue_free()
 
