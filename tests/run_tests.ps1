@@ -72,7 +72,9 @@ try {
         "single_grid_cross_terrain_test",
         "dual_grid_terrain_test",
         "variation_determinism_test",
-        "slope_layout_test"
+        "slope_layout_test",
+        "terrain_fallback_test",
+        "terrain_integration_test"
     )
 
     $tests = $allTests
