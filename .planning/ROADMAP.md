@@ -238,7 +238,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 3.5 → 4 → 5 → 6 → 7 �
 | 5. Demo Refresh + Documentation + Release | 5/5 | **Complete.** v0.2.0 shipped end-to-end via the release workflow on 2026-04-29. 8-instance demo grid + 4 README sections + accumulated CHANGELOG + 15 spec corrections (SC-A..D + 1 follow-up) + identity audit (per D-05-11 — SHIP outcome: clean hot path + 16/16 anti-patterns absent). 17 automated tests green; release workflow run 25131034672 (44s) published `penta_tile-v0.2.0.zip` (208024 bytes) to https://github.com/Shilo/PentaTile/releases/tag/v0.2.0. | 2026-04-29 |
 | 6. Editor Line/Rect/Bucket Tool Preview During Drag | 0/0 | Deferred / not planned. Known editor-preview UX issue captured for later. | — |
 | 7. Repo Restructure: Extract Tests + MkDocs Site + LLM-Friendly Docs Pipeline | 1/1 | **Complete.** Tests extracted to root `tests/`; release workflow retargeted and still archives only `addons/penta_tile/`; MkDocs Material site added with dark-first manual toggle; LLM docs decision recommends direct source docs over generated flat artifact for now. | 2026-04-29 |
-| 8. Research Triage + v0.3 Scope Selection | 0/0 | Added from supplied research. Includes focused multi-terrain research accepting Godot `TileData` metadata as input while rejecting Godot terrain-solver delegation. Ready to plan after Phase 7 by roadmap order; independent of Phase 6 implementation. | — |
+| 8. Research Triage + v0.3 Scope Selection | 4/4 | **Complete.** Verified competitive-autotiling claims, dispositioned supplied recommendations, ranked v0.3 candidates, wrote scope firewall, refined backlog triggers, and recommended **Terrain + Variation Authoring Research Spike** as the next v0.3 target. Production terrain/variation refactors remain blocked until spike findings plus user-side manual Godot testing exist. | 2026-04-30 |
 
 ## Coverage
 
@@ -253,8 +253,9 @@ All 58 v1 requirements mapped to exactly one phase. No orphans, no duplicates.
 | 4. Fallback Routing | PREVIEW-03, PREVIEW-04 (2) |
 | 5. Demo Refresh + Documentation + Release | DEMO-01..03, DOC-01..04, REL-01..03 (10) |
 | 7. Repo Restructure + MkDocs + LLM Docs | REPO-01..03, DOCS-06..08 (6 post-release follow-up reqs) |
+| 8. Research Triage + v0.3 Scope Selection | TRIAGE-01..06 (6 post-release planning reqs) |
 | **(Pre-shipped flat templates) → restructured in Phase 2 (TEMPLATE-01)** | (existing PNGs migrated to co-located bundles next to layout `.gd` files) |
-| **Total** | **58 / 58 v1 + 6 / 6 Phase 7 follow-up** |
+| **Total** | **58 / 58 v1 + 6 / 6 Phase 7 follow-up + 6 / 6 Phase 8 planning reqs** |
 
 > **2026-04-26 architectural pivots** (locked after fourth iteration of design refinement):
 > - `PentaTileAtlasContract` deleted (CONTRACT-01..05 retired); `layout: PentaTileLayout` directly on `PentaTileMapLayer` (LAYER-01..03)
@@ -334,27 +335,34 @@ Plans:
 
 **Goal:** Turn the supplied competitive-autotiling research into a verified, identity-filtered v0.3 candidate set. This is a design/planning phase, not an implementation phase: challenge claims against primary sources and the live repo, accept only ideas that fit PentaTile's "small hot path + native `set_cell()`" identity, reject off-mission suggestions explicitly, then produce the next-milestone scope recommendation.
 
-**Requirements**: TRIAGE-01..06 (drafted in REQUIREMENTS.md v2 section; refine during `/gsd-plan-phase 8`)
+**Requirements**: TRIAGE-01..06.
 
 **Depends on:** Phase 5 for the shipped v0.2.0 surface. Phase 7 docs may inform the final communication shape, but Phase 8 is independent of Phase 6 editor-preview implementation.
 
 **Background:** Initial triage artifact: `.planning/phases/08-research-triage-v0-3-scope-selection/08-RESEARCH-TRIAGE.md`. Focused terrain artifact: `.planning/phases/08-research-triage-v0-3-scope-selection/08-MULTI-TERRAIN-RESEARCH.md`. The broad research usefully reinforces deterministic variation, PixelLab variation-bank pick, explicit top tiles, Tilesetter follow-up, authoring/converter tooling, docs, and benchmark-first performance work. It also contains stale or off-identity recommendations: PentaTile already has dual-grid layouts; global constraint solvers, terrain-rule docks, persistent caches, hex/iso support, JSON metadata/entity spawning, and GPU infinite-world shaders are not v0.3 defaults. Multi-terrain support is no longer blanket-rejected: the accepted research shape is to read Godot `TileData` terrain metadata as authoring/indexing input while PentaTile keeps its own deterministic layout solver and generated `set_cell()` output.
 
-**Success Criteria (draft, refine when planning):**
-1. **Verified claims table:** Each accepted competitor claim cites a primary source or local artifact. Stale claims from the supplied research are corrected, especially anything implying PentaTile lacks dual-grid support or lacks v0.2.0 release outputs.
-2. **Accept/reject matrix:** Every major recommendation in the supplied research is dispositioned as `accept`, `already covered`, `defer`, or `reject`, with identity-guardrail rationale.
-3. **v0.3 candidate matrix:** Candidate work is ranked by user value, implementation risk, dependency coupling, and identity fit. At minimum, evaluate `VAR-01`, `VAR-PIXEL-01`, `TOP-01`, `TBT-01/02-DEFERRED`, `TOOL-01/02`, `PERF-02`, `DIST-01`, and Phase 6/7 follow-ups.
-4. **Scope firewall:** Explicitly reject or quarantine global solvers/backtracking, Godot's terrain solver as PentaTile's renderer, Terrains dock/editor-wizard scope, persistent coordinate caches, scriptable rule engines, metadata/entity-spawning systems, grid-agnostic hex/iso support, and GPU/procedural world generation unless the project identity is intentionally renegotiated. Godot terrain metadata interop is allowed as input when PentaTile remains the solver.
-5. **Backlog cleanup:** Update REQUIREMENTS.md and STATE.md with any new un-defer triggers, dependencies, or "do not pursue" notes discovered during triage. No backwards-compat shims, version fields, schema markers, or speculative extension points.
-6. **Next-step recommendation:** Produce one recommended v0.3 package and two alternates, with the exact `/gsd-plan-phase` target that should be run next.
+**Success Criteria (complete):**
+1. **Verified claims table:** Complete in `08-VERIFIED-CLAIMS.md`.
+2. **Accept/reject matrix:** Complete in `08-DISPOSITION-MATRIX.md`.
+3. **v0.3 candidate matrix:** Complete in `08-CANDIDATE-MATRIX.md`; ranks Terrain + Variation Authoring Research Spike first and preserves Art Quality / Adoption-UX alternates.
+4. **Scope firewall:** Complete in `08-SCOPE-FIREWALL.md`; Godot terrain metadata input remains allowed, solver delegation and framework-scale systems rejected.
+5. **Backlog cleanup:** Complete in `REQUIREMENTS.md` and `08-BACKLOG-CLEANUP.md`; production terrain/variation work waits for spike findings and user-side manual Godot testing.
+6. **Next-step recommendation:** Complete in `08-RECOMMENDATION.md`.
 
-**Plans:** 4 plans
+**Plans:** 4 plans (4/4 complete)
 
 Plans:
-- [ ] 08-01-PLAN.md — Verify claims and disposition supplied research recommendations
-- [ ] 08-02-PLAN.md — Rank v0.3 candidates and write the scope firewall
-- [ ] 08-03-PLAN.md — Refine REQUIREMENTS backlog triggers and constraints
-- [ ] 08-04-PLAN.md — Recommend v0.3 package, update ROADMAP/STATE, and close Phase 8
+- [x] 08-01-PLAN.md — Verify claims and disposition supplied research recommendations
+- [x] 08-02-PLAN.md — Rank v0.3 candidates and write the scope firewall
+- [x] 08-03-PLAN.md — Refine REQUIREMENTS backlog triggers and constraints
+- [x] 08-04-PLAN.md — Recommend v0.3 package, update ROADMAP/STATE, and close Phase 8
+
+**Recommendation:** Add and plan the next v0.3 phase:
+
+```text
+/gsd-add-phase "Terrain + Variation Authoring Research Spike"
+/gsd-plan-phase <new phase number>
+```
 
 ---
 *Roadmap re-spun: 2026-04-25 after v0.2 pivot to layout library*

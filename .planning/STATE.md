@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v0.3
 milestone_name: Scope Selection
-status: executing
-stopped_at: Phase 08 context gathered; approved recommendation is Terrain + Variation Authoring Research Spike
-last_updated: "2026-04-30T10:23:12.763Z"
-last_activity: 2026-04-30 -- Phase 08 execution started
+status: ready
+stopped_at: Phase 8 complete; next recommended command is to add and plan Terrain + Variation Authoring Research Spike
+last_updated: "2026-04-30T11:14:51Z"
+last_activity: 2026-04-30 -- Phase 8 completed with Terrain + Variation Authoring Research Spike recommendation
 progress:
   total_phases: 10
-  completed_phases: 8
+  completed_phases: 9
   total_plans: 42
-  completed_plans: 39
-  percent: 93
+  completed_plans: 42
+  percent: 100
 ---
 
 # Project State
@@ -21,18 +21,20 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-25 after v0.2 pivot to layout library)
 
 **Core value:** Painting tiles with the native `TileMapLayer` API produces correct dual-grid autotiled visuals — without the user maintaining caches, terrain metadata, or 16-tile blob sets.
-**Current focus:** Phase 08 — Research Triage + v0.3 Scope Selection
+**Current focus:** Phase 08 complete - next target is Terrain + Variation Authoring Research Spike
 
 ## Current Position
 
-Phase: 08 (Research Triage + v0.3 Scope Selection) — EXECUTING
-Plan: 1 of 4
-Status: Executing Phase 08
-Last activity: 2026-04-30 -- Phase 08 execution started
+Phase: 08 (Research Triage + v0.3 Scope Selection) - COMPLETE
+Plan: 4 of 4
+Status: Ready to add and plan the next v0.3 research-spike phase
+Last activity: 2026-04-30 -- Phase 8 completed with Terrain + Variation Authoring Research Spike recommendation
 
-> Phase 7 (Repo Restructure: Extract Tests + MkDocs Site + LLM-Friendly Docs Pipeline) closed 2026-04-29. Tests now live at root `tests/`; release workflow runs `tests/run_tests.sh` while archive packaging remains restricted to `addons/penta_tile/`; MkDocs Material site lives under `docs/` with dark-first manual toggle; LLM docs decision recommends direct MkDocs + GDScript docs over a generated flat artifact for now. Phase 6 (editor line/rect/bucket preview) remains far-future deferred. Next planning step: `/gsd-plan-phase 8`.
+> Phase 8 (Research Triage + v0.3 Scope Selection) closed 2026-04-30. It verified claims, dispositioned supplied research, ranked candidate packages, wrote a hard scope firewall, refined backlog triggers, and recommends **Terrain + Variation Authoring Research Spike** as the next v0.3 target. This recommendation is research/spike only: production terrain/variation refactors stay blocked until spike findings plus user-side manual Godot testing outside this repo exist.
 
-> Phase 8 (Research Triage + v0.3 Scope Selection) added 2026-04-29 from user-supplied competitor research. It verifies claims, accepts identity-compatible improvements, rejects off-mission "ultimate terrain framework" scope, and recommends the next v0.3 package. Initial triage artifact: `.planning/phases/08-research-triage-v0-3-scope-selection/08-RESEARCH-TRIAGE.md`. Current next planning step remains `/gsd-plan-phase 7` by roadmap order; Phase 8 follows as the v0.3 selection gate.
+> Exact next command:
+> `/gsd-add-phase "Terrain + Variation Authoring Research Spike"`
+> then `/gsd-plan-phase <new phase number>`
 
 > Focused multi-terrain research added 2026-04-29 at `.planning/phases/08-research-triage-v0-3-scope-selection/08-MULTI-TERRAIN-RESEARCH.md`. Outcome: one public `PentaTileMapLayer` / one `TileSet` is feasible if Godot `TileData` terrain metadata is treated as authoring/indexing input and PentaTile keeps its own deterministic solver. REQUIREMENTS.md MULTITERR-01..08 supersedes the old Y-axis-as-terrain sketch. The hard firewall is now "do not call Godot's terrain solver for generated visuals," not "never read terrain metadata."
 
@@ -40,7 +42,7 @@ Last activity: 2026-04-30 -- Phase 08 execution started
 
 > Phase 4 closed 2026-04-29 with full in-scope coverage: PREVIEW-03 + PREVIEW-04 Complete (8 actually-shipped layouts verified under fallback path via `fallback_routing_test.gd` composed-canvas test + manual demo UAT per D-04-06 belt+suspenders); doc-comment sweep landed on all 12 addon scripts per Godot's official format (D-04-01..04), annotation-only — zero logic changes; cross-AI review pass executed under D-04-10 strict order with Gemini headless returning `status: clean` (0 findings) and the Codex headless pass DEFERRED at closeout due to a hard external Codex CLI quota wall (RESEARCH § 8 Pitfall #14; user elected to skip and continue per `AskUserQuestion`). All 4 closeout artifacts committed (FALLBACK-UAT.md + DOC-SWEEP.md + GEMINI-REVIEW-FIX.md + CODEX-REVIEW-FIX.md). Test suite stayed ALL GREEN (18 tests). Cumulative runtime LOC: 2884 (Phase 3.5 baseline 2663 + Phase 4 delta 221, all from added `##` doc-comment lines — Phase 4 was annotation-only). Identity guardrail AT RISK carry-forward — formal gate is Phase 5 final audit. The Codex prompt is preserved at `04-CODEX-PROMPT.md` for re-use when quota resets. Phase 5 (Demo Refresh + Documentation + Release) is the next planning step.
 
-Progress: [████████--] 80%
+Progress: [██████████] 100%
 
 > Out-of-band progress: 5 of 8 greyboxed template PNGs + the generator script shipped in commit e86036f as part of the discovery pass. Counted as TEMPLATE-01 + TEMPLATE-03 covered. The remaining 3 templates (Blob47Godot, TilesetterWang15, TilesetterBlob47) ship in Phase 3 once their slot tables are transcribed from TileBitTools.
 
@@ -101,6 +103,7 @@ Progress: [████████--] 80%
 
 ### Roadmap Evolution
 
+- 2026-04-30 (Phase 8 closeout): **v0.3 recommendation selected.** Phase 8 recommends `Terrain + Variation Authoring Research Spike` as the next target, with Art Quality Pack and Adoption/UX Pack as alternates. Terrain and automated variation are treated as one coupled TileSet-authoring problem; the spike must compare alternatives/probability, atlas rows/banks, multiple atlas sources, Godot `TileData` terrain metadata, PixelLab-style variation banks, and Penta terrain banks. Production terrain/variation refactors are blocked until spike findings and user-side manual Godot testing outside this repo exist. Exact next command: `/gsd-add-phase "Terrain + Variation Authoring Research Spike"` then `/gsd-plan-phase <new phase number>`.
 - 2026-04-29 (post-v0.2.0 research triage): **Phase 8 added — Research Triage + v0.3 Scope Selection.** User supplied comparative research spanning PentaTile, TileMapDual, TileBitTools, Better Terrain, Godot built-in, Unity, Tiled, RPG Maker, and procedural/GPU autotiling. Verification against primary sources found useful signals (deterministic variation, PixelLab bank pick, top tiles, Tilesetter follow-up, docs/distribution, benchmark-first performance) and stale/off-identity claims (PentaTile already has dual-grid support; global solvers, terrain docks, hex/iso, persistent caches, metadata/entity systems, GPU infinite worlds are not default scope). Added TRIAGE-01..06 requirements, Phase 8 ROADMAP details, and `08-RESEARCH-TRIAGE.md`.
 - 2026-04-29 (focused multi-terrain research): **MULTITERR backlog reshaped.** Subagent + primary-source verification found the optimal path: use Godot `TileData.terrain_set` / `terrain` / peering bits as the authoring language, scan all atlas sources and alternatives into a transient candidate index, then keep PentaTile's own `_update_cells()` solver and generated `set_cell()` output. Single-grid layouts should land first; dual-grid gets TileMapDual-style four-corner terrain signatures second; Penta gets terrain banks first. Added `08-MULTI-TERRAIN-RESEARCH.md`; REQUIREMENTS.md now tracks MULTITERR-01..08 instead of the older Y-axis-as-terrain sketch; PROJECT.md identity guardrail now rejects Godot solver delegation rather than metadata reads.
 - 2026-04-26: Phase 2.1 inserted after Phase 2 (single-tile-layout) — ships `PentaTileLayoutSingleTile`. Adds 5 requirements (SINGLE-01..05). Companion artifact: `.planning/research/layouts/RPG_MAKER.md` audits the RPG Maker family and recommends offline-importer path for v0.3+ — out of scope for v0.2.0.
@@ -137,7 +140,7 @@ Recent decisions affecting current work:
 - Excalibur/jaconir/Stormcloak/OpenGameArt CR31 dropped from the layout library (no Godot adoption signal)
 - Godot `MATCH_SIDES` skipped (engine semantics disputed in issue #79411)
 - RPG Maker A2/A4 architecturally reserved (subtile compositor) but deferred to v0.3+
-- PentaTile does NOT integrate with Godot's stock terrain peering bits (defeats v0.1's "no manual bitmask authoring" selling point)
+- PentaTile does NOT delegate generated visuals to Godot's stock terrain solver. Phase 8 allows reading Godot `TileData` terrain metadata as authoring/indexing input when PentaTile keeps its own deterministic solver.
 - TileBitTools' `EditorInspectorPlugin` architecture explicitly not copied (3,800-LOC editor UI conflicts with PentaTile's "small runtime + no editor polish" identity)
 - **Breaking changes always allowed and encouraged** (user policy 2026-04-26). Never write backwards-compat shims; never defer features because they would break v0.1. CHANGELOG entries are the only acceptable compat work. CLAUDE.md "Breaking Changes Policy (HARD RULE)" formalizes this; PROJECT.md constraint updated.
 - **Overlay-layer removal + unified 5-archetype synthesis** (2026-04-26). All v0.2 layouts render via single-layer 5-archetype dispatch. Penta layouts auto-detect source tile counts (1/2/3/4/5) and synthesize the missing archetypes from slot 0 (IsolatedCell). `_overlay_layer`, `_paint_overlay_for_slot`, `AtlasSlot.diagonal_complement_atlas_coords`, and the planned `needs_diagonal_overlay()` virtual are all deleted. FOUR-mode regression baseline is a fresh capture (slot ordering changed; not v0.1 bit-equivalence). Phase 2 supersedes the previously-planned separate Penta5* layout classes. See `.planning/phases/02-native-layouts/02-DISCUSSION-LOG.md` SUPERSESSION rounds for D-47..D-71.
@@ -228,8 +231,8 @@ Items acknowledged and carried forward as v2 requirements (see REQUIREMENTS.md v
 | Top Tiles | Designated top-edge visuals (TOP-01) | future milestone | 2026-04-25 (v0.2 pivot) |
 | RPG Maker | Subtile compositor for A2/A4 (RPGM-01/02) | v0.3+ | 2026-04-25 |
 | External Editors | Tiled `.tsx` / LDtk `.ldtk` rule importers (IMPORT-01/02) | v0.3+ | 2026-04-25 |
-| Tooling | PentaBake / Wang→PentaTile converter (TOOL-01/02) | v2 | 2026-04-25 |
-| Multi-terrain | Terrain metadata dispatch in one TileSet/public layer (MULTITERR-01..08) + outer transition tiles (TERRAIN-01) | v2 / research-backed | 2026-04-29 |
+| Tooling | Penta-format composition helper / Wang-to-PentaTile converter (TOOL-01/02) | v2 | 2026-04-25 |
+| Multi-terrain + variation | Terrain metadata dispatch in one TileSet/public layer (MULTITERR-01..08) plus deterministic variation (VAR-01 / VAR-PIXEL-01) | next recommended research spike; implementation blocked pending user-side Godot testing | 2026-04-30 |
 | Performance | Shader fallback / large-map benchmarks (PERF-01/02) | v2 | 2026-04-25 |
 | Distribution | Asset Library / GUT test suite (DIST-01/02) | v2 | 2026-04-25 |
 | Research Triage | v0.3 scope selection and off-identity recommendation firewall (TRIAGE-01..06) | Phase 8 | 2026-04-29 |
@@ -237,8 +240,8 @@ Items acknowledged and carried forward as v2 requirements (see REQUIREMENTS.md v
 ## Session Continuity
 
 Last session: 2026-04-30T10:23:28Z
-Stopped at: Phase 08 context gathered; approved recommendation is Terrain + Variation Authoring Research Spike
-Resume file: .planning/phases/08-research-triage-v0-3-scope-selection/08-CONTEXT.md
+Stopped at: Phase 8 complete; next recommended command is to add and plan Terrain + Variation Authoring Research Spike
+Resume file: .planning/phases/08-research-triage-v0-3-scope-selection/08-RECOMMENDATION.md
 
 **Completed Phase:** 01 (Contract Skeleton + Penta Layouts) — 5/5 plans, 14/14 requirements, 26/26 automated tests PASS — 2026-04-26
 **Completed Phase:** 01.1 (PentaTile Rename + Penta Codename Establishment) — 3/3 plans, 0 formal REQ-IDs (rename phase), demo loads cleanly under new name, git remote tracks PentaTile origin — 2026-04-26
@@ -247,7 +250,7 @@ Resume file: .planning/phases/08-research-triage-v0-3-scope-selection/08-CONTEXT
 
 **Completed Phase:** 05 (Demo Refresh + Documentation + Release) — 5/5 plans, 10/10 in-scope requirements (DEMO-01..03 + DOC-01..04 + REL-01..03), 17 automated tests green throughout, identity audit per D-05-11 outcome **SHIP** (clean hot path + 16/16 anti-patterns absent; +758 LOC vs TileMapDual is signal not verdict), release workflow ran successfully on 2026-04-29 (run id 25131034672, 44s) publishing v0.2.0 — 2026-04-29
 
-**Planned Phase:** 08 (Research Triage + v0.3 Scope Selection) — 4 plans — 2026-04-30T09:53:42.654Z
+**Completed Phase:** 08 (Research Triage + v0.3 Scope Selection) — 4/4 plans, TRIAGE-01..06 complete, recommendation: Terrain + Variation Authoring Research Spike; next command `/gsd-add-phase "Terrain + Variation Authoring Research Spike"` then `/gsd-plan-phase <new phase number>` — 2026-04-30
 
 **Completed Phase:** 03.5 (PixelLab Layouts) — 6/6 plans, 4/4 in-scope requirements (PIXLAB-01..04), 17 automated tests green, VAR-PIXEL-01 stays in v2 backlog per D-91 — 2026-04-29
 
