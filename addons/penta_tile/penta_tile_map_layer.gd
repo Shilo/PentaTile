@@ -92,7 +92,13 @@ const _TerrainGroupScript = preload("res://addons/penta_tile/layouts/penta_tile_
 			# Godot TileMap pane refuses to engage and users can't draw with just a
 			# layout assigned.)
 			if tile_set == null or _tile_set_is_fallback:
-				var fallback := layout.get_fallback_tile_set()
+				# Phase 10 fallback extension (F sub-phase):
+				# When terrain_group is bound, use first terrain's layout fallback.
+				# When terrain_group is null, use layout's own fallback (v0.2.0).
+				var fallback_source: PentaTileLayout = layout
+				if terrain_group != null and terrain_group.layouts.size() > 0:
+					fallback_source = terrain_group.layouts[0] if terrain_group.layouts[0] != null else layout
+				var fallback := fallback_source.get_fallback_tile_set()
 				if fallback != null:
 					_suppress_tile_set_override = true
 					tile_set = fallback
@@ -175,6 +181,17 @@ func _set(property: StringName, value: Variant) -> bool:
 		terrain_group = value
 		if terrain_group != null:
 			terrain_group.changed.connect(_on_terrain_group_changed)
+			# Phase 10 fallback extension: when terrain_group is newly bound
+			# and tile_set is null or a previously-auto-filled fallback,
+			# refresh from the first terrain's layout.
+			if tile_set == null or _tile_set_is_fallback:
+				if terrain_group.layouts.size() > 0 and terrain_group.layouts[0] != null:
+					var fallback := terrain_group.layouts[0].get_fallback_tile_set()
+					if fallback != null:
+						_suppress_tile_set_override = true
+						tile_set = fallback
+						_suppress_tile_set_override = false
+						_tile_set_is_fallback = true
 		_build_terrain_index()
 		_queue_rebuild()
 
@@ -793,6 +810,22 @@ func _ensure_visual_layers() -> void:
 	if resolved_layout != null and resolved_layout.needs_synthesis():
 		var source_id := _resolve_source_id()
 		_ensure_synthesized_tile_set(resolved_layout, source_id)
+
+	# Phase 10: Per-terrain Penta synthesis bridge (F sub-phase).
+	# When terrain_group is bound, each terrain's layout that needs synthesis
+	# triggers its own synthesis from the global tile_set. Each terrain's Penta
+	# layout reads from the same source TileSet but may target different
+	# atlas strips (strip_index = terrain_id for per-terrain dispatch).
+	if terrain_group != null:
+		for terrain_id in range(terrain_group.layouts.size()):
+			var terrain_layout := terrain_group.layouts[terrain_id]
+			if terrain_layout != null and terrain_layout.needs_synthesis():
+				var source_id := _resolve_source_id()
+				# Synthesize per-terrain: each terrain's Penta layout composes
+				# from the same source TileSet. For per-terrain synthesis the
+				# terrain_id maps to strip_index in the Penta atlas.
+				_ensure_synthesized_tile_set(terrain_layout, source_id)
+
 	_sync_visual_layers()
 
 
@@ -1004,7 +1037,12 @@ func _on_layout_changed() -> void:
 	# changes. User-supplied tile_sets keep `_tile_set_is_fallback = false` and are
 	# never replaced.
 	if _tile_set_is_fallback and layout != null:
-		var fallback := layout.get_fallback_tile_set()
+		# Phase 10 fallback extension: when terrain_group is bound,
+		# refresh from the first terrain's layout.
+		var fallback_source: PentaTileLayout = layout
+		if terrain_group != null and terrain_group.layouts.size() > 0:
+			fallback_source = terrain_group.layouts[0] if terrain_group.layouts[0] != null else layout
+		var fallback := fallback_source.get_fallback_tile_set()
 		if fallback != null and fallback != tile_set:
 			_suppress_tile_set_override = true
 			tile_set = fallback
