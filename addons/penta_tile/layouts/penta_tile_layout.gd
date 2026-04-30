@@ -10,6 +10,17 @@
 ##   - .planning/research/layouts/TEMPLATE_CONVENTIONS.md §5 (dual-grid declaration)
 ##   - .planning/research/PITFALLS.md §3 (_pack_alternative recipe)
 ##
+## How variation tiles are selected for this layout.
+## SINGLE: One tile per mask (current v0.2.0 behavior) — no variation.
+## PROBABILITY: Weighted random from tiles sharing the same peering-bit config,
+##   reading [member TileData.probability] at render time.
+## STRIP: Random pick from a horizontal strip in the atlas (PixelLab-style).
+enum VariationMode {
+	SINGLE = 0,
+	PROBABILITY = 1,
+	STRIP = 2,
+}
+
 ## @experimental
 class_name PentaTileLayout
 extends Resource
@@ -27,6 +38,18 @@ extends Resource
 ## Multiline description of the layout's mask topology, atlas grid shape, and
 ## intended use case. Surfaces in inspector help.
 @export_multiline var description: String = ""
+
+## Variation selection mode for this layout. [constant SINGLE] produces one
+## tile per mask (current v0.2.0 behavior). [constant PROBABILITY] pools
+## candidates sharing the same peering-bit configuration and picks via
+## weighted random from [member TileData.probability]. [constant STRIP] picks
+## randomly from a horizontal strip (PixelLab-style).
+@export var variation_mode: VariationMode = VariationMode.SINGLE:
+	set(value):
+		if variation_mode == value:
+			return
+		variation_mode = value
+		emit_changed()
 
 
 # Auto-fill seam for `bitmask_template`. Subclasses with a single bundled preview
@@ -54,9 +77,11 @@ func _init() -> void:
 ## Compute the layout-specific mask for [param _coord] using [param _sample_fn]
 ## as the neighbor-presence query.
 ##
-## Returns the mask integer the layout's [method mask_to_atlas] consumes.
-## Subclasses must override this abstract base implementation.
-func compute_mask(_coord: Vector2i, _sample_fn: Callable) -> int:
+## [param _strip_index] selects which terrain strip to compute against
+## (default 0). Used by cross-terrain mask filtering — each terrain only sees
+## same-terrain cells as "filled". Subclasses must override this abstract base
+## implementation.
+func compute_mask(_coord: Vector2i, _sample_fn: Callable, _strip_index: int = 0) -> int:
 	push_error("PentaTileLayout.compute_mask is abstract; subclass must override.")
 	return 0
 
@@ -84,6 +109,18 @@ func mask_to_atlas(_mask: int, _strip_index: int = 0) -> PentaTileAtlasSlot:
 func is_dual_grid() -> bool:
 	push_error("PentaTileLayout.is_dual_grid is abstract; subclass must override.")
 	return true
+
+
+## Return the Godot [enum TileSet.TerrainMode] this layout's mask system
+## corresponds to. Used by the terrain index builder for peering-bits-to-mask
+## conversion during candidate tile discovery.
+##
+## Base returns -1 (unset). Subclasses override to return:
+##   MATCH_CORNERS (0) → DualGrid16, Penta, Wang2Corner, PixelLab
+##   MATCH_SIDES (1) → Wang2Edge, Min3x3
+##   MATCH_CORNERS_AND_SIDES (2) → Blob47Godot, SingleTile
+func terrain_mode() -> int:
+	return -1
 
 
 ## Resolve which synthesized strip [param _coord] should dispatch to.
