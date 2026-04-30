@@ -239,6 +239,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 3.5 → 4 → 5 → 6 → 7 �
 | 6. Editor Line/Rect/Bucket Tool Preview During Drag | 0/0 | Deferred / not planned. Known editor-preview UX issue captured for later. | — |
 | 7. Repo Restructure: Extract Tests + MkDocs Site + LLM-Friendly Docs Pipeline | 1/1 | **Complete.** Tests extracted to root `tests/`; release workflow retargeted and still archives only `addons/penta_tile/`; MkDocs Material site added with dark-first manual toggle; LLM docs decision recommends direct source docs over generated flat artifact for now. | 2026-04-29 |
 | 8. Research Triage + v0.3 Scope Selection | 4/4 | **Complete.** Verified competitive-autotiling claims, dispositioned supplied recommendations, ranked v0.3 candidates, wrote scope firewall, refined backlog triggers, and recommended **Terrain + Variation Authoring Research Spike** as the next v0.3 target. Production terrain/variation refactors remain blocked until spike findings plus user-side manual Godot testing exist. | 2026-04-30 |
+| 9. Terrain + Variation Authoring Research Spike | 0/0 | Added from Phase 8 recommendation. Research spike only; not planned yet. | — |
 
 ## Coverage
 
@@ -363,6 +364,16 @@ Plans:
 /gsd-add-phase "Terrain + Variation Authoring Research Spike"
 /gsd-plan-phase <new phase number>
 ```
+
+### Phase 9: Terrain + Variation Authoring Research Spike
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 8
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 9 to break down)
 
 ---
 *Roadmap re-spun: 2026-04-25 after v0.2 pivot to layout library*
