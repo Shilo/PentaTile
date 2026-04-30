@@ -67,7 +67,12 @@ try {
         "single_grid_8_moore_propagation_test",
         "pixellab_first_cell_test",
         "pixellab_visual_regression_test",
-        "fallback_routing_test"
+        "fallback_routing_test",
+        "terrain_index_test",
+        "single_grid_cross_terrain_test",
+        "dual_grid_terrain_test",
+        "variation_determinism_test",
+        "slope_layout_test"
     )
 
     $tests = $allTests
