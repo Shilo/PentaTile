@@ -543,11 +543,15 @@ func _resolve_terrain_id(cell: Vector2i) -> int:
 	if source_id == -1:
 		return 0
 	# Step 1: custom data layer override (D-03 / D-04)
-	var custom := get_cell_tile_data(cell)
-	if custom != null:
-		var penta_terrain = custom.get_custom_data("penta_terrain_id")
-		if typeof(penta_terrain) == TYPE_INT and penta_terrain >= 0:
-			return penta_terrain
+	# Guard: TileSet may not have penta_terrain_id custom data layer registered.
+	# Check before calling get_custom_data to avoid "TileSet has no layer" error
+	# (Rule 3 — blocking: headless test tilesets without custom data layers crash).
+	if tile_set != null and tile_set.get_custom_data_layer_by_name("penta_terrain_id") >= 0:
+		var custom := get_cell_tile_data(cell)
+		if custom != null:
+			var penta_terrain = custom.get_custom_data("penta_terrain_id")
+			if typeof(penta_terrain) == TYPE_INT and penta_terrain >= 0:
+				return penta_terrain
 	# atlas_coords.y encoding (D-05): when terrain_group is bound,
 	# Y component of the painted atlas coord stores the terrain_id.
 	# Checked AFTER custom data (custom data takes priority).
