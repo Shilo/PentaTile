@@ -164,9 +164,15 @@ func _test_two_terrain_index() -> void:
 
 	var layer := _LayerScript.new()
 	layer.tile_set = ts
-
-	# RED-PHASE GATE: verify terrain_group property exists on PentaTileMapLayer.
-	_assert("terrain_group property exists", _has_terrain_group(layer))
+	# Debug: verify tile data
+	for si in range(ts.get_source_count()):
+		var sid := ts.get_source_id(si)
+		var src := ts.get_source(sid) as TileSetAtlasSource
+		print("  source[%d] id=%d tiles=%d" % [si, sid, src.get_tiles_count() if src else 0])
+		if src and src.get_tiles_count() > 0:
+			var c0 := src.get_tile_id(0)
+			var td := src.get_tile_data(c0, 0)
+			print("    tile at ", c0, " terrain=", td.terrain if td else "null")
 
 	var group := _group_with_layouts(2)
 	layer.terrain_group = group
@@ -298,8 +304,8 @@ func _test_multi_source_scanning() -> void:
 	src0.texture = tex
 	src0.create_tile(Vector2i(0, 0))
 	var td0 := src0.get_tile_data(Vector2i(0, 0), 0)
-	td0.terrain = 0
 	td0.terrain_set = 0
+	td0.terrain = 0
 	ts.add_source(src0, 0)
 
 	# Source 1 — terrain 1 tile
@@ -308,8 +314,8 @@ func _test_multi_source_scanning() -> void:
 	src1.texture = tex
 	src1.create_tile(Vector2i(0, 0))
 	var td1 := src1.get_tile_data(Vector2i(0, 0), 0)
-	td1.terrain = 1
 	td1.terrain_set = 0
+	td1.terrain = 1
 	ts.add_source(src1, 1)
 
 	var layer := _LayerScript.new()
@@ -319,6 +325,8 @@ func _test_multi_source_scanning() -> void:
 	get_root().add_child(layer)
 	await process_frame
 	await process_frame
+
+	var idx: Dictionary = layer.get("_terrain_index")
 
 	var e0 := _index_entry(layer, 0)
 	var t0 := e0.get("tiles", []) as Array

@@ -38,6 +38,9 @@ const _PentaTileSynthesis = preload("res://addons/penta_tile/penta_tile_synthesi
 # ordering failures in headless / --script mode.
 const _DEFAULT_LAYOUT_SCRIPT = preload("res://addons/penta_tile/layouts/penta_tile_layout_penta.gd")
 
+# Preload terrain group script for @export type resolution in headless / --script mode.
+const _TerrainGroupScript = preload("res://addons/penta_tile/layouts/penta_tile_terrain_group.gd")
+
 ## Source [Class TileSetAtlasSource] ID for atlas reads. [code]-1[/code] means
 ## "use the first source discovered in [member tile_set]." Set explicitly only
 ## when the user's TileSet has multiple sources.
@@ -158,6 +161,22 @@ func _set(property: StringName, value: Variant) -> bool:
 	set(value):
 		logic_collision_enabled = value
 		_apply_logic_collision()
+
+## Optional [PentaTileTerrainGroup] that groups multiple per-terrain layouts.
+## When set, terrain-aware dispatch activates: each painted cell's terrain
+## identity routes to the correct layout. When [code]null[/code] (default),
+## single-layout v0.2.0 behavior is preserved unchanged.
+@export var terrain_group: PentaTileTerrainGroup = null:
+	set(value):
+		if terrain_group == value:
+			return
+		if terrain_group != null and terrain_group.changed.is_connected(_on_terrain_group_changed):
+			terrain_group.changed.disconnect(_on_terrain_group_changed)
+		terrain_group = value
+		if terrain_group != null:
+			terrain_group.changed.connect(_on_terrain_group_changed)
+		_build_terrain_index()
+		_queue_rebuild()
 
 var _primary_layer: TileMapLayer
 
@@ -423,6 +442,70 @@ func _resolve_source_id() -> int:
 	if tile_set.get_source_count() == 0:
 		return -1
 	return tile_set.get_source_id(0)
+
+
+# --- TERRAIN INDEX (Phase 10 — Plan 02) ---
+
+# Transient terrain index — maps terrain_id (0-indexed) to a lightweight
+# Dictionary { "layout": PentaTileLayout, "tiles": Array[Vector2i] }.
+# Built by _build_terrain_index(); cleared when terrain_group is null.
+# Never persisted, never a Resource — index is transient and rebuilt on
+# every terrain_group / tile_set change.
+var _terrain_index: Dictionary = {}
+
+
+## Scan all [Class TileSetAtlasSource]s in [member tile_set] for tiles belonging
+## to each terrain in [member terrain_group]. Maps terrain_id (0-indexed)
+## to [code]{ "layout": PentaTileLayout, "tiles": Array[Vector2i] }[/code].
+##
+## Per GAP-01: scans ALL alternative tiles ([code]alt_id > 0[/code]), not
+## just base tiles.
+## Per GAP-02: tiles with [member TileData.terrain] == [code]-1[/code]
+## (no center bit) are excluded.
+##
+## Called from the [member terrain_group] setter and
+## [method _on_terrain_group_changed].
+func _build_terrain_index() -> void:
+	_terrain_index.clear()
+	if terrain_group == null or tile_set == null:
+		return
+
+	for terrain_id in range(terrain_group.layouts.size()):
+		var layout: PentaTileLayout = terrain_group.layouts[terrain_id]
+		if layout == null:
+			continue
+		var tiles: Array[Vector2i] = []
+		var source_count := tile_set.get_source_count()
+		for src_idx in range(source_count):
+			var source_id := tile_set.get_source_id(src_idx)
+			var source := tile_set.get_source(source_id) as TileSetAtlasSource
+			if source == null:
+				continue
+			var tiles_count := source.get_tiles_count()
+			for t in range(tiles_count):
+				var coord := source.get_tile_id(t)
+				var alt_count := source.get_alternative_tiles_count(coord)
+				# Per GAP-01: scan ALL alternative tiles, not just alt_id=0
+				for alt_id in range(alt_count):
+					var tile_data := source.get_tile_data(coord, alt_id)
+					if tile_data == null:
+						continue
+					var td_terrain := tile_data.terrain
+					# Per GAP-02: skip tiles without center bit
+					if td_terrain < 0:
+						continue
+					if td_terrain == terrain_id:
+						tiles.append(coord)
+						break  # coord already indexed, skip remaining alts
+		_terrain_index[terrain_id] = {"layout": layout, "tiles": tiles}
+
+
+## Emits when [member terrain_group] properties change.
+## Rebuilds the terrain index and schedules a full re-dispatch.
+## Follows the [method _on_layout_changed] pattern.
+func _on_terrain_group_changed() -> void:
+	_build_terrain_index()
+	_queue_rebuild()
 
 
 # Wave 2 overlay deletion: _ensure_visual_layers now creates only _primary_layer.
