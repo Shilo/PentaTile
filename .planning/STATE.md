@@ -203,6 +203,10 @@ TILESETTER_DECISION: b
 ### Pending Todos
 
 - **Re-research editor line/rect/bucket tool preview during drag** (`general`, far-future) — preview invisible when `layout` is bound because Godot's editor draws the line/rect preview as a viewport overlay multiplied by `self_modulate.a`, which PentaTile zeroes via `logic_layer_opacity=0`. Two paths on revisit: (a) ghost-material refactor for raw preview parity with TileMapDual (~30 LOC, breaking change to `logic_layer_opacity`), or (b) custom `EditorPlugin` for true dispatched preview (full new phase). Defer until after v0.2.0 ships. See `.planning/research/editor-line-rect-preview.md` and `.planning/todos/pending/2026-04-28-re-research-editor-line-rect-tool-preview-during-drag.md`.
+- **source_id on PentaTileAtlasSlot (Phase 10 schema)** (`general`, v0.3+) — Add optional `source_id: int = -1` field to PentaTileAtlasSlot. When >= 0, `_paint_with_slot` uses it directly instead of `_resolve_source_id()`. Needed for multi-source TileSets (VirtuMap, terrain banks). See `.planning/todos/pending/2026-04-30-source-id-on-pentatileatlasslot-phase-10-schema.md`.
+- **terrain_mode() virtual on PentaTileLayout base** (`general`, v0.3+) — Add virtual method `terrain_mode() -> int` to declare Godot TerrainMode per layout. Used by `_build_terrain_index()` in spike 007. See `.planning/todos/pending/2026-04-30-terrain-mode-virtual-on-pentatilelayout-base.md`.
+- **compute_mask(strip_index) signature extension** (`general`, v0.3+) — Extend `compute_mask(coord, sample_fn, strip_index: int = 0)` to accept terrain strip index for multi-terrain dispatch (spike 006). See `.planning/todos/pending/2026-04-30-compute-mask-strip-index-signature-extension.md`.
+- **GDScript port of spike 001-003 mask decoder (v0.4 tooling)** (`general`, v0.4) — Port Python+Pillow mask decoder to GDScript using `Image.get_pixel()`/`Color`. 3x3 majority vote at geometric anchors. Enables custom layout authoring from template PNGs. See `.planning/todos/pending/2026-04-30-gdscript-port-of-spike-001-003-mask-decoder.md`.
 
 ### Blockers/Concerns
 
