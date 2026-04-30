@@ -94,8 +94,6 @@ func _test_class_exists() -> void:
 	# In GDScript, `is` checks work with class_name
 	_assert("has class_name", slope.get_script() != null)
 
-	slope.free()
-
 
 func _test_virtual_overrides() -> void:
 	print("\n  --- virtual overrides ---")
@@ -116,8 +114,6 @@ func _test_virtual_overrides() -> void:
 	# mask_to_atlas should exist
 	var slot = slope.mask_to_atlas(1)
 	_assert("mask_to_atlas returns slot", slot != null)
-
-	slope.free()
 
 
 func _test_compute_mask() -> void:
@@ -150,7 +146,7 @@ func _test_compute_mask() -> void:
 	print("  mask with TL painted: ", mask_tl)
 	_assert("single-neighbor mask has bits", mask_tl > 0)
 
-	slope.free()
+	# Resource is RefCounted — no explicit free needed
 
 
 func _test_mask_to_atlas() -> void:
@@ -177,7 +173,7 @@ func _test_mask_to_atlas() -> void:
 	if slot15 != null:
 		_assert("mask=15 atlas_coords is (3,3)", slot15.atlas_coords == Vector2i(3, 3))
 
-	slope.free()
+	# Resource is RefCounted — no explicit free needed
 
 
 func _test_export_properties() -> void:
@@ -202,7 +198,7 @@ func _test_export_properties() -> void:
 	var wtid2 = slope.get("wall_terrain_id")
 	_assert("wall_terrain_id set to 3", wtid2 == 3)
 
-	slope.free()
+	# Resource is RefCounted — no explicit free needed
 
 
 func _test_terrain_group_integration() -> void:
@@ -257,9 +253,9 @@ func _test_single_grid_propagation() -> void:
 	await process_frame
 	await process_frame
 
-	# Paint 2 adjacent cells.
+	# Paint cells diagonally adjacent (Slope samples diagonals, not cardinals).
 	layer.set_cell(Vector2i(0, 0), 0, Vector2i(0, 0))
-	layer.set_cell(Vector2i(1, 0), 0, Vector2i(0, 0))
+	layer.set_cell(Vector2i(1, 1), 0, Vector2i(0, 0))
 	await process_frame
 	await process_frame
 
