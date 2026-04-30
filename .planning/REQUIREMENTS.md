@@ -240,21 +240,21 @@ Added 2026-04-29 from a user-supplied comparative research packet. These are Pha
 
 - **TRIAGE-01**: Verify external claims against primary sources and local artifacts before promoting them. Minimum source set: TileMapDual README, TileBitTools README, Better Terrain README, Godot 4.6 TileMap docs, PentaTile README/ROADMAP/REQUIREMENTS. Correct stale claims inline; especially note that PentaTile already shipped dual-grid support and v0.2.0 release outputs.
 - **TRIAGE-02**: Produce an accept/reject/defer matrix for the supplied research. Accepted near-term ideas must map to existing backlog IDs where possible (`VAR-01`, `VAR-PIXEL-01`, `TOP-01`, `TBT-01/02-DEFERRED`, `TOOL-01/02`, `PERF-02`, `DIST-01`) rather than spawning duplicate feature names.
-- **TRIAGE-03**: Rank v0.3 candidate packages by user value, implementation risk, dependency coupling, visual-test burden, and identity fit. The ranked matrix must include at least: variation + PixelLab banks; explicit top tiles; Tilesetter layouts; PentaBake/converter tooling; editor preview; docs/distribution; benchmark-first performance.
-- **TRIAGE-04**: Scope firewall: explicitly reject global constraint solvers/backtracking, terrain peering metadata/rule tries, Terrains dock/editor-wizard systems, persistent coordinate caches, custom paint APIs parallel to `set_cell()`, scriptable rule engines, JSON metadata/entity-spawning systems, hex/iso/grid-agnostic expansion, and GPU infinite-world shader architecture unless the project identity is deliberately renegotiated in PROJECT.md first.
-- **TRIAGE-05**: Refine existing backlog items with un-defer triggers and design constraints discovered during triage. Examples: deterministic variation must preserve `_pack_alternative()` bit packing; top tiles must be explicit per-mask layout data, not inferred from "tile below"; performance work must start with benchmark harnesses before caches or shaders.
+- **TRIAGE-03**: Rank v0.3 candidate packages by user value, implementation risk, dependency coupling, visual-test burden, external-test burden, and identity fit. The ranked matrix must include at least: Terrain + Variation Authoring Research Spike; variation + PixelLab banks; explicit top tiles; Tilesetter layouts; Penta-format composition/converter tooling; editor preview; docs/distribution; benchmark-first performance.
+- **TRIAGE-04**: Scope firewall: explicitly reject global constraint solvers/backtracking, Godot terrain-solver delegation for generated visuals, Terrains dock/editor-wizard systems, persistent coordinate caches, custom paint APIs parallel to `set_cell()`, scriptable rule engines, JSON metadata/entity-spawning systems, hex/iso/grid-agnostic expansion, GPU infinite-world shader architecture, production terrain/variation refactors before spike completion, compatibility shims, version fields/schema markers, and speculative extension points unless the project identity is deliberately renegotiated in PROJECT.md first. Godot `TileData` terrain metadata remains allowed as authoring/indexing input only.
+- **TRIAGE-05**: Refine existing backlog items with un-defer triggers and design constraints discovered during triage. Examples: deterministic variation must preserve `_pack_alternative()` bit packing; top tiles must be explicit per-mask layout data, not inferred from "tile below"; performance work must start with benchmark harnesses before caches or shaders; terrain + variation production work must wait for spike findings and user-side manual Godot testing outside this repo.
 - **TRIAGE-06**: Deliver one recommended v0.3 package plus two alternates, including the exact next planning command. Output lives in `.planning/phases/08-research-triage-v0-3-scope-selection/`.
 
 ### Variation, Top Tiles, Non-Rotating Spillover
 
-- **VAR-01**: Variation via deterministic per-cell hash + `TileData.probability` weights (was original v0.2; pushed because layout library landed first). **DESIGN-COUPLED with MULTITERR-02/03 and VAR-PIXEL-01 below** — variation, terrain banks, atlas sources, and `alternative_tile` packing all compete for the final `set_cell(source_id, atlas_coords, alternative_tile)` tuple. The 2026-04-29 multi-terrain research supersedes the older "Y-axis as terrain" default; prefer `TileData` terrain metadata for terrain identity so Y can remain available to layouts that use it for variation banks.
-- **VAR-PIXEL-01**: Variation-bank deterministic pick for PixelLab layouts — when a PixelLab atlas has multiple cells mapped to the same mask, pick one keyed on `(coord, variation_seed)` per PITFALLS.md §2 hash recipe. Moved here 2026-04-26 from Phase 3.5 active scope when `variation_seed` was deleted from `PentaTileAtlasContract` (which itself was deleted; see LAYER-01..03). Phase 3.5's PIXLAB-03 ships first-cell pick only; bank pick lands when variation work is reopened.
-- **TOP-01**: Top-tile support — designated top-edge visuals for platformer caps (was original v0.2; pushed; needs design discussion against the new layout shape). Research-triage constraint: top tiles must be explicit per-mask/per-layout data. Do not infer them from "tile below is filled" or any platformer-specific heuristic.
+- **VAR-01**: Variation via deterministic per-cell hash + `TileData.probability` weights (was original v0.2; pushed because layout library landed first). **DESIGN-COUPLED with MULTITERR-02/03 and VAR-PIXEL-01 below** - variation, terrain banks, atlas sources, and `alternative_tile` packing all compete for the final `set_cell(source_id, atlas_coords, alternative_tile)` tuple. The 2026-04-29 multi-terrain research supersedes the older "Y-axis as terrain" default; prefer `TileData` terrain metadata for terrain identity so Y can remain available to layouts that use it for variation banks. Un-defer only after the Terrain + Variation Authoring Research Spike compares real TileSet layouts for alternatives/`TileData.probability`, atlas rows/banks, multiple atlas sources, PixelLab-style banks, and Penta terrain banks.
+- **VAR-PIXEL-01**: Variation-bank deterministic pick for PixelLab layouts - when a PixelLab atlas has multiple cells mapped to the same mask, pick one keyed on `(coord, variation_seed)` per PITFALLS.md §2 hash recipe. Moved here 2026-04-26 from Phase 3.5 active scope when `variation_seed` was deleted from `PentaTileAtlasContract` (which itself was deleted; see LAYER-01..03). Phase 3.5's PIXLAB-03 ships first-cell pick only; bank pick lands when variation work is reopened. Un-defer with `VAR-01` only after the spike decides whether PixelLab banks share the general candidate/weight design or need layout-specific rules.
+- **TOP-01**: Top-tile support - designated top-edge visuals for platformer caps (was original v0.2; pushed; needs design discussion against the new layout shape). Research-triage constraint: top tiles must be explicit per-mask/per-layout data. Do not infer them from "tile below is filled" or any platformer-specific heuristic. Un-defer when art-quality work is chosen and the per-layout explicit top-tile table shape is specified.
 - **NONROT-01**: Any "non-rotating" features not covered by DualGrid16 / Wang2Corner / Wang2Edge layouts (most non-rotating cases are now solved).
 
 ### Multi-Terrain in One Tileset (MULTITERR)
 
-Backlog item added 2026-04-26 from Phase 2.1 brainstorm and superseded 2026-04-29 by `.planning/phases/08-research-triage-v0-3-scope-selection/08-MULTI-TERRAIN-RESEARCH.md`. Goal: support multiple terrain types and multiple atlas sources in one `TileSet` and one public `PentaTileMapLayer`, while preserving native `set_cell()` painting. Corrected design: use Godot `TileData` terrain metadata as the authoring/indexing language, but keep PentaTile's `_update_cells()` dispatcher as the solver. Do not call Godot's built-in terrain solver for generated visuals.
+Backlog item added 2026-04-26 from Phase 2.1 brainstorm and superseded 2026-04-29 by `.planning/phases/08-research-triage-v0-3-scope-selection/08-MULTI-TERRAIN-RESEARCH.md`, then reframed 2026-04-30 by `08-CONTEXT.md`. Goal: support multiple terrain types and multiple atlas sources in one `TileSet` and one public `PentaTileMapLayer`, while preserving native `set_cell()` painting. Corrected design: use Godot `TileData` terrain metadata as the authoring/indexing language, but keep PentaTile's `_update_cells()` dispatcher as the solver. Do not call Godot's built-in terrain solver for generated visuals. Production implementation is blocked until the Terrain + Variation Authoring Research Spike resolves TileSet layout strategy and the user completes manual Godot testing outside this repo.
 
 - **MULTITERR-01**: Terrain-aware dispatch samples `TileData.terrain_set` and `TileData.terrain` from painted logic cells. Empty cells remain terrain `-1`. Painted cells without terrain metadata produce a configuration warning or documented fallback.
 - **MULTITERR-02**: Build a transient `TerrainTileIndex` from the active `TileSet`: scan all `TileSetAtlasSource` sources when `atlas_source_id == -1`, all atlas tiles, and all alternatives; record `source_id`, `atlas_coords`, packed `alternative_tile`, terrain set/id, peering bits, and `TileData.probability`. No persistent coordinate cache.
@@ -263,12 +263,12 @@ Backlog item added 2026-04-26 from Phase 2.1 brainstorm and superseded 2026-04-2
 - **MULTITERR-05**: Dual-grid layouts ship second using a TileMapDual-style four-corner terrain signature for each display cell. Exact authored candidates are preferred; missing candidates warn and fall back explicitly. Document the art-cost limit: theoretical exact state space grows toward `N^4` for `N` terrains before symmetry/fallbacks.
 - **MULTITERR-06**: Penta layouts support per-terrain banks first. Each terrain can have its own Penta strip or atlas source, and existing Penta synthesis runs per bank. True grass-to-dirt-style Penta transition art is TERRAIN-01, not baseline MULTITERR.
 - **MULTITERR-07**: Godot built-in terrain metadata is input only. PentaTile does not call `set_cells_terrain_connect()` / `set_cells_terrain_path()` for generated output because those functions mutate cells/neighbors under Godot's solver, not PentaTile's layout library.
-- **MULTITERR-08**: Visual UAT composes rendered output, not just dispatch tables, across at least 2 terrains, 3 terrains, multiple atlas sources, alternatives/transforms, and the standard pattern matrix. Include rebuild determinism checks so weighted candidates do not shimmer.
+- **MULTITERR-08**: Visual UAT composes rendered output, not just dispatch tables, across at least 2 terrains, 3 terrains, multiple atlas sources, alternatives/transforms, and the standard pattern matrix. Include rebuild determinism checks so weighted candidates do not shimmer. Before production implementation, the user must validate real Godot-authored TileSet workflows outside this repo using spike-provided fixture instructions or examples.
 
 ### Atlas Tooling
 
-- **TOOL-01**: PentaBake — edit-time utility to procedurally compose a fifth edge/diagonal connector tile.
-- **TOOL-02**: Tileset converter — Wang/blob/single-tile inputs → PentaTile-compatible atlas.
+- **TOOL-01**: Penta-format composition helper - edit-time utility to procedurally compose a fifth edge/diagonal connector tile. Un-defer only when authoring tooling is the selected package; keep separate from runtime solver and do not create migration/version machinery.
+- **TOOL-02**: Tileset converter - Wang/blob/single-tile inputs to PentaTile-compatible atlas. Un-defer only after the target layout package is clear; do not treat converter output as a backwards-compatibility shim.
 
 ### RPG Maker Family
 
@@ -288,13 +288,13 @@ Backlog item added 2026-04-26 from Phase 2.1 brainstorm and superseded 2026-04-2
 ### Performance
 
 - **PERF-01**: Shader fallback — single-pass shader option for diagonal compositing.
-- **PERF-02**: Large-map perf benchmarks (>10k cells) with documented limits. Research-triage constraint: benchmark before optimizing. Do not add persistent caches, worker-thread tile managers, or shader paths until measured PentaTile behavior proves a real need at a target map size.
+- **PERF-02**: Large-map perf benchmarks (>10k cells) with documented limits. Research-triage constraint: benchmark before optimizing. Do not add persistent caches, worker-thread tile managers, or shader paths until measured PentaTile behavior proves a real need at a target map size. Un-defer when the user has a target map size or a real scene that exceeds demo-scale behavior.
 
 ### Tooling & Distribution
 
 - **TOOL-03**: Collision authoring tools / auto-collision generation.
 - ~~**TOOL-04**: MkDocs documentation site.~~ — **Promoted to Phase 7** (v0.2.0 follow-up) on 2026-04-29 and satisfied as DOCS-06 / DOCS-07.
-- **DIST-01**: Godot Asset Library submission.
+- **DIST-01**: Godot Asset Library submission. Un-defer when adoption/distribution becomes the selected package and release packaging/docs are stable enough for public review.
 - **DIST-02**: Formal automated test suite (GUT or similar).
 
 ### TBT (Phase 3 deferred — Tilesetter only)
@@ -319,8 +319,8 @@ Explicitly excluded for v0.2.0. Documented to prevent scope creep.
 | Excalibur / jaconir Blob 47 | Web-game indie convention; no Godot adoption |
 | Stormcloak / OpenGameArt CR31 community blob | Insufficient adoption signal |
 | Godot `MATCH_SIDES` mask layout | Engine semantics disputed (Godot issue #79411) |
-| PentaBake / Tileset converter | Authoring tooling deferred |
-| Multi-terrain transitions | Distinct R&D track |
+| Penta-format composition helper / Tileset converter | Authoring tooling deferred |
+| Multi-terrain transitions | Distinct research track; production work waits for the Terrain + Variation Authoring Research Spike and user-side Godot testing |
 | Shader fallback for diagonal compositing | Demo-scale doesn't need it |
 | Collision authoring / auto-collision generation | TileSet-physics path is sufficient |
 | Godot Asset Library distribution | GitHub-only this milestone |
@@ -329,7 +329,8 @@ Explicitly excluded for v0.2.0. Documented to prevent scope creep.
 | Backwards compatibility for v0.1.0 atlases | Pre-1.0; breaking changes accepted (CLAUDE.md "Breaking Changes Policy") |
 | Forward-compat versioning machinery (`version: int` fields, schema markers, speculative extension points) | No-forward-compat policy added 2026-04-26; YAGNI applies hardest to versioning machinery |
 | `EditorInspectorPlugin` polish for layout authoring | Custom layouts work via subclassing but are documented as experimental — no editor UX |
-| Terrains dock / template wizard / bulk terrain-bit editor | TileBitTools and Better Terrain territory; conflicts with "no terrain peering metadata" and "no editor polish" identity |
+| Godot terrain solver as renderer | PentaTile may read `TileData` terrain metadata as input, but must not delegate generated visuals to Godot terrain connect/path solver calls |
+| Terrains dock / template wizard / bulk terrain-bit editor | TileBitTools and Better Terrain territory; conflicts with typed-resource simplicity and "no editor polish" identity |
 | Persistent coordinate cache | TileMapDual territory; demo-scale doesn't need it |
 | Watcher / signal-fanout systems | TileMapDual territory; lifecycle bug surface |
 | Custom drawing API parallel to `set_cell()` | Defeats the v0.1 native-API win |
@@ -337,6 +338,7 @@ Explicitly excluded for v0.2.0. Documented to prevent scope creep.
 | Hex/isometric/grid-agnostic expansion | Valid TileMapDual differentiator but not a PentaTile v0.3 priority under current identity |
 | JSON metadata / entity spawning / scriptable rule-tile system | Godot already has custom data and scene tiles; this would turn PentaTile into a world-building framework, not a layout autotiler |
 | Worker-thread tile manager or GPU infinite-world autotiling path | Premature before PERF-02 benchmarks; far outside demo-scale quality bar |
+| Production terrain/variation refactor before spike completion | Refactor boundary is blocked until the Terrain + Variation Authoring Research Spike compares real TileSet layouts and the user validates workflows outside this repo |
 | `addons/penta_tile/ATTRIBUTION.md` | D-72 / D-73: nothing is lifted from TBT, so nothing requires attribution. Replaced by a 1-line README footnote acknowledging TBT as design inspiration only. |
 | Code or data lift from TileBitTools | D-73: TBT is design-inspiration only. Layouts implemented from each format's primary reference. The audit `03-TBT-DEEP-AUDIT.md` reads TBT source for ideas, NOT for code/data extraction. |
 
