@@ -240,7 +240,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 3.5 → 4 → 5 → 6 → 7 �
 | 7. Repo Restructure: Extract Tests + MkDocs Site + LLM-Friendly Docs Pipeline | 1/1 | **Complete.** Tests extracted to root `tests/`; release workflow retargeted and still archives only `addons/penta_tile/`; MkDocs Material site added with dark-first manual toggle; LLM docs decision recommends direct source docs over generated flat artifact for now. | 2026-04-29 |
 | 8. Research Triage + v0.3 Scope Selection | 4/4 | **Complete.** Verified competitive-autotiling claims, dispositioned supplied recommendations, ranked v0.3 candidates, wrote scope firewall, refined backlog triggers, and recommended **Terrain + Variation Authoring Research Spike** as the next v0.3 target. Production terrain/variation refactors remain blocked until spike findings plus user-side manual Godot testing exist. | 2026-04-30 |
 | 9. Terrain + Variation Authoring Research Spike | 3/3 | Complete. 09-ARCHITECTURE-RECOMMENDATION.md produced: PentaTileTerrainGroup + penta_terrain_id custom data layer + transient terrain index + 6-phase blueprint (~440 LOC). Godot terrain sets PDF fully extracted. All 6 phase decisions verified. | 2026-04-30 |
-| 10. Multi-Terrain + Variation Implementation | 3/4 | In Progress|  |
+| 10. Multi-Terrain + Variation Implementation | 4/4 | Complete   | 2026-04-30 |
 | 11. VirtuMap Integration Bridge | 0/0 | Consumes spike 004+005. Blocked until Phase 10 completes. | — |
 
 ## Coverage
@@ -385,13 +385,13 @@ Plans:
 
 **Requirements**: TBD
 **Depends on:** Phase 9
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans complete
 
 Plans:
 - [x] 10-01-PLAN.md — Wave 1: PentaTileTerrainGroup Resource + source_id on AtlasSlot + terrain_mode() + VariationMode + compute_mask signature on base + all 9 subclass signature updates
 - [x] 10-02-PLAN.md — Wave 2: terrain_group setter + _build_terrain_index() + _resolve_terrain_id() + terrain-aware single-grid dispatch
 - [x] 10-03-PLAN.md — Wave 3: per-corner dual-grid terrain dispatch + variation mode wiring (SINGLE/PROBABILITY/STRIP) + PentaTileLayoutSlope subclass + set_cell_passthrough()
-- [ ] 10-04-PLAN.md — Wave 4: fallback TileSet extension for terrain_group + full 9-layout × 13-pattern × multi-terrain integration test suite
+- [x] 10-04-PLAN.md — Wave 4: fallback TileSet extension for terrain_group + full 9-layout × 13-pattern × multi-terrain integration test suite
 
 ### Phase 11: VirtuMap Integration Bridge
 
