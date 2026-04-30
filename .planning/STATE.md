@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v0.2.0
-milestone_name: milestone
-status: ready_to_plan
-stopped_at: Phase 7 complete
-last_updated: "2026-04-29T23:59:00Z"
-last_activity: 2026-04-29 -- Phase 7 repo restructure and docs site complete
+milestone: v0.3
+milestone_name: Scope Selection
+status: executing
+stopped_at: v0.2.0 SHIPPED
+last_updated: "2026-04-30T09:54:11.369Z"
+last_activity: 2026-04-30 -- Phase 08 execution started
 progress:
   total_phases: 10
   completed_phases: 8
-  total_plans: 38
+  total_plans: 42
   completed_plans: 38
-  percent: 80
+  percent: 90
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-25 after v0.2 pivot to layout library)
 
 **Core value:** Painting tiles with the native `TileMapLayer` API produces correct dual-grid autotiled visuals — without the user maintaining caches, terrain metadata, or 16-tile blob sets.
-**Current focus:** Phase 8 — Research Triage + v0.3 Scope Selection (next planning step). Phase 7 is complete.
+**Current focus:** Phase 08 — Research Triage + v0.3 Scope Selection
 
 ## Current Position
 
-Phase: 08
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-04-29
+Phase: 08 (Research Triage + v0.3 Scope Selection) — EXECUTING
+Plan: 1 of 4
+Status: Executing Phase 08
+Last activity: 2026-04-30 -- Phase 08 execution started
 
 > Phase 7 (Repo Restructure: Extract Tests + MkDocs Site + LLM-Friendly Docs Pipeline) closed 2026-04-29. Tests now live at root `tests/`; release workflow runs `tests/run_tests.sh` while archive packaging remains restricted to `addons/penta_tile/`; MkDocs Material site lives under `docs/` with dark-first manual toggle; LLM docs decision recommends direct MkDocs + GDScript docs over a generated flat artifact for now. Phase 6 (editor line/rect/bucket preview) remains far-future deferred. Next planning step: `/gsd-plan-phase 8`.
 
@@ -247,7 +247,7 @@ Resume file: None — milestone closed
 
 **Completed Phase:** 05 (Demo Refresh + Documentation + Release) — 5/5 plans, 10/10 in-scope requirements (DEMO-01..03 + DOC-01..04 + REL-01..03), 17 automated tests green throughout, identity audit per D-05-11 outcome **SHIP** (clean hot path + 16/16 anti-patterns absent; +758 LOC vs TileMapDual is signal not verdict), release workflow ran successfully on 2026-04-29 (run id 25131034672, 44s) publishing v0.2.0 — 2026-04-29
 
-**Planned Phase:** 4 (fallback-routing) — 5 plans — 2026-04-29T12:56:46.695Z
+**Planned Phase:** 08 (Research Triage + v0.3 Scope Selection) — 4 plans — 2026-04-30T09:53:42.654Z
 
 **Completed Phase:** 03.5 (PixelLab Layouts) — 6/6 plans, 4/4 in-scope requirements (PIXLAB-01..04), 17 automated tests green, VAR-PIXEL-01 stays in v2 backlog per D-91 — 2026-04-29
 
