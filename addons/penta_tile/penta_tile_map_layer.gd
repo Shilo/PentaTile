@@ -38,8 +38,7 @@ const _PentaTileSynthesis = preload("res://addons/penta_tile/penta_tile_synthesi
 # ordering failures in headless / --script mode.
 const _DEFAULT_LAYOUT_SCRIPT = preload("res://addons/penta_tile/layouts/penta_tile_layout_penta.gd")
 
-# Preload terrain group script for @export type resolution in headless / --script mode.
-const _TerrainGroupScript = preload("res://addons/penta_tile/layouts/penta_tile_terrain_group.gd")
+
 
 ## Source [Class TileSetAtlasSource] ID for atlas reads. [code]-1[/code] means
 ## "use the first source discovered in [member tile_set]." Set explicitly only
@@ -92,13 +91,7 @@ const _TerrainGroupScript = preload("res://addons/penta_tile/layouts/penta_tile_
 			# Godot TileMap pane refuses to engage and users can't draw with just a
 			# layout assigned.)
 			if tile_set == null or _tile_set_is_fallback:
-				# Phase 10 fallback extension (F sub-phase):
-				# When terrain_group is bound, use first terrain's layout fallback.
-				# When terrain_group is null, use layout's own fallback (v0.2.0).
-				var fallback_source: PentaTileLayout = layout
-				if terrain_group != null and terrain_group.layouts.size() > 0:
-					fallback_source = terrain_group.layouts[0] if terrain_group.layouts[0] != null else layout
-				var fallback := fallback_source.get_fallback_tile_set()
+				var fallback := layout.get_fallback_tile_set()
 				if fallback != null:
 					_suppress_tile_set_override = true
 					tile_set = fallback
@@ -167,33 +160,6 @@ func _set(property: StringName, value: Variant) -> bool:
 	set(value):
 		logic_collision_enabled = value
 		_apply_logic_collision()
-
-## Optional [PentaTileTerrainGroup] that groups multiple per-terrain layouts.
-## When set, terrain-aware dispatch activates: each painted cell's terrain
-## identity routes to the correct layout. When [code]null[/code] (default),
-## single-layout v0.2.0 behavior is preserved unchanged.
-@export var terrain_group: PentaTileTerrainGroup = null:
-	set(value):
-		if terrain_group == value:
-			return
-		if terrain_group != null and terrain_group.changed.is_connected(_on_terrain_group_changed):
-			terrain_group.changed.disconnect(_on_terrain_group_changed)
-		terrain_group = value
-		if terrain_group != null:
-			terrain_group.changed.connect(_on_terrain_group_changed)
-			# Phase 10 fallback extension: when terrain_group is newly bound
-			# and tile_set is null or a previously-auto-filled fallback,
-			# refresh from the first terrain's layout.
-			if tile_set == null or _tile_set_is_fallback:
-				if terrain_group.layouts.size() > 0 and terrain_group.layouts[0] != null:
-					var fallback := terrain_group.layouts[0].get_fallback_tile_set()
-					if fallback != null:
-						_suppress_tile_set_override = true
-						tile_set = fallback
-						_suppress_tile_set_override = false
-						_tile_set_is_fallback = true
-		_build_terrain_index()
-		_queue_rebuild()
 
 ## Global seed for deterministic variation. Change this to get different
 ## variation picks across the entire layer. Same seed + same cell + same
@@ -374,14 +340,7 @@ func _paint_via_layout(display_cell: Vector2i, active_layout: PentaTileLayout, s
 				get_cell_alternative_tile(display_cell))
 		return
 
-	# --- Phase 10: Dual-grid terrain dispatch branch (D-11) ---
-	# When terrain_group is active and the layout is dual-grid, each display
-	# cell dispatches per-corner: TL through TL logic cell's terrain layout,
-	# TR through TR's, etc. terrain_precedence controls paint stacking (D-12).
-	if active_layout.is_dual_grid() and terrain_group != null:
-		_primary_layer.erase_cell(display_cell)
-		_paint_dual_grid_terrain(display_cell, source)
-		return
+	# -- Phase 10 dual-grid terrain_group branch removed — see Task 3 for replacement
 
 	_primary_layer.erase_cell(display_cell)
 
@@ -397,24 +356,19 @@ func _paint_via_layout(display_cell: Vector2i, active_layout: PentaTileLayout, s
 	if not active_layout.is_dual_grid() and not sample_fn.call(display_cell):
 		return
 
-	# --- TERRAIN-AWARE DISPATCH (Phase 10 — Plan 02) ---
+	# --- TERRAIN-AWARE DISPATCH (Phase 10.1 auto-detection) ---
 	var resolved_layout: PentaTileLayout = active_layout
 	var paint_source: int = source
-	var terrain_id := 0
-	var mask := 0
+	var terrain_id := _resolve_terrain_id(display_cell)
 
-	if terrain_group != null:
-		terrain_id = _resolve_terrain_id(display_cell)
-		var entry: Dictionary = _terrain_index.get(terrain_id, {})
-		if entry.is_empty() or entry.get("layout") == null:
-			# No layout for this terrain — fall back to terrain 0
-			entry = _terrain_index.get(0, {})
-		resolved_layout = entry.get("layout") if not entry.is_empty() else active_layout
-		# Recompute mask with terrain-aware neighbor filtering (D-10)
-		# Pass terrain_id as strip_index so compute_mask can filter by terrain
-		mask = resolved_layout.compute_mask(display_cell, sample_fn, terrain_id)
-	else:
-		mask = resolved_layout.compute_mask(display_cell, sample_fn)
+	# Build terrain-aware sample_fn: only same-terrain neighbors count as filled (D-10)
+	var terrain_sample_fn := func(logic_cell: Vector2i) -> bool:
+		if not _has_logic_cell(logic_cell):
+			return false
+		return _resolve_terrain_id(logic_cell) == terrain_id
+
+	# Compute mask with terrain filtering (passes terrain_id as strip_index)
+	var mask: int = resolved_layout.compute_mask(display_cell, terrain_sample_fn, terrain_id)
 
 	# DUAL-GRID universal short-circuit (PITFALLS §4): a display cell with no
 	# painted corners doesn't render. Single-grid logic cells with mask=0
@@ -448,158 +402,29 @@ func _paint_via_layout(display_cell: Vector2i, active_layout: PentaTileLayout, s
 		return
 
 	# --- Phase 10: Variation mode dispatch (E) ---
-	if terrain_group != null:
-		if resolved_layout.variation_mode == PentaTileLayout.VariationMode.PROBABILITY:
-			var variant_coord: Vector2i = _pick_variation_tile(display_cell, resolved_layout, mask, terrain_id)
-			if variant_coord != Vector2i(-1, -1) and slot != null:
-				slot.atlas_coords = variant_coord
-		elif resolved_layout.variation_mode == PentaTileLayout.VariationMode.STRIP:
-			# STRIP mode: pick random column within atlas row (PixelLab-style).
-			# strip_index is terrain_id; pick random X within atlas row.
-			var strip_rng := RandomNumberGenerator.new()
-			strip_rng.seed = hash(Vector4i(display_cell.x, display_cell.y, terrain_id, variation_seed))
-			if source >= 0 and tile_set != null:
-				var src: TileSetAtlasSource = tile_set.get_source(source) as TileSetAtlasSource
-				if src != null:
-					var grid_size: Vector2i = src.get_atlas_grid_size()
-					var strip_row: int = terrain_id % max(1, grid_size.y)
-					var cols: int = max(1, grid_size.x)
-					var col: int = strip_rng.randi() % cols
-					slot.atlas_coords = Vector2i(col, strip_row)
+	if resolved_layout.variation_mode == PentaTileLayout.VariationMode.PROBABILITY:
+		var variant_coord: Vector2i = _pick_variation_tile(display_cell, resolved_layout, mask, terrain_id)
+		if variant_coord != Vector2i(-1, -1) and slot != null:
+			slot.atlas_coords = variant_coord
+	elif resolved_layout.variation_mode == PentaTileLayout.VariationMode.STRIP:
+		# STRIP mode: pick random column within atlas row (PixelLab-style).
+		# strip_index is terrain_id; pick random X within atlas row.
+		var strip_rng := RandomNumberGenerator.new()
+		strip_rng.seed = hash(Vector4i(display_cell.x, display_cell.y, terrain_id, variation_seed))
+		if source >= 0 and tile_set != null:
+			var src: TileSetAtlasSource = tile_set.get_source(source) as TileSetAtlasSource
+			if src != null:
+				var grid_size: Vector2i = src.get_atlas_grid_size()
+				var strip_row: int = terrain_id % max(1, grid_size.y)
+				var cols: int = max(1, grid_size.x)
+				var col: int = strip_rng.randi() % cols
+				slot.atlas_coords = Vector2i(col, strip_row)
 
 	_paint_with_slot(_primary_layer, slot, display_cell, source)
 
 
-## Per-corner dual-grid terrain dispatch (D-11, D-13).
-## Each display cell gets painted up to 4 times — once per terrain present
-## in the 4 neighboring logic cells (TL/TR/BL/BR). The TL corner dispatches
-## through TL logic cell's terrain layout, TR through TR's, BL through BL's,
-## BR through BR's.
-##
-## terrain_precedence determines paint order: higher-precedence terrains
-## paint later (on top). When terrain_precedence is empty, paint order
-## follows layouts array index order (D-12).
-##
-## Called from _paint_via_layout when layout is dual-grid and terrain_group
-## is bound.
-func _paint_dual_grid_terrain(display_cell: Vector2i, source: int) -> void:
-	# Corners in TL, TR, BL, BR order — matching _mark_affected_display_cells
-	const CORNERS := [
-		Vector2i(-1, -1),  # TL
-		Vector2i(0, -1),   # TR
-		Vector2i(-1, 0),   # BL
-		Vector2i(0, 0),    # BR
-	]
-
-	# Gather per-terrain data: terrain_id -> {layout, mask bits}.
-	# Mask is computed per-terrain by checking which corners belong to that
-	# terrain (D-11). Dual-grid layouts don't filter neighbors by terrain in
-	# compute_mask, so we build the mask ourselves from per-corner terrain IDs.
-	var terrain_data: Dictionary = {}  # terrain_id -> { "layout": layout, "mask": int }
-
-	for i: int in range(CORNERS.size()):
-		var logic_cell: Vector2i = display_cell + CORNERS[i]
-		if not _has_logic_cell(logic_cell):
-			continue
-		var terrain_id: int = _resolve_terrain_id(logic_cell)
-		if not terrain_data.has(terrain_id):
-			var entry: Dictionary = _terrain_index.get(terrain_id, {})
-			var layout: PentaTileLayout = entry.get("layout") if not entry.is_empty() else null
-			if layout == null:
-				continue
-			terrain_data[terrain_id] = {"layout": layout, "mask": 0}
-		# Set the corner bit for this terrain
-		terrain_data[terrain_id]["mask"] |= (1 << i)
-
-	# Convert to sortable list
-	var layers: Array[Dictionary] = []
-	for terrain_id: int in terrain_data.keys():
-		var data: Dictionary = terrain_data[terrain_id]
-		layers.append({
-			"terrain_id": terrain_id,
-			"layout": data["layout"],
-			"mask": data["mask"],
-		})
-
-	# Sort by terrain_precedence (D-12). Higher precedence = painted later.
-	# When terrain_precedence is empty, maintain layouts array order (terrain_id).
-	layers.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
-		var prec_a := 0
-		var prec_b := 0
-		if terrain_group != null:
-			var tp: Array[int] = terrain_group.terrain_precedence
-			if a.terrain_id < tp.size():
-				prec_a = tp[a.terrain_id]
-			if b.terrain_id < tp.size():
-				prec_b = tp[b.terrain_id]
-		if prec_a != prec_b:
-			return prec_a < prec_b  # lower precedence painted first
-		return a.terrain_id < b.terrain_id  # tiebreaker: terrain_id order
-	)
-
-	# Paint each terrain layer in sorted order (higher precedence on top)
-	for layer_dict: Dictionary in layers:
-		var layout: PentaTileLayout = layer_dict["layout"]
-		var mask: int = layer_dict["mask"]
-		var paint_source: int = source
-
-		# mask=0 short-circuit per PITFALLS §4 (dual-grid universal)
-		if mask == 0:
-			continue
-
-		var slot := layout.mask_to_atlas(mask, layer_dict["terrain_id"])
-		if slot == null:
-			continue
-
-		if slot.source_id >= 0:
-			paint_source = slot.source_id
-
-		_paint_with_slot(_primary_layer, slot, display_cell, paint_source)
 
 
-## Pick a variation tile via deterministic weighted random (D-07).
-## Scans terrain index for tiles sharing the same terrain, reads
-## TileData.probability as weight, picks via
-## hash(Vector4i(cell.x, cell.y, terrain_id, variation_seed)).
-func _pick_variation_tile(display_cell: Vector2i, _layout: PentaTileLayout, _mask: int, terrain_id: int) -> Vector2i:
-	var entry: Dictionary = _terrain_index.get(terrain_id, {})
-	var candidates: Array = entry.get("tiles", []) if not entry.is_empty() else []
-	if candidates.is_empty():
-		return Vector2i(-1, -1)
-
-	var source_id: int = _resolve_source_id()
-	if source_id < 0 or tile_set == null:
-		return Vector2i(-1, -1)
-	var source: TileSetAtlasSource = tile_set.get_source(source_id) as TileSetAtlasSource
-	if source == null:
-		return Vector2i(-1, -1)
-
-	# Collect candidates with probability weights.
-	# The terrain index already filters by terrain membership, so all
-	# candidates in the entry's tile list are valid variants for that terrain.
-	# Read TileData.probability for weighted selection.
-	var matching: Array[Vector2i] = []
-	var weights: Array[float] = []
-
-	for coord: Vector2i in candidates:
-		var tile_data: TileData = source.get_tile_data(coord, 0)
-		if tile_data == null:
-			continue
-		var prob: float = tile_data.probability
-		if prob <= 0.0:
-			prob = 1.0  # Clamp: 0 or negative probability → 1.0 (T-10-09 mitigation)
-		matching.append(coord)
-		weights.append(prob)
-
-	if matching.is_empty():
-		return Vector2i(-1, -1)
-
-	# Deterministic hash (D-07, PITFALLS §2)
-	var seed_value: int = hash(Vector4i(display_cell.x, display_cell.y, terrain_id, variation_seed))
-	var rng := RandomNumberGenerator.new()
-	rng.seed = seed_value
-	var pick: int = rng.rand_weighted(weights)
-	return matching[pick]
 
 
 # Paints the primary slot. The slot carries atlas_coords directly (no _atlas_coords
@@ -664,14 +489,7 @@ func _resolve_source_id() -> int:
 	return tile_set.get_source_id(0)
 
 
-# --- TERRAIN INDEX (Phase 10 — Plan 02) ---
 
-# Transient terrain index — maps terrain_id (0-indexed) to a lightweight
-# Dictionary { "layout": PentaTileLayout, "tiles": Array[Vector2i] }.
-# Built by _build_terrain_index(); cleared when terrain_group is null.
-# Never persisted, never a Resource — index is transient and rebuilt on
-# every terrain_group / tile_set change.
-var _terrain_index: Dictionary = {}
 
 # Internal tracking for passthrough cells (set_cell_passthrough).
 # Cells in this dict bypass the autotile solver in _paint_via_layout
@@ -679,103 +497,9 @@ var _terrain_index: Dictionary = {}
 var _passthrough_cells: Dictionary = {}
 
 
-## Scan all [Class TileSetAtlasSource]s in [member tile_set] for tiles belonging
-## to each terrain in [member terrain_group]. Maps terrain_id (0-indexed)
-## to [code]{ "layout": PentaTileLayout, "tiles": Array[Vector2i] }[/code].
-##
-## Per GAP-01: scans ALL alternative tiles ([code]alt_id > 0[/code]), not
-## just base tiles.
-## Per GAP-02: tiles with [member TileData.terrain] == [code]-1[/code]
-## (no center bit) are excluded.
-##
-## Called from the [member terrain_group] setter and
-## [method _on_terrain_group_changed].
-func _build_terrain_index() -> void:
-	_terrain_index.clear()
-	if terrain_group == null or tile_set == null:
-		return
-
-	for terrain_id in range(terrain_group.layouts.size()):
-		var layout: PentaTileLayout = terrain_group.layouts[terrain_id]
-		if layout == null:
-			continue
-		var tiles: Array[Vector2i] = []
-		var source_count := tile_set.get_source_count()
-		for src_idx in range(source_count):
-			var source_id := tile_set.get_source_id(src_idx)
-			var source := tile_set.get_source(source_id) as TileSetAtlasSource
-			if source == null:
-				continue
-			var tiles_count := source.get_tiles_count()
-			for t in range(tiles_count):
-				var coord := source.get_tile_id(t)
-				var alt_count := source.get_alternative_tiles_count(coord)
-				# Per GAP-01: scan ALL alternative tiles, not just alt_id=0
-				for alt_id in range(alt_count):
-					var tile_data := source.get_tile_data(coord, alt_id)
-					if tile_data == null:
-						continue
-					var td_terrain := tile_data.terrain
-					# Per GAP-02: skip tiles without center bit
-					if td_terrain < 0:
-						continue
-					if td_terrain == terrain_id:
-						tiles.append(coord)
-						break  # coord already indexed, skip remaining alts
-		_terrain_index[terrain_id] = {"layout": layout, "tiles": tiles}
 
 
-## Emits when [member terrain_group] properties change.
-## Rebuilds the terrain index and schedules a full re-dispatch.
-## Follows the [method _on_layout_changed] pattern.
-func _on_terrain_group_changed() -> void:
-	_build_terrain_index()
-	_queue_rebuild()
 
-
-## Resolve which terrain_id a logic cell belongs to.
-##
-## Resolution order (D-04):
-##   1. Read [code]penta_terrain_id[/code] from the logic cell's custom data —
-##      if >= 0, use that.
-##   2. Read [member TileData.terrain] from the cell's base tile ([code]alt_id=0[/code]) —
-##      if >= 0, use that.
-##   3. Default to 0 (first terrain in [member terrain_group].[member PentaTileTerrainGroup.layouts]).
-##
-## Returns 0 when [member terrain_group] is [code]null[/code] or the cell is empty.
-func _resolve_terrain_id(cell: Vector2i) -> int:
-	if terrain_group == null:
-		return 0
-	var source_id := get_cell_source_id(cell)
-	if source_id == -1:
-		return 0
-	# Step 1: custom data layer override (D-03 / D-04)
-	# Guard: TileSet may not have penta_terrain_id custom data layer registered.
-	# Check before calling get_custom_data to avoid "TileSet has no layer" error
-	# (Rule 3 — blocking: headless test tilesets without custom data layers crash).
-	if tile_set != null and tile_set.get_custom_data_layer_by_name("penta_terrain_id") >= 0:
-		var custom := get_cell_tile_data(cell)
-		if custom != null:
-			var penta_terrain = custom.get_custom_data("penta_terrain_id")
-			if typeof(penta_terrain) == TYPE_INT and penta_terrain >= 0:
-				return penta_terrain
-	# atlas_coords.y encoding (D-05): when terrain_group is bound,
-	# Y component of the painted atlas coord stores the terrain_id.
-	# Checked AFTER custom data (custom data takes priority).
-	if terrain_group != null:
-		var ac := get_cell_atlas_coords(cell)
-		if ac.y >= 0 and ac.y < terrain_group.layouts.size():
-			return ac.y
-	# Step 2: Godot native terrain property (D-04)
-	var source := tile_set.get_source(source_id) as TileSetAtlasSource
-	if source != null:
-		var atlas_coords := get_cell_atlas_coords(cell)
-		if source.has_tile(atlas_coords):
-			var tile_data := source.get_tile_data(atlas_coords, 0)
-			if tile_data != null and tile_data.terrain >= 0:
-				return tile_data.terrain
-	# Step 3: default terrain (D-04)
-	return 0
 
 
 ## Place a raw atlas cell directly on the visual layer without running the
@@ -810,21 +534,6 @@ func _ensure_visual_layers() -> void:
 	if resolved_layout != null and resolved_layout.needs_synthesis():
 		var source_id := _resolve_source_id()
 		_ensure_synthesized_tile_set(resolved_layout, source_id)
-
-	# Phase 10: Per-terrain Penta synthesis bridge (F sub-phase).
-	# When terrain_group is bound, each terrain's layout that needs synthesis
-	# triggers its own synthesis from the global tile_set. Each terrain's Penta
-	# layout reads from the same source TileSet but may target different
-	# atlas strips (strip_index = terrain_id for per-terrain dispatch).
-	if terrain_group != null:
-		for terrain_id in range(terrain_group.layouts.size()):
-			var terrain_layout := terrain_group.layouts[terrain_id]
-			if terrain_layout != null and terrain_layout.needs_synthesis():
-				var source_id := _resolve_source_id()
-				# Synthesize per-terrain: each terrain's Penta layout composes
-				# from the same source TileSet. For per-terrain synthesis the
-				# terrain_id maps to strip_index in the Penta atlas.
-				_ensure_synthesized_tile_set(terrain_layout, source_id)
 
 	_sync_visual_layers()
 
@@ -1037,12 +746,7 @@ func _on_layout_changed() -> void:
 	# changes. User-supplied tile_sets keep `_tile_set_is_fallback = false` and are
 	# never replaced.
 	if _tile_set_is_fallback and layout != null:
-		# Phase 10 fallback extension: when terrain_group is bound,
-		# refresh from the first terrain's layout.
-		var fallback_source: PentaTileLayout = layout
-		if terrain_group != null and terrain_group.layouts.size() > 0:
-			fallback_source = terrain_group.layouts[0] if terrain_group.layouts[0] != null else layout
-		var fallback := fallback_source.get_fallback_tile_set()
+		var fallback := layout.get_fallback_tile_set()
 		if fallback != null and fallback != tile_set:
 			_suppress_tile_set_override = true
 			tile_set = fallback
