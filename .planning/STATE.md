@@ -4,14 +4,14 @@ milestone: v0.3
 milestone_name: Terrain + Variation + VirtuMap Integration
 status: executing
 stopped_at: Phase 10 context gathered
-last_updated: "2026-04-30T20:39:57.812Z"
+last_updated: "2026-05-01T09:32:46.817Z"
 last_activity: 2026-04-30 -- Phase 10 execution started
 progress:
-  total_phases: 4
-  completed_phases: 2
+  total_phases: 5
+  completed_phases: 3
   total_plans: 11
-  completed_plans: 7
-  percent: 64
+  completed_plans: 11
+  percent: 100
 ---
 
 # Project State
@@ -25,12 +25,11 @@ See: .planning/PROJECT.md (updated 2026-04-25 after v0.2 pivot to layout library
 
 ## Current Position
 
-Phase: 10 (multi-terrain-variation-implementation) — EXECUTING
-Plan: 1 of 4
-Status: Executing Phase 10
-Last activity: 2026-04-30 -- Phase 10 execution started
+Phase: 10.1 (terrain-auto-detection-redesign) — INSERTED
+Status: Needs planning. Spike 009 validated auto-detection approach.
+Last activity: 2026-05-01 — Spike 009 completed; Phase 10.1 inserted after Phase 10
 
-> Phase 9 (Terrain + Variation Authoring Research Spike) completed 2026-04-30. 3/3 plans executed. Produced formal architecture recommendation at `.planning/phases/09-terrain-variation-authoring-research-spike/09-ARCHITECTURE-RECOMMENDATION.md` — `PentaTileTerrainGroup` Resource + `penta_terrain_id` custom data layer + transient terrain index + 6-phase implementation blueprint (~440 LOC). Godot terrain sets PDF fully extracted. All 6 phase decisions verified. Spikes 004-008 provided validated designs for slopes (single-grid, 8-tile atlas), multi-terrain dispatch (atlas_coords.y encoding), Godot peering bits conversion, and atlas passthrough.
+> Phase 10 (Multi-Terrain + Variation Implementation) was fully executed (4/4 plans) but the TerrainGroup Resource + per-terrain layout array approach is overengineered. Spike 009 validated a simpler approach: auto-detect terrain count from atlas grid dimensions, use Godot native terrain sets for name/color storage (not solving), single shared PentaTileMapLayer.layout for all terrains. Phase 10.1 will replace the TerrainGroup implementation with this auto-detection design.
 
 > Exact next command: `/gsd-plan-phase 10`
 
@@ -125,6 +124,7 @@ Progress: [██████████] 100%
 - 2026-04-29: **Phase 3 closed.** Public-Convention Layouts shipped under D-86 option (b): Blob47Godot only (Tilesetter pair deferred to v0.3+) — 1 layout + 1 bundled PNG + 3 new tests (`blob_47_collapse_test`, `blob_47_hollow_test`, `single_grid_8_moore_propagation_test`) + 1 audit deliverable (`03-TBT-DEEP-AUDIT.md`) + 1 README footnote + 8-Moore single-grid propagation pipeline patch (D-87). REQUIREMENTS.md gains `TBT-01-DEFERRED` / `TBT-02-DEFERRED` / `TEMPLATE-02-DEFERRED` v2 backlog entries; Traceability table marks TBT-03 / TBT-04 / DOC-05 Complete; TEMPLATE-02 marked Partial (Blob47Godot half ships; Tilesetter half deferred). ROADMAP Phase 3 row flipped to `[x]` 2026-04-29 with completion summary. Cumulative runtime GDScript LOC measured directly: ~2455 (sum of `addons/penta_tile/**/*.gd` excluding `tests/` and `demo/`). Phase 2 close baseline reported 1827; the difference vs the +121 LOC actually added in Phase 3 is methodology drift — Phase 2's 1827 figure pre-dated several refinements + .uid-sidecar accounting. Identity guardrail: AT RISK carry-forward — final formal gate is Phase 5 audit vs TileMapDual. No ATTRIBUTION.md created (D-73 final guard verified). 47-blob layout sourced from BorisTheBrave (D-74). Tilesetter slot tables: D-86 = (b) defer. Test suite grew 12 (Phase 2 close) → 15 (Phase 3 close); matrix combos grew 5×16=80 → 6×18=108 in `comprehensive_bitmask_test`. Phase 4 (Fallback Routing) is the next planning step.
 - 2026-04-29 (Phase 7 closeout): **Repo Restructure + MkDocs + LLM Docs Decision complete.** Moved `addons/penta_tile/tests/` to root `tests/`; updated PowerShell/bash runners, PixelLab fixture paths, release workflow commands, README, AGENTS/CLAUDE, and current planning docs. Release packaging still archives only `addons/penta_tile/`, so tests and docs are excluded from addon zips. Added `mkdocs.yml`, `requirements-docs.txt`, and `docs/` with quickstart, installation, layouts overview, per-layout pages, Penta definition, custom layout authoring, and LLM docs page. Decision artifact `07-LLM-DOCS-DECISION.md` recommends direct MkDocs source + GDScript `##` comments over a generated flat artifact for now. REPO-01..03 + DOCS-06..08 complete.
 - 2026-04-27 (UAT-driven AUTO_STRIP completion): **AUTO_STRIP per-strip dispatch un-deferred and shipped retroactively** (commit `29cba37`). Discovered during user UAT that AUTO_STRIP rendered nothing — Wave 6 had explicitly deferred per-strip dispatch to Phase 5, but the deferral was buried in the summary and the verifier marked SC-7 ✓ on detector existence alone (`resolve_strip_modes()` was implemented but never called). Sweep also surfaced a same-file spec contradiction: Wave 2's `synthesize_strip` docstring described Interpretation B (cumulative offset along slot axis); Wave 6's `resolve_strip_modes` implemented Interpretation A (strips perpendicular to slot axis). A locked. Fix: layer's `_ensure_synthesized_tile_set` now branches on AUTO_STRIP, calls `resolve_strip_modes`, threads cumulative `strip_origin` per strip, builds 5×N synthesized atlas (single source, output coord = `Vector2i(slot, strip_index)`); `mask_to_atlas` + `_make_slot` gain `strip_index: int = 0` parameter; new virtual `resolve_display_strip` returns first-non-empty-neighbor's source-atlas-coord (TL→TR→BL→BR canonical order); Penta-only override (non-Penta layouts use base default = 0). Bonus bug found: `resolve_strip_modes` was treating trailing empties as gaps; now only flags "empty-then-populated" patterns. paint_test grew 4 new AUTO_STRIP cases (uniform [3,3] HORIZONTAL, mixed [3,5] HORIZONTAL, gap-with-warning-C, VERTICAL [4,2]) — ALL PASS. Determinism BASELINE_HASH=2986698704 still holds across 11 runs. Documented Gate 1 OuterCorner-via-rotation tradeoff stays as locked spec; user accepts; data-side fix path is artist-authored faded slot 0. Workflow-quality root cause logged: verifier checked existence not wiring; deferrals weren't loud at sign-off; demo bound only FOUR mode so non-FOUR coverage required manual `.tres` swap.
+- Phase 10.1 inserted after Phase 10: Spike 009 validated: auto-detect terrains from atlas grid, use Godot native terrain sets for names/colors (storage-only), single shared layout — replaces overengineered TerrainGroup approach (URGENT)
 
 ### Decisions
 
@@ -258,4 +258,4 @@ Resume file: .planning/phases/10-multi-terrain-variation-implementation/10-CONTE
 **Completed Phase:** 07 (Repo Restructure + MkDocs + LLM Docs) — 1/1 plans — 2026-04-29
 **Completed Phase:** 08 (Research Triage + v0.3 Scope Selection) — 4/4 plans — 2026-04-30
 **Completed Phase:** 09 (Terrain + Variation Authoring Research Spike) — 3/3 plans, architecture recommendation produced — 2026-04-30
-**Next Phase:** 10 (Multi-Terrain + Variation Implementation) — `/gsd-plan-phase 10`
+**Next Phase:** 10.1 (Terrain Auto-Detection Redesign) — `/gsd-plan-phase 10.1`

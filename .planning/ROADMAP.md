@@ -393,6 +393,16 @@ Plans:
 - [x] 10-03-PLAN.md — Wave 3: per-corner dual-grid terrain dispatch + variation mode wiring (SINGLE/PROBABILITY/STRIP) + PentaTileLayoutSlope subclass + set_cell_passthrough()
 - [x] 10-04-PLAN.md — Wave 4: fallback TileSet extension for terrain_group + full 9-layout × 13-pattern × multi-terrain integration test suite
 
+### Phase 10.1: Terrain Auto-Detection Redesign — replace manual TerrainGroup Resource with auto-detected Godot native terrain sets, single shared layout for all terrains, atlas-grid-based terrain count (INSERTED)
+
+**Goal:** [Urgent work - to be planned]
+**Requirements**: TBD
+**Depends on:** Phase 10
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 10.1 to break down)
+
 ### Phase 11: VirtuMap Integration Bridge
 
 **Goal:** Implement atlas passthrough (source-ID gating + _PentaTilePassthrough layer) + PentaTileLayoutSlope subclass + editor preview fix (ghost material refactor). Consumes spike 004+005 findings. Enables VirtuMap to adopt PentaTile as its autotiling engine.
