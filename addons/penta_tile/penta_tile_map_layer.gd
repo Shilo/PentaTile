@@ -132,6 +132,15 @@ func _set(property: StringName, value: Variant) -> bool:
 	if property == "tile_set" and not _suppress_tile_set_override:
 		if value != tile_set:
 			_tile_set_is_fallback = false
+			# Disconnect old tile_set.changed if present
+			if tile_set != null and tile_set is TileSet and tile_set.changed.is_connected(_on_tile_set_changed):
+				tile_set.changed.disconnect(_on_tile_set_changed)
+		# Connect new tile_set.changed
+		if value != null and value is TileSet:
+			if not value.changed.is_connected(_on_tile_set_changed):
+				value.changed.connect(_on_tile_set_changed)
+			# Auto-detect terrains AFTER tile_set is written (deferred so Godot completes the property write first)
+			_auto_detect_terrains.call_deferred()
 	return false
 
 ## Visibility of the parent's raw non-dispatched cells, applied via
@@ -754,6 +763,178 @@ func _on_layout_changed() -> void:
 			_tile_set_is_fallback = true                                              # _set hook would have flipped it false; restore
 	_queue_rebuild()
 	update_configuration_warnings()                                                # H-3 trigger
+
+
+## Auto-detect terrain count from atlas grid dimensions across all sources.
+## Creates terrain_set 0, assigns TileData.terrain = sequential atlas row ID.
+## Idempotent — preserves user-set terrain names/colors via snapshot-before-clear.
+## Called from tile_set setter and on tile_set.changed (deferred coalescer).
+func _auto_detect_terrains() -> void:
+	if tile_set == null:
+		return
+
+	# 1. Compute terrain count: sum atlas_grid_size.y across all TileSetAtlasSource sources
+	var infos: Array = []  # [{source_id: int, first_terrain_id: int, row_count: int}]
+	var next_id: int = 0
+	for src_idx in range(tile_set.get_source_count()):
+		var sid: int = tile_set.get_source_id(src_idx)
+		var src := tile_set.get_source(sid) as TileSetAtlasSource
+		if src == null:
+			continue
+		var rows: int = src.get_atlas_grid_size().y
+		if rows <= 0:
+			continue
+		infos.append({"source_id": sid, "first_terrain_id": next_id, "row_count": rows})
+		next_id += rows
+
+	var total: int = next_id
+	if total == 0:
+		return  # No atlas sources with rows — nothing to do
+
+	# 2. Snapshot old names/colors BEFORE clearing (D-14: user-set customizations survive)
+	var old_names: Dictionary = {}
+	var old_colors: Dictionary = {}
+	if tile_set.get_terrain_sets_count() > 0:
+		for i in tile_set.get_terrains_count(0):
+			old_names[i] = tile_set.get_terrain_name(0, i)
+			old_colors[i] = tile_set.get_terrain_color(0, i)
+
+	# 3. Clear + recreate terrain_set 0
+	while tile_set.get_terrain_sets_count() > 0:
+		tile_set.remove_terrain_set(0)
+
+	tile_set.add_terrain_set()
+
+	# 4. Select terrain mode from active layout's terrain_mode() (D-07)
+	var mode := TileSet.TERRAIN_MODE_MATCH_CORNERS
+	var resolved_layout := _resolve_layout()
+	if resolved_layout != null:
+		var layout_mode := resolved_layout.terrain_mode()
+		if layout_mode >= 0:
+			mode = layout_mode
+	tile_set.set_terrain_set_mode(0, mode)
+
+	# 5. Add terrains + restore names/colors (D-14)
+	for i in range(total):
+		tile_set.add_terrain(0)
+		var name: String = "Terrain %d" % i
+		if old_names.has(i):
+			var old := str(old_names[i])
+			if not old.begins_with("Terrain "):
+				name = old  # preserve user-set name
+		tile_set.set_terrain_name(0, i, name)
+		if old_colors.has(i):
+			tile_set.set_terrain_color(0, i, old_colors[i])
+		else:
+			tile_set.set_terrain_color(0, i,
+				Color.from_hsv(float(hash("tc%d" % i) % 256) / 255.0, 0.7, 0.8))
+
+	# 6. Assign TileData.terrain = sequential terrain ID (D-12, D-15)
+	for info in infos:
+		var sid: int = int(info.source_id)
+		var src := tile_set.get_source(sid) as TileSetAtlasSource
+		if src == null:
+			continue
+		var first: int = int(info.first_terrain_id)
+		var rows: int = int(info.row_count)
+		for row in range(rows):
+			var tid: int = first + row
+			for col in range(src.get_atlas_grid_size().x):
+				var coord := Vector2i(col, row)
+				if src.has_tile(coord):
+					for alt in range(src.get_alternative_tiles_count(coord)):
+						var td := src.get_tile_data(coord, alt)
+						if td:
+							td.terrain_set = 0
+							td.terrain = tid
+
+	# 7. Trigger full rebuild
+	_queue_rebuild()
+
+# Guard flag to prevent tile_set.changed signal recursion during auto-detection
+# (Pitfall 1: auto-detection mutates TileSet → tile_set.changed fires → infinite loop).
+var _performing_auto_detect: bool = false
+
+
+## Receives TileSet.changed when the bound TileSet is externally mutated
+## (add_source, remove_source, etc.). Uses disconnect-before-reconnect pattern
+## to prevent self-triggering when _auto_detect_terrains() mutates the TileSet
+## (Pitfall 1 — RESEARCH.md §Common Pitfalls).
+func _on_tile_set_changed() -> void:
+	if _performing_auto_detect:
+		return
+	if tile_set != null and tile_set.changed.is_connected(_on_tile_set_changed):
+		tile_set.changed.disconnect(_on_tile_set_changed)
+	_performing_auto_detect = true
+	_auto_detect_terrains()
+	_performing_auto_detect = false
+	if tile_set != null and not tile_set.changed.is_connected(_on_tile_set_changed):
+		tile_set.changed.connect(_on_tile_set_changed)
+
+
+## Resolve which terrain_id a logic cell belongs to.
+## Reads TileData.terrain directly from the cell's source tile data (D-13).
+## Returns 0 when the cell is empty or tile_set is null.
+func _resolve_terrain_id(cell: Vector2i) -> int:
+	if tile_set == null:
+		return 0
+	var source_id := get_cell_source_id(cell)
+	if source_id == -1:
+		return 0  # empty cell
+	var source := tile_set.get_source(source_id) as TileSetAtlasSource
+	if source == null:
+		return 0
+	var atlas_coords := get_cell_atlas_coords(cell)
+	if not source.has_tile(atlas_coords):
+		return 0
+	var tile_data := source.get_tile_data(atlas_coords, 0)
+	if tile_data == null:
+		return 0
+	if tile_data.terrain < 0:
+		return 0
+	return tile_data.terrain
+
+
+## Pick a variation tile via deterministic weighted random (D-09).
+## Scans atlas row matching terrain_id for tiles, reads TileData.probability
+## as weight, picks via hash(Vector4i(cell.x, cell.y, terrain_id, variation_seed)).
+## Does NOT use a cached index — scans at render time (acceptable at demo-scale,
+## RESEARCH.md Pitfall 4).
+func _pick_variation_tile(display_cell: Vector2i, _layout: PentaTileLayout, _mask: int, terrain_id: int) -> Vector2i:
+	var source_id: int = _resolve_source_id()
+	if source_id < 0 or tile_set == null:
+		return Vector2i(-1, -1)
+	var source: TileSetAtlasSource = tile_set.get_source(source_id) as TileSetAtlasSource
+	if source == null:
+		return Vector2i(-1, -1)
+
+	var matching: Array[Vector2i] = []
+	var weights: Array[float] = []
+
+	var grid_size: Vector2i = source.get_atlas_grid_size()
+	for col in range(grid_size.x):
+		var coord := Vector2i(col, terrain_id)
+		if not source.has_tile(coord):
+			continue
+		var tile_data: TileData = source.get_tile_data(coord, 0)
+		if tile_data == null:
+			continue
+		if tile_data.terrain != terrain_id:
+			continue
+		var prob: float = tile_data.probability
+		if prob <= 0.0:
+			prob = 1.0
+		matching.append(coord)
+		weights.append(prob)
+
+	if matching.is_empty():
+		return Vector2i(-1, -1)
+
+	var seed_value: int = hash(Vector4i(display_cell.x, display_cell.y, terrain_id, variation_seed))
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_value
+	var pick: int = rng.rand_weighted(weights)
+	return matching[pick]
 
 
 # PENTA-SYNTH-08: Inspector warning panel hook (@tool). Forwards layout-side warnings
