@@ -10,13 +10,11 @@
 ##   - Test is_dual_grid returns false (single-grid)
 ##   - Test terrain_mode returns MATCH_CORNERS
 ##   - Test floor_terrain_id and wall_terrain_id exports
-##   - Test slope layout integrates with terrain_group
 ##
 ## Exits 0 on PASS, 1 on FAIL with details to stderr.
 extends SceneTree
 
 const _LayerScript       = preload("res://addons/penta_tile/penta_tile_map_layer.gd")
-const _TerrainGroupSc    = preload("res://addons/penta_tile/layouts/penta_tile_terrain_group.gd")
 const _SlopeLayoutSc     = preload("res://addons/penta_tile/layouts/penta_tile_layout_slope.gd")
 
 var _failures: Array = []
@@ -30,7 +28,6 @@ func _initialize() -> void:
 	await _test_compute_mask()
 	await _test_mask_to_atlas()
 	await _test_export_properties()
-	await _test_terrain_group_integration()
 	await _test_single_grid_propagation()
 
 	print("\n=== summary ===")
@@ -201,47 +198,10 @@ func _test_export_properties() -> void:
 	# Resource is RefCounted — no explicit free needed
 
 
-func _test_terrain_group_integration() -> void:
-	print("\n  --- terrain group integration ---")
-
-	var ts := _build_slope_tileset()
-	var layer := _LayerScript.new()
-	layer.tile_set = ts
-
-	var slope := _SlopeLayoutSc.new()
-	var group := _TerrainGroupSc.new()
-	group.layouts.append(slope)  # terrain 0 = Slope
-	layer.terrain_group = group
-	get_root().add_child(layer)
-	await process_frame
-	await process_frame
-
-	# Paint a cell with terrain 0 (Slope).
-	layer.set_cell(Vector2i(0, 0), 0, Vector2i(0, 0))
-	await process_frame
-	await process_frame
-	if layer.has_method("rebuild"):
-		layer.rebuild()
-	await process_frame
-	await process_frame
-
-	# Slope layout is single-grid (is_dual_grid = false).
-	# Since the default Penta layout (dual-grid) triggers dual-grid path,
-	# the slope layout embedded in terrain_group gets called via
-	# _paint_dual_grid_terrain's per-terrain mask computation.
-	var primary: TileMapLayer = layer.get("_primary_layer")
-	if primary != null and is_instance_valid(primary):
-		var painted_count: int = primary.get_used_cells().size()
-		print("  visual cells painted: ", painted_count)
-		_assert("slope in terrain_group paints cells", painted_count > 0)
-
-	layer.queue_free()
-
-
 func _test_single_grid_propagation() -> void:
 	print("\n  --- single-grid propagation ---")
 
-	# Slope is single-grid. When used as self.layout (not via terrain_group),
+	# Slope is single-grid. When used as self.layout,
 	# the single-grid _mark_affected_single_grid_cells should propagate.
 	var ts := _build_slope_tileset()
 	var layer := _LayerScript.new()
