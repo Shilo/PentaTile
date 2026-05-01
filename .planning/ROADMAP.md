@@ -241,7 +241,8 @@ Phases execute in numeric order: 1 → 2 → 3 → 3.5 → 4 → 5 → 6 → 7 �
 | 8. Research Triage + v0.3 Scope Selection | 4/4 | **Complete.** Verified competitive-autotiling claims, dispositioned supplied recommendations, ranked v0.3 candidates, wrote scope firewall, refined backlog triggers, and recommended **Terrain + Variation Authoring Research Spike** as the next v0.3 target. Production terrain/variation refactors remain blocked until spike findings plus user-side manual Godot testing exist. | 2026-04-30 |
 | 9. Terrain + Variation Authoring Research Spike | 3/3 | Complete. 09-ARCHITECTURE-RECOMMENDATION.md produced: PentaTileTerrainGroup + penta_terrain_id custom data layer + transient terrain index + 6-phase blueprint (~440 LOC). Godot terrain sets PDF fully extracted. All 6 phase decisions verified. | 2026-04-30 |
 | 10. Multi-Terrain + Variation Implementation | 4/4 | Complete   | 2026-04-30 |
-| 11. VirtuMap Integration Bridge | 0/0 | Consumes spike 004+005. Blocked until Phase 10 completes. | — |
+| 10.1. Terrain Auto-Detection Redesign | 0/3 | Planned — 3 plans, 2 waves | — |
+| 11. VirtuMap Integration Bridge | 0/0 | Consumes spike 004+005. Blocked until Phase 10.1 completes. | — |
 
 ## Coverage
 
@@ -257,8 +258,9 @@ All 58 v1 requirements mapped to exactly one phase. No orphans, no duplicates.
 | 5. Demo Refresh + Documentation + Release | DEMO-01..03, DOC-01..04, REL-01..03 (10) |
 | 7. Repo Restructure + MkDocs + LLM Docs | REPO-01..03, DOCS-06..08 (6 post-release follow-up reqs) |
 | 8. Research Triage + v0.3 Scope Selection | TRIAGE-01..06 (6 post-release planning reqs) |
+| 10 + 10.1. Multi-Terrain + Variation | MULTITERR-01..08 (8, split across Phases 10 + 10.1) |
 | **(Pre-shipped flat templates) → restructured in Phase 2 (TEMPLATE-01)** | (existing PNGs migrated to co-located bundles next to layout `.gd` files) |
-| **Total** | **58 / 58 v1 + 6 / 6 Phase 7 follow-up + 6 / 6 Phase 8 planning reqs** |
+| **Total** | **58 / 58 v1 + 6 / 6 Phase 7 follow-up + 6 / 6 Phase 8 planning reqs + 0/8 MULTITERR reqs (Phase 10 partial, Phase 10.1 pending)** |
 
 > **2026-04-26 architectural pivots** (locked after fourth iteration of design refinement):
 > - `PentaTileAtlasContract` deleted (CONTRACT-01..05 retired); `layout: PentaTileLayout` directly on `PentaTileMapLayer` (LAYER-01..03)
@@ -395,13 +397,16 @@ Plans:
 
 ### Phase 10.1: Terrain Auto-Detection Redesign — replace manual TerrainGroup Resource with auto-detected Godot native terrain sets, single shared layout for all terrains, atlas-grid-based terrain count (INSERTED)
 
-**Goal:** [Urgent work - to be planned]
-**Requirements**: TBD
+**Goal:** Replace the Phase 10 `PentaTileTerrainGroup` Resource + per-terrain layout array with auto-detection: terrain count derived from `atlas_grid_size.y` (each atlas row = one terrain), Godot native `TerrainSets` for name/color storage (not solving), single shared `layout: PentaTileLayout` for all terrains. ~280 LOC net savings (~400 removed, ~120 added).
+
+**Requirements**: MULTITERR-01, MULTITERR-02, MULTITERR-03, MULTITERR-04, MULTITERR-05, MULTITERR-07, MULTITERR-08
 **Depends on:** Phase 10
-**Plans:** 0 plans
+**Plans:** 3 plans
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 10.1 to break down)
+- [ ] 10.1-01-PLAN.md — Wave 1: Source code refactor — DELETE TerrainGroup infrastructure + ADD _auto_detect_terrains()/_on_tile_set_changed()/_resolve_terrain_id() + SIMPLIFY dual-grid per-corner dispatch + single-grid terrain dispatch + variation wiring
+- [ ] 10.1-02-PLAN.md — Wave 2: NEW tests (terrain_autodetect_test.gd + terrain_dispatch_test.gd + terrain_determinism_test.gd + terrain_sample_terrains_test.gd) + DELETE 5 old TerrainGroup-coupled tests
+- [ ] 10.1-03-PLAN.md — Wave 2: REWRITE tests (variation_determinism_test.gd + slope_layout_test.gd drop TerrainGroup) + UPDATE run_tests.ps1 inventory + closeout (ROADMAP.md + STATE.md)
 
 ### Phase 11: VirtuMap Integration Bridge
 
