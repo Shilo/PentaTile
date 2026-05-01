@@ -349,7 +349,61 @@ func _paint_via_layout(display_cell: Vector2i, active_layout: PentaTileLayout, s
 				get_cell_alternative_tile(display_cell))
 		return
 
-	# -- Phase 10 dual-grid terrain_group branch removed — see Task 3 for replacement
+	# --- Phase 10.1: Dual-grid terrain dispatch (D-05) ---
+	# Per-corner single-shared-layout dispatch.
+	# Each display cell's 4 corners get terrain IDs from TileData.terrain
+	# of logic cell neighbors. sample_fn filters: only same-terrain neighbors
+	# count as filled. No precedence stacking — each corner renders once.
+	if active_layout.is_dual_grid():
+		_primary_layer.erase_cell(display_cell)
+
+		const CORNERS := [
+			Vector2i(-1, -1),  # TL
+			Vector2i(0, -1),   # TR
+			Vector2i(-1, 0),   # BL
+			Vector2i(0, 0),    # BR
+		]
+
+		var corner_terrain_ids: Array[int] = []
+		for i in range(CORNERS.size()):
+			var logic_cell: Vector2i = display_cell + CORNERS[i]
+			corner_terrain_ids.append(_resolve_terrain_id(logic_cell) if _has_logic_cell(logic_cell) else -1)
+
+		# Build per-corner mask per unique terrain
+		var painted_terrains: Dictionary = {}  # terrain_id -> mask_bits
+		for i in range(CORNERS.size()):
+			var tid: int = corner_terrain_ids[i]
+			if tid < 0:
+				continue
+			if not painted_terrains.has(tid):
+				painted_terrains[tid] = 0
+			painted_terrains[tid] |= (1 << i)
+
+		for tid: int in painted_terrains.keys():
+			var terrain_mask: int = painted_terrains[tid]
+			if terrain_mask == 0:
+				continue
+			# Terrain-aware sample_fn: only same-terrain neighbors count as filled
+			var terrain_sample_fn := func(logic_cell: Vector2i) -> bool:
+				if not _has_logic_cell(logic_cell):
+					return false
+				return _resolve_terrain_id(logic_cell) == tid
+
+			var full_mask: int = active_layout.compute_mask(display_cell, terrain_sample_fn, tid)
+			if full_mask == 0:
+				continue
+
+			var slot := active_layout.mask_to_atlas(full_mask, tid)
+			if slot == null:
+				continue
+
+			var paint_source: int = source
+			if slot.source_id >= 0:
+				paint_source = slot.source_id
+
+			_paint_with_slot(_primary_layer, slot, display_cell, paint_source)
+
+		return  # dual-grid path done
 
 	_primary_layer.erase_cell(display_cell)
 
@@ -406,7 +460,7 @@ func _paint_via_layout(display_cell: Vector2i, active_layout: PentaTileLayout, s
 			if _strip_count > 0 and strip_index >= _strip_count:
 				strip_index = 0
 
-	var slot := resolved_layout.mask_to_atlas(mask, strip_index)
+	var slot := resolved_layout.mask_to_atlas(mask, terrain_id)
 	if slot == null:
 		return
 
