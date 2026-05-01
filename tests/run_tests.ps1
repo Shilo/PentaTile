@@ -68,13 +68,12 @@ try {
         "pixellab_first_cell_test",
         "pixellab_visual_regression_test",
         "fallback_routing_test",
-        "terrain_index_test",
-        "single_grid_cross_terrain_test",
-        "dual_grid_terrain_test",
+        "terrain_autodetect_test",
+        "terrain_dispatch_test",
+        "terrain_determinism_test",
+        "terrain_sample_terrains_test",
         "variation_determinism_test",
-        "slope_layout_test",
-        "terrain_fallback_test",
-        "terrain_integration_test"
+        "slope_layout_test"
     )
 
     $tests = $allTests
