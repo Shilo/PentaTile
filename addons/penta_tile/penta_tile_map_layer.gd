@@ -227,6 +227,13 @@ func _init() -> void:
 ## Prepare the generated visual layer and schedule the first full dispatch after
 ## Godot has finished entering the scene tree.
 func _ready() -> void:
+	# Auto-detect terrains on scene load. The _set hook's call_deferred() may have
+	# been dropped if tile_set was written during PackedScene.instantiate() before
+	# the node entered the tree (Godot kills deferred calls on non-tree objects).
+	# Calling directly here is safe: _ready is the first tree-enter callback and
+	# the _performing_auto_detect guard prevents re-entrancy if _set's deferred
+	# also fires later.
+	_auto_detect_terrains()
 	_ensure_visual_layers()
 	_apply_logic_layer_opacity()
 	_apply_logic_collision()
