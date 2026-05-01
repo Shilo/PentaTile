@@ -824,7 +824,11 @@ func _on_layout_changed() -> void:
 ## Idempotent — preserves user-set terrain names/colors via snapshot-before-clear.
 ## Called from tile_set setter and on tile_set.changed (deferred coalescer).
 func _auto_detect_terrains() -> void:
+	if _performing_auto_detect:
+		return  # Guard against re-entrancy (called from deferred _set + tile_set.changed)
+	_performing_auto_detect = true
 	if tile_set == null:
+		_performing_auto_detect = false
 		return
 
 	# 1. Compute terrain count: sum atlas_grid_size.y across all TileSetAtlasSource sources
@@ -843,6 +847,7 @@ func _auto_detect_terrains() -> void:
 
 	var total: int = next_id
 	if total == 0:
+		_performing_auto_detect = false
 		return  # No atlas sources with rows — nothing to do
 
 	# 2. Snapshot old names/colors BEFORE clearing (D-14: user-set customizations survive)
@@ -904,6 +909,7 @@ func _auto_detect_terrains() -> void:
 
 	# 7. Trigger full rebuild
 	_queue_rebuild()
+	_performing_auto_detect = false
 
 # Guard flag to prevent tile_set.changed signal recursion during auto-detection
 # (Pitfall 1: auto-detection mutates TileSet → tile_set.changed fires → infinite loop).
