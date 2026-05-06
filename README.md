@@ -26,7 +26,8 @@
 18. [Using PentaTile as a subtree dependency](#-using-pentatile-as-a-subtree-dependency)
 19. [VS Code task for updating without typing the CLI command](#-vs-code-task-for-updating-without-typing-the-cli-command)
 20. [Dependencies](#-dependencies)
-21. [External Resources](#-external-resources)
+21. [Used By](#-used-by)
+22. [External Resources](#-external-resources)
 
 ## 🚀 Why PentaTile?
 
@@ -467,6 +468,10 @@ The task still runs Git under the hood, but you can trigger it from VS Code with
 - [Tyle Map Editor](https://github.com/Shilo/tyle-map-editor) - Godot terrain-painting editor plugin bundled at `addons/penta_tile/tyle_map_editor`.
 - [Flyout Button](https://github.com/Shilo/flyout-button) - reusable Godot button control bundled through Tyle Map Editor at `addons/penta_tile/tyle_map_editor/flyout_button`.
 - [NeoCade Theme](https://github.com/Shilo/NeoCade-Theme) - shared Godot UI theme resources bundled through Tyle Map Editor at `addons/penta_tile/tyle_map_editor/neocade_theme`.
+
+## 🔁 Used By
+
+- [VirtuMap](https://github.com/Shilo/VirtuMap) - uses PentaTile as a child subtree at `addons/virtumap/penta_tile`.
 
 ## 🔗 External Resources
 
