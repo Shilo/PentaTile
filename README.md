@@ -23,8 +23,10 @@
 15. [Implementation Notes](#-implementation-notes)
 16. [Roadmap](#-roadmap)
 17. [Maintainer: create the addon split branch](#-maintainer-create-the-addon-split-branch)
-18. [Dependencies](#-dependencies)
-19. [External Resources](#-external-resources)
+18. [Using PentaTile as a subtree dependency](#-using-pentatile-as-a-subtree-dependency)
+19. [VS Code task for updating without typing the CLI command](#-vs-code-task-for-updating-without-typing-the-cli-command)
+20. [Dependencies](#-dependencies)
+21. [External Resources](#-external-resources)
 
 ## 🚀 Why PentaTile?
 
@@ -365,28 +367,7 @@ The `addon` branch contains only the files that belong inside a dependent projec
 
 The `.github/workflows/sync-addon-branch.yml` workflow runs this split automatically whenever `main` receives changes under `addons/penta_tile`. Use the manual commands above when creating the branch for the first time, repairing it, or refreshing it outside GitHub Actions.
 
-## 📦 Dependencies
-
-- [Tyle Map Editor](https://github.com/Shilo/tyle-map-editor) - Godot terrain-painting editor plugin used for faster TileMapLayer terrain editing workflows.
-- [Flyout Button](https://github.com/Shilo/flyout-button) - reusable Godot button control required by Tyle Map Editor's compact flyout toolbar controls.
-
-## 🔗 External Resources
-
-- <a href="https://github.com/dandeliondino/godot-4-tileset-terrains-docs" target="_blank" rel="noopener">Godot 4 Autotilling Documentation ↗︎</a> - A detailed guide and starter project for understanding Godot 4's native terrain system.
-- <a href="https://www.youtube.com/watch?v=jEWFSv3ivTg" target="_blank" rel="noopener">The Dual Grid Concept ↗︎</a> - A brilliant deep dive into how offset grid math solves the 47-tile problem.
-- <a href="https://www.youtube.com/watch?v=aWcCNGen0cM" target="_blank" rel="noopener">Drawing Only 5 Tiles ↗︎</a> - The inspiration for PentaTile's minimalism, showing how to achieve high-end results with a tiny asset footprint.
-- <a href="https://github.com/dandeliondino/tile_bit_tools" target="_blank" rel="noopener">TileBitTools (Godot 4 inspector plugin) ↗︎</a> - Design inspiration for PentaTile's layout-Resource architecture. PentaTile re-implements every layout from each format's primary reference (BorisTheBrave for 47-blob; Tilesetter manual for Tilesetter Wang/Blob); no code or data is copied from TBT.
-- <a href="https://excaliburjs.com/blog/Dual%20Tilemap%20Autotiling%20Technique/" target="_blank" rel="noopener">Dual Tilemap Autotiling Technique (Excalibur.js) ↗︎</a> - Codifies the 5-archetype dual-grid set: <code>Filled</code>, <code>Edge</code>, <code>InnerCorner</code>, <code>OuterCorner</code>, <code>OppositeCorners</code>. Source for PentaTile's "Opposite Corners" archetype name. Companion code: <a href="https://github.com/jyoung4242/dual-grid-auto-tiling" target="_blank" rel="noopener">jyoung4242/dual-grid-auto-tiling ↗︎</a>.
-- <a href="https://youtu.be/Uxeo9c-PX-w?t=305" target="_blank" rel="noopener">Oskar Stålberg — dual-grid implementation walkthrough (5:05) ↗︎</a> - The dual-grid talk that popularized this technique; the deep-link jumps straight to the tile-implementation breakdown.
-- <a href="https://www.youtube.com/watch?v=buKQjkad2I0" target="_blank" rel="noopener">Programming Terrain Generation for my Farming Game ↗︎</a> - Devlog showing dual-grid / 5-tile autotiling applied in a real game project.
-- <a href="https://www.rpgmakerweb.com/blog/classic-tutorial-how-autotiles-work" target="_blank" rel="noopener">Classic Tutorial: How Autotiles Work (RPG Maker) ↗︎</a> - Explains RPG Maker's A2 autotile internals — each tile composed from 4 mini-tiles of 24×24 px. Background reading for the eventual <code>RPGM-01/02</code> subtile compositor (v0.3+).
-
-## 🙏 Attributions
-
-- <a href="https://kenney.nl/assets/pico-8-platformer" target="_blank" rel="noopener">Kenney's Pico-8 Platformer ↗︎</a> - Asset pack used for the demo ground texture (CC0).
-- The pixel-art Godot robot mascot in PentaTile's brand assets is an original drawing inspired by <a href="https://godotengine.org/press/" target="_blank" rel="noopener">Godot's official icon ↗︎</a> and <a href="https://toongoat.itch.io/godot-pixel-art-emoji-pack" target="_blank" rel="noopener">Krad's Godot Pixel Art Emoji Pack ↗︎</a>. It's a "powered by Godot" nod, not PentaTile branding — the Godot logo and name are trademarks of the Godot Foundation, and PentaTile claims no ownership of either.
-
-## Using PentaTile as a subtree dependency
+## 🌳 Using PentaTile as a subtree dependency
 
 Dependent Godot projects should keep these shared files at:
 
@@ -418,7 +399,7 @@ git subtree pull --prefix=addons/penta_tile https://github.com/Shilo/PentaTile.g
 
 If Git reports conflicts, resolve them like a normal merge, then commit the result.
 
-## VS Code task for updating without typing the CLI command
+## 🧰 VS Code task for updating without typing the CLI command
 
 In any dependent repo, create `.vscode/tasks.json` with this task:
 
@@ -461,3 +442,24 @@ Optional keyboard shortcut in VS Code `keybindings.json`:
 ```
 
 The task still runs Git under the hood, but you can trigger it from VS Code without retyping the subtree command.
+
+## 📦 Dependencies
+
+- [Tyle Map Editor](https://github.com/Shilo/tyle-map-editor) - Godot terrain-painting editor plugin used for faster TileMapLayer terrain editing workflows.
+- [Flyout Button](https://github.com/Shilo/flyout-button) - reusable Godot button control required by Tyle Map Editor's compact flyout toolbar controls.
+
+## 🔗 External Resources
+
+- <a href="https://github.com/dandeliondino/godot-4-tileset-terrains-docs" target="_blank" rel="noopener">Godot 4 Autotilling Documentation ↗︎</a> - A detailed guide and starter project for understanding Godot 4's native terrain system.
+- <a href="https://www.youtube.com/watch?v=jEWFSv3ivTg" target="_blank" rel="noopener">The Dual Grid Concept ↗︎</a> - A brilliant deep dive into how offset grid math solves the 47-tile problem.
+- <a href="https://www.youtube.com/watch?v=aWcCNGen0cM" target="_blank" rel="noopener">Drawing Only 5 Tiles ↗︎</a> - The inspiration for PentaTile's minimalism, showing how to achieve high-end results with a tiny asset footprint.
+- <a href="https://github.com/dandeliondino/tile_bit_tools" target="_blank" rel="noopener">TileBitTools (Godot 4 inspector plugin) ↗︎</a> - Design inspiration for PentaTile's layout-Resource architecture. PentaTile re-implements every layout from each format's primary reference (BorisTheBrave for 47-blob; Tilesetter manual for Tilesetter Wang/Blob); no code or data is copied from TBT.
+- <a href="https://excaliburjs.com/blog/Dual%20Tilemap%20Autotiling%20Technique/" target="_blank" rel="noopener">Dual Tilemap Autotiling Technique (Excalibur.js) ↗︎</a> - Codifies the 5-archetype dual-grid set: <code>Filled</code>, <code>Edge</code>, <code>InnerCorner</code>, <code>OuterCorner</code>, <code>OppositeCorners</code>. Source for PentaTile's "Opposite Corners" archetype name. Companion code: <a href="https://github.com/jyoung4242/dual-grid-auto-tiling" target="_blank" rel="noopener">jyoung4242/dual-grid-auto-tiling ↗︎</a>.
+- <a href="https://youtu.be/Uxeo9c-PX-w?t=305" target="_blank" rel="noopener">Oskar Stålberg — dual-grid implementation walkthrough (5:05) ↗︎</a> - The dual-grid talk that popularized this technique; the deep-link jumps straight to the tile-implementation breakdown.
+- <a href="https://www.youtube.com/watch?v=buKQjkad2I0" target="_blank" rel="noopener">Programming Terrain Generation for my Farming Game ↗︎</a> - Devlog showing dual-grid / 5-tile autotiling applied in a real game project.
+- <a href="https://www.rpgmakerweb.com/blog/classic-tutorial-how-autotiles-work" target="_blank" rel="noopener">Classic Tutorial: How Autotiles Work (RPG Maker) ↗︎</a> - Explains RPG Maker's A2 autotile internals — each tile composed from 4 mini-tiles of 24×24 px. Background reading for the eventual <code>RPGM-01/02</code> subtile compositor (v0.3+).
+
+## 🙏 Attributions
+
+- <a href="https://kenney.nl/assets/pico-8-platformer" target="_blank" rel="noopener">Kenney's Pico-8 Platformer ↗︎</a> - Asset pack used for the demo ground texture (CC0).
+- The pixel-art Godot robot mascot in PentaTile's brand assets is an original drawing inspired by <a href="https://godotengine.org/press/" target="_blank" rel="noopener">Godot's official icon ↗︎</a> and <a href="https://toongoat.itch.io/godot-pixel-art-emoji-pack" target="_blank" rel="noopener">Krad's Godot Pixel Art Emoji Pack ↗︎</a>. It's a "powered by Godot" nod, not PentaTile branding — the Godot logo and name are trademarks of the Godot Foundation, and PentaTile claims no ownership of either.
