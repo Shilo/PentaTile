@@ -22,8 +22,9 @@
 14. [Identity & Footprint](#-identity--footprint)
 15. [Implementation Notes](#-implementation-notes)
 16. [Roadmap](#-roadmap)
-17. [External Resources](#-external-resources)
-18. [Dependencies](#dependencies)
+17. [Maintainer: create the addon split branch](#-maintainer-create-the-addon-split-branch)
+18. [Dependencies](#-dependencies)
+19. [External Resources](#-external-resources)
 
 ## 🚀 Why PentaTile?
 
@@ -351,6 +352,24 @@ The logic layer is hidden with `self_modulate.a`, not `visible = false`, because
 
 Full deferred-features inventory is in [`.planning/REQUIREMENTS.md`](.planning/REQUIREMENTS.md) § "v2 Requirements".
 
+## 🔧 Maintainer: create the addon split branch
+
+The public subtree branch is always named `addon`. After changing files under `addons/penta_tile` on `main`, refresh and push the split branch from the PentaTile repo root:
+
+```powershell
+git subtree split --prefix=addons/penta_tile main --branch addon
+git push origin addon
+```
+
+The `addon` branch contains only the files that belong inside a dependent project's `addons/penta_tile` directory.
+
+The `.github/workflows/sync-addon-branch.yml` workflow runs this split automatically whenever `main` receives changes under `addons/penta_tile`. Use the manual commands above when creating the branch for the first time, repairing it, or refreshing it outside GitHub Actions.
+
+## 📦 Dependencies
+
+- [Tyle Map Editor](https://github.com/Shilo/tyle-map-editor) - Godot terrain-painting editor plugin used for faster TileMapLayer terrain editing workflows.
+- [Flyout Button](https://github.com/Shilo/flyout-button) - reusable Godot button control required by Tyle Map Editor's compact flyout toolbar controls.
+
 ## 🔗 External Resources
 
 - <a href="https://github.com/dandeliondino/godot-4-tileset-terrains-docs" target="_blank" rel="noopener">Godot 4 Autotilling Documentation ↗︎</a> - A detailed guide and starter project for understanding Godot 4's native terrain system.
@@ -366,19 +385,6 @@ Full deferred-features inventory is in [`.planning/REQUIREMENTS.md`](.planning/R
 
 - <a href="https://kenney.nl/assets/pico-8-platformer" target="_blank" rel="noopener">Kenney's Pico-8 Platformer ↗︎</a> - Asset pack used for the demo ground texture (CC0).
 - The pixel-art Godot robot mascot in PentaTile's brand assets is an original drawing inspired by <a href="https://godotengine.org/press/" target="_blank" rel="noopener">Godot's official icon ↗︎</a> and <a href="https://toongoat.itch.io/godot-pixel-art-emoji-pack" target="_blank" rel="noopener">Krad's Godot Pixel Art Emoji Pack ↗︎</a>. It's a "powered by Godot" nod, not PentaTile branding — the Godot logo and name are trademarks of the Godot Foundation, and PentaTile claims no ownership of either.
-
-## Maintainer: create the addon split branch
-
-The public subtree branch is always named `addon`. After changing files under `addons/penta_tile` on `main`, refresh and push the split branch from the PentaTile repo root:
-
-```powershell
-git subtree split --prefix=addons/penta_tile main --branch addon
-git push origin addon
-```
-
-The `addon` branch contains only the files that belong inside a dependent project's `addons/penta_tile` directory.
-
-The `.github/workflows/sync-addon-branch.yml` workflow runs this split automatically whenever `main` receives changes under `addons/penta_tile`. Use the manual commands above when creating the branch for the first time, repairing it, or refreshing it outside GitHub Actions.
 
 ## Using PentaTile as a subtree dependency
 
@@ -455,8 +461,3 @@ Optional keyboard shortcut in VS Code `keybindings.json`:
 ```
 
 The task still runs Git under the hood, but you can trigger it from VS Code without retyping the subtree command.
-
-## Dependencies
-
-- [Tyle Map Editor](https://github.com/Shilo/tyle-map-editor) - Godot terrain-painting editor plugin used for faster TileMapLayer terrain editing workflows.
-- [Flyout Button](https://github.com/Shilo/flyout-button) - reusable Godot button control required by Tyle Map Editor's compact flyout toolbar controls.
