@@ -369,15 +369,16 @@ The `.github/workflows/sync-addon-branch.yml` workflow runs this split automatic
 
 ## 🌳 Using PentaTile as a subtree dependency
 
-Dependent Godot projects should keep these shared files at:
+Dependent Godot projects should keep PentaTile and its shared script dependency at these sibling locations:
 
 ```text
 addons/penta_tile
+addons/virtucore
 ```
 
 Git subtree is useful here because the dependent repo gets real committed files instead of a submodule pointer. That means the project still opens normally in Godot and does not require an extra clone step.
 
-This repository is a full Godot demo project. The reusable addon files live in `addons/penta_tile`, so subtree consumers should use the generated `addon` split branch.
+This repository is a full Godot demo project. The reusable addon files live in `addons/penta_tile`, so subtree consumers should use the generated `addon` split branch. Tyle Map Editor, Flyout Button, and NeoCade Theme are bundled as child subtrees inside `addons/penta_tile`; VirtuCore stays as a sibling subtree because it is shared by multiple addons.
 
 ### Initialize the subtree
 
@@ -385,9 +386,10 @@ From the root of the repo that depends on PentaTile:
 
 ```powershell
 git subtree add --prefix=addons/penta_tile https://github.com/Shilo/PentaTile.git addon --squash
+git subtree add --prefix=addons/virtucore https://github.com/Shilo/VirtuCore.git addon --squash
 ```
 
-This adds the shared PentaTile files into `addons/penta_tile` and records enough subtree history for future updates.
+This adds the shared PentaTile files into `addons/penta_tile`, adds VirtuCore into `addons/virtucore`, and records enough subtree history for future updates.
 
 ### Update to the latest PentaTile commit
 
@@ -395,6 +397,7 @@ From the dependent repo root:
 
 ```powershell
 git subtree pull --prefix=addons/penta_tile https://github.com/Shilo/PentaTile.git addon --squash
+git subtree pull --prefix=addons/virtucore https://github.com/Shilo/VirtuCore.git addon --squash
 ```
 
 If Git reports conflicts, resolve them like a normal merge, then commit the result.
@@ -408,16 +411,15 @@ In any dependent repo, create `.vscode/tasks.json` with this task:
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Update PentaTile subtree",
+      "label": "Update all subtrees",
       "type": "shell",
-      "command": "git",
+      "command": "powershell",
       "args": [
-        "subtree",
-        "pull",
-        "--prefix=addons/penta_tile",
-        "https://github.com/Shilo/PentaTile.git",
-        "addon",
-        "--squash"
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-Command",
+        "git subtree pull --prefix=addons/penta_tile https://github.com/Shilo/PentaTile.git addon --squash; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; git subtree pull --prefix=addons/virtucore https://github.com/Shilo/VirtuCore.git addon --squash; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }"
       ],
       "problemMatcher": []
     }
@@ -429,7 +431,7 @@ Then run it from VS Code:
 
 1. Open the Command Palette with `Ctrl+Shift+P`.
 2. Choose `Tasks: Run Task`.
-3. Choose `Update PentaTile subtree`.
+3. Choose `Update all subtrees`.
 
 Optional keyboard shortcut in VS Code `keybindings.json`:
 
@@ -437,7 +439,7 @@ Optional keyboard shortcut in VS Code `keybindings.json`:
 {
   "key": "ctrl+alt+u",
   "command": "workbench.action.tasks.runTask",
-  "args": "Update PentaTile subtree"
+  "args": "Update all subtrees"
 }
 ```
 
@@ -445,9 +447,10 @@ The task still runs Git under the hood, but you can trigger it from VS Code with
 
 ## 📦 Dependencies
 
-- [Tyle Map Editor](https://github.com/Shilo/tyle-map-editor) - Godot terrain-painting editor plugin used for faster TileMapLayer terrain editing workflows.
-- [Flyout Button](https://github.com/Shilo/flyout-button) - reusable Godot button control required by Tyle Map Editor's compact flyout toolbar controls.
-- [NeoCade Theme](https://github.com/Shilo/NeoCade-Theme) - shared Godot UI theme resources used by Tyle Map Editor for consistent editor-facing controls.
+- [VirtuCore](https://github.com/Shilo/VirtuCore) - shared Godot utility scripts kept as a sibling subtree at `addons/virtucore`.
+- [Tyle Map Editor](https://github.com/Shilo/tyle-map-editor) - Godot terrain-painting editor plugin bundled at `addons/penta_tile/tyle_map_editor`.
+- [Flyout Button](https://github.com/Shilo/flyout-button) - reusable Godot button control bundled through Tyle Map Editor at `addons/penta_tile/tyle_map_editor/flyout_button`.
+- [NeoCade Theme](https://github.com/Shilo/NeoCade-Theme) - shared Godot UI theme resources bundled through Tyle Map Editor at `addons/penta_tile/tyle_map_editor/neocade_theme`.
 
 ## 🔗 External Resources
 

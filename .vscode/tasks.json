@@ -2,30 +2,15 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Update Tyle Map Editor subtree",
+      "label": "Update all subtrees",
       "type": "shell",
-      "command": "git",
+      "command": "powershell",
       "args": [
-        "subtree",
-        "pull",
-        "--prefix=addons/tyle_map_editor",
-        "https://github.com/Shilo/tyle-map-editor.git",
-        "addon",
-        "--squash"
-      ],
-      "problemMatcher": []
-    },
-    {
-      "label": "Update Flyout Button subtree",
-      "type": "shell",
-      "command": "git",
-      "args": [
-        "subtree",
-        "pull",
-        "--prefix=addons/flyout_button",
-        "https://github.com/Shilo/flyout-button.git",
-        "addon",
-        "--squash"
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-Command",
+        "git subtree pull --prefix=addons/penta_tile/tyle_map_editor https://github.com/Shilo/tyle-map-editor.git addon --squash; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; git subtree pull --prefix=addons/virtucore https://github.com/Shilo/VirtuCore.git addon --squash; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }"
       ],
       "problemMatcher": []
     }
