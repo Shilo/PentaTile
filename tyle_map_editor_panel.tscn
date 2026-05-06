@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://1bhkbncfojmv"]
 
 [ext_resource type="Script" uid="uid://d4bsm0kh3eusm" path="res://addons/tyle_map_editor/tyle_map_editor_panel.gd" id="1_panel"]
-[ext_resource type="Script" uid="uid://lpes8eqyfvqg" path="res://addons/tyle_map_editor/flyout_button/flyout_button.gd" id="2_3361d"]
-[ext_resource type="Script" uid="uid://dd6qdiv3n7xrg" path="res://addons/tyle_map_editor/flyout_button/flyout_button_item.gd" id="3_mhpx5"]
+[ext_resource type="Script" uid="uid://c7hbyexi83ha6" path="res://addons/flyout_button/flyout_button.gd" id="2_3361d"]
+[ext_resource type="Script" uid="uid://dg12678wjk1m3" path="res://addons/flyout_button/flyout_button_item.gd" id="3_mhpx5"]
 [ext_resource type="Texture2D" path="res://addons/tyle_map_editor/icons/rectangle.svg" id="4_yw7vp"]
 [ext_resource type="Texture2D" path="res://addons/tyle_map_editor/icons/rectangle_filled.svg" id="5_mssda"]
 [ext_resource type="Texture2D" path="res://addons/tyle_map_editor/icons/ellipse_filled.svg" id="6_mj8ra"]
@@ -32,25 +32,25 @@ events = [SubResource("action_draw")]
 script = ExtResource("3_mhpx5")
 title = &"Rectangle"
 icon = ExtResource("5_mssda")
-metadata/_custom_type_script = "uid://dd6qdiv3n7xrg"
+metadata/_custom_type_script = "uid://dg12678wjk1m3"
 
 [sub_resource type="Resource" id="Resource_w8eta"]
 script = ExtResource("3_mhpx5")
 title = &"Outline rectangle"
 icon = ExtResource("4_yw7vp")
-metadata/_custom_type_script = "uid://dd6qdiv3n7xrg"
+metadata/_custom_type_script = "uid://dg12678wjk1m3"
 
 [sub_resource type="Resource" id="Resource_tjqd2"]
 script = ExtResource("3_mhpx5")
 title = &"Ellipse"
 icon = ExtResource("6_mj8ra")
-metadata/_custom_type_script = "uid://dd6qdiv3n7xrg"
+metadata/_custom_type_script = "uid://dg12678wjk1m3"
 
 [sub_resource type="Resource" id="Resource_t272n"]
 script = ExtResource("3_mhpx5")
 title = &"Outline ellipse"
 icon = ExtResource("7_civ1p")
-metadata/_custom_type_script = "uid://dd6qdiv3n7xrg"
+metadata/_custom_type_script = "uid://dg12678wjk1m3"
 
 [sub_resource type="InputEventAction" id="action_line"]
 action = &"tyle_line"
@@ -143,7 +143,7 @@ flat = true
 script = ExtResource("2_3361d")
 popup_direction = 2
 options = Array[ExtResource("3_mhpx5")]([SubResource("Resource_mj8ra"), SubResource("Resource_w8eta"), SubResource("Resource_tjqd2"), SubResource("Resource_t272n")])
-metadata/_custom_type_script = "uid://lpes8eqyfvqg"
+metadata/_custom_type_script = "uid://c7hbyexi83ha6"
 
 [node name="Line" type="Button" parent="VBoxContainer/Toolbar" unique_id=1030726166]
 unique_name_in_owner = true
