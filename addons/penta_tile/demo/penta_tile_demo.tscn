@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=4 uid="uid://udxugm8223jb"]
+[gd_scene format=3 uid="uid://udxugm8223jb"]
 
 [ext_resource type="Script" uid="uid://du0uvrtc7fw14" path="res://addons/penta_tile/penta_tile_map_layer.gd" id="1_layer"]
 [ext_resource type="Script" uid="uid://dyv8ickdvbeqv" path="res://addons/penta_tile/demo/demo_runtime_painter.gd" id="2_painter"]
@@ -19,44 +19,345 @@
 [ext_resource type="Texture2D" uid="uid://crhotgtg4lij6" path="res://addons/penta_tile/layouts/penta_tile_layout_pixel_lab_top_down.png" id="17_pltd_png"]
 [ext_resource type="Texture2D" uid="uid://dwtrd5kuxrhpl" path="res://addons/penta_tile/layouts/penta_tile_layout_pixel_lab_side_scroller.png" id="18_plss_png"]
 
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_dbfiq"]
+texture = ExtResource("11_penta_png")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+1:0/0 = 0
+2:0/0 = 0
+3:0/0 = 0
+
+[sub_resource type="TileSet" id="TileSet_yhxbg"]
+tile_size = Vector2i(32, 32)
+sources/0 = SubResource("TileSetAtlasSource_dbfiq")
+
 [sub_resource type="Resource" id="Resource_penta"]
 script = ExtResource("3_penta")
-axis = 0
 tile_count = 4
 bitmask_template = ExtResource("11_penta_png")
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_siypm"]
+texture = ExtResource("12_dg16_png")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+1:0/0 = 0
+2:0/0 = 0
+3:0/0 = 0
+0:1/0 = 0
+1:1/0 = 0
+2:1/0 = 0
+3:1/0 = 0
+0:2/0 = 0
+1:2/0 = 0
+2:2/0 = 0
+3:2/0 = 0
+0:3/0 = 0
+1:3/0 = 0
+2:3/0 = 0
+3:3/0 = 0
+
+[sub_resource type="TileSet" id="TileSet_n5cm7"]
+tile_size = Vector2i(32, 32)
+sources/0 = SubResource("TileSetAtlasSource_siypm")
 
 [sub_resource type="Resource" id="Resource_dg16"]
 script = ExtResource("4_dg16")
 bitmask_template = ExtResource("12_dg16_png")
 
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_68qvy"]
+texture = ExtResource("13_w2e_png")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+1:0/0 = 0
+2:0/0 = 0
+3:0/0 = 0
+0:1/0 = 0
+1:1/0 = 0
+2:1/0 = 0
+3:1/0 = 0
+0:2/0 = 0
+1:2/0 = 0
+2:2/0 = 0
+3:2/0 = 0
+0:3/0 = 0
+1:3/0 = 0
+2:3/0 = 0
+3:3/0 = 0
+
+[sub_resource type="TileSet" id="TileSet_5qtnw"]
+tile_size = Vector2i(32, 32)
+sources/0 = SubResource("TileSetAtlasSource_68qvy")
+
 [sub_resource type="Resource" id="Resource_w2e"]
 script = ExtResource("5_w2e")
 bitmask_template = ExtResource("13_w2e_png")
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_7jem1"]
+texture = ExtResource("14_w2c_png")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+1:0/0 = 0
+2:0/0 = 0
+3:0/0 = 0
+0:1/0 = 0
+1:1/0 = 0
+2:1/0 = 0
+3:1/0 = 0
+0:2/0 = 0
+1:2/0 = 0
+2:2/0 = 0
+3:2/0 = 0
+0:3/0 = 0
+1:3/0 = 0
+2:3/0 = 0
+3:3/0 = 0
+
+[sub_resource type="TileSet" id="TileSet_e52o4"]
+tile_size = Vector2i(32, 32)
+sources/0 = SubResource("TileSetAtlasSource_7jem1")
 
 [sub_resource type="Resource" id="Resource_w2c"]
 script = ExtResource("6_w2c")
 bitmask_template = ExtResource("14_w2c_png")
 
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_spdhs"]
+texture = ExtResource("15_m3x3_png")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+1:0/0 = 0
+2:0/0 = 0
+0:1/0 = 0
+1:1/0 = 0
+2:1/0 = 0
+0:2/0 = 0
+1:2/0 = 0
+2:2/0 = 0
+
+[sub_resource type="TileSet" id="TileSet_3mq0t"]
+tile_size = Vector2i(32, 32)
+sources/0 = SubResource("TileSetAtlasSource_spdhs")
+
 [sub_resource type="Resource" id="Resource_m3x3"]
 script = ExtResource("7_m3x3")
 bitmask_template = ExtResource("15_m3x3_png")
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_nuh0i"]
+texture = ExtResource("16_b47_png")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+1:0/0 = 0
+2:0/0 = 0
+3:0/0 = 0
+4:0/0 = 0
+5:0/0 = 0
+6:0/0 = 0
+0:1/0 = 0
+1:1/0 = 0
+2:1/0 = 0
+3:1/0 = 0
+4:1/0 = 0
+5:1/0 = 0
+6:1/0 = 0
+0:2/0 = 0
+1:2/0 = 0
+2:2/0 = 0
+3:2/0 = 0
+4:2/0 = 0
+5:2/0 = 0
+6:2/0 = 0
+0:3/0 = 0
+1:3/0 = 0
+2:3/0 = 0
+3:3/0 = 0
+4:3/0 = 0
+5:3/0 = 0
+6:3/0 = 0
+0:4/0 = 0
+1:4/0 = 0
+2:4/0 = 0
+3:4/0 = 0
+4:4/0 = 0
+5:4/0 = 0
+6:4/0 = 0
+0:5/0 = 0
+1:5/0 = 0
+2:5/0 = 0
+3:5/0 = 0
+4:5/0 = 0
+5:5/0 = 0
+6:5/0 = 0
+0:6/0 = 0
+1:6/0 = 0
+2:6/0 = 0
+3:6/0 = 0
+4:6/0 = 0
+5:6/0 = 0
+6:6/0 = 0
+
+[sub_resource type="TileSet" id="TileSet_als1o"]
+tile_size = Vector2i(32, 32)
+sources/0 = SubResource("TileSetAtlasSource_nuh0i")
 
 [sub_resource type="Resource" id="Resource_b47"]
 script = ExtResource("8_b47")
 bitmask_template = ExtResource("16_b47_png")
 
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_h3o5k"]
+texture = ExtResource("17_pltd_png")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+1:0/0 = 0
+2:0/0 = 0
+3:0/0 = 0
+4:0/0 = 0
+5:0/0 = 0
+6:0/0 = 0
+7:0/0 = 0
+0:1/0 = 0
+1:1/0 = 0
+2:1/0 = 0
+3:1/0 = 0
+4:1/0 = 0
+5:1/0 = 0
+6:1/0 = 0
+7:1/0 = 0
+0:2/0 = 0
+1:2/0 = 0
+2:2/0 = 0
+3:2/0 = 0
+4:2/0 = 0
+5:2/0 = 0
+6:2/0 = 0
+7:2/0 = 0
+0:3/0 = 0
+1:3/0 = 0
+2:3/0 = 0
+3:3/0 = 0
+4:3/0 = 0
+5:3/0 = 0
+6:3/0 = 0
+7:3/0 = 0
+0:4/0 = 0
+1:4/0 = 0
+2:4/0 = 0
+3:4/0 = 0
+4:4/0 = 0
+5:4/0 = 0
+6:4/0 = 0
+7:4/0 = 0
+0:5/0 = 0
+1:5/0 = 0
+2:5/0 = 0
+3:5/0 = 0
+4:5/0 = 0
+5:5/0 = 0
+6:5/0 = 0
+7:5/0 = 0
+0:6/0 = 0
+1:6/0 = 0
+2:6/0 = 0
+3:6/0 = 0
+4:6/0 = 0
+5:6/0 = 0
+6:6/0 = 0
+7:6/0 = 0
+0:7/0 = 0
+1:7/0 = 0
+2:7/0 = 0
+3:7/0 = 0
+4:7/0 = 0
+5:7/0 = 0
+6:7/0 = 0
+7:7/0 = 0
+
+[sub_resource type="TileSet" id="TileSet_8642e"]
+tile_size = Vector2i(32, 32)
+sources/0 = SubResource("TileSetAtlasSource_h3o5k")
+
 [sub_resource type="Resource" id="Resource_pltd"]
 script = ExtResource("9_pltd")
 bitmask_template = ExtResource("17_pltd_png")
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_8k7e1"]
+texture = ExtResource("18_plss_png")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+1:0/0 = 0
+2:0/0 = 0
+3:0/0 = 0
+4:0/0 = 0
+5:0/0 = 0
+6:0/0 = 0
+7:0/0 = 0
+0:1/0 = 0
+1:1/0 = 0
+2:1/0 = 0
+3:1/0 = 0
+4:1/0 = 0
+5:1/0 = 0
+6:1/0 = 0
+7:1/0 = 0
+0:2/0 = 0
+1:2/0 = 0
+2:2/0 = 0
+3:2/0 = 0
+4:2/0 = 0
+5:2/0 = 0
+6:2/0 = 0
+7:2/0 = 0
+0:3/0 = 0
+1:3/0 = 0
+2:3/0 = 0
+3:3/0 = 0
+4:3/0 = 0
+5:3/0 = 0
+6:3/0 = 0
+7:3/0 = 0
+0:4/0 = 0
+1:4/0 = 0
+2:4/0 = 0
+3:4/0 = 0
+4:4/0 = 0
+5:4/0 = 0
+6:4/0 = 0
+7:4/0 = 0
+0:5/0 = 0
+1:5/0 = 0
+2:5/0 = 0
+3:5/0 = 0
+4:5/0 = 0
+5:5/0 = 0
+6:5/0 = 0
+7:5/0 = 0
+0:6/0 = 0
+1:6/0 = 0
+2:6/0 = 0
+3:6/0 = 0
+4:6/0 = 0
+5:6/0 = 0
+6:6/0 = 0
+7:6/0 = 0
+0:7/0 = 0
+1:7/0 = 0
+2:7/0 = 0
+3:7/0 = 0
+4:7/0 = 0
+5:7/0 = 0
+6:7/0 = 0
+7:7/0 = 0
+
+[sub_resource type="TileSet" id="TileSet_0fohj"]
+tile_size = Vector2i(32, 32)
+sources/0 = SubResource("TileSetAtlasSource_8k7e1")
 
 [sub_resource type="Resource" id="Resource_plss"]
 script = ExtResource("10_plss")
 bitmask_template = ExtResource("18_plss_png")
 
-[node name="PentaTileDemo" type="Node2D"]
+[node name="PentaTileDemo" type="Node2D" unique_id=1324160721]
 script = ExtResource("2_painter")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="ColorRect" parent="." unique_id=1830106499]
 z_index = -100
 offset_left = -64.0
 offset_top = -128.0
@@ -64,126 +365,147 @@ offset_right = 2304.0
 offset_bottom = 896.0
 color = Color(0.12, 0.12, 0.16, 1)
 
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1293625077]
 position = Vector2(1120, 384)
 zoom = Vector2(0.4, 0.4)
 
-[node name="PentaTileMapLayer" type="TileMapLayer" parent="."]
-position = Vector2(0, 0)
+[node name="PentaTileMapLayer" type="TileMapLayer" parent="." unique_id=917424933]
+self_modulate = Color(1, 1, 1, 0)
+tile_set = SubResource("TileSet_yhxbg")
+collision_enabled = false
 script = ExtResource("1_layer")
 layout = SubResource("Resource_penta")
 _tile_set_is_fallback = true
 
-[node name="Label_Penta" type="Label" parent="."]
-offset_left = 0.0
+[node name="Label_Penta" type="Label" parent="." unique_id=1688856642]
 offset_top = -64.0
 offset_right = 512.0
 offset_bottom = -32.0
-text = "Penta (FOUR mode)"
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 24
+text = "Penta (FOUR mode)"
 
-[node name="Layout_DualGrid16" type="TileMapLayer" parent="."]
+[node name="Layout_DualGrid16" type="TileMapLayer" parent="." unique_id=1996512347]
+self_modulate = Color(1, 1, 1, 0)
 position = Vector2(576, 0)
+tile_set = SubResource("TileSet_n5cm7")
+collision_enabled = false
 script = ExtResource("1_layer")
 layout = SubResource("Resource_dg16")
 _tile_set_is_fallback = true
 
-[node name="Label_DualGrid16" type="Label" parent="."]
+[node name="Label_DualGrid16" type="Label" parent="." unique_id=1825647669]
 offset_left = 576.0
 offset_top = -64.0
 offset_right = 1088.0
 offset_bottom = -32.0
-text = "DualGrid16"
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 24
+text = "DualGrid16"
 
-[node name="Layout_Wang2Edge" type="TileMapLayer" parent="."]
+[node name="Layout_Wang2Edge" type="TileMapLayer" parent="." unique_id=53254398]
+self_modulate = Color(1, 1, 1, 0)
 position = Vector2(1152, 0)
+tile_set = SubResource("TileSet_5qtnw")
+collision_enabled = false
 script = ExtResource("1_layer")
 layout = SubResource("Resource_w2e")
 _tile_set_is_fallback = true
 
-[node name="Label_Wang2Edge" type="Label" parent="."]
+[node name="Label_Wang2Edge" type="Label" parent="." unique_id=1042325359]
 offset_left = 1152.0
 offset_top = -64.0
 offset_right = 1664.0
 offset_bottom = -32.0
-text = "Wang 2-Edge"
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 24
+text = "Wang 2-Edge"
 
-[node name="Layout_Wang2Corner" type="TileMapLayer" parent="."]
+[node name="Layout_Wang2Corner" type="TileMapLayer" parent="." unique_id=1279359463]
+self_modulate = Color(1, 1, 1, 0)
 position = Vector2(1728, 0)
+tile_set = SubResource("TileSet_e52o4")
+collision_enabled = false
 script = ExtResource("1_layer")
 layout = SubResource("Resource_w2c")
 _tile_set_is_fallback = true
 
-[node name="Label_Wang2Corner" type="Label" parent="."]
+[node name="Label_Wang2Corner" type="Label" parent="." unique_id=156587864]
 offset_left = 1728.0
 offset_top = -64.0
 offset_right = 2240.0
 offset_bottom = -32.0
-text = "Wang 2-Corner"
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 24
+text = "Wang 2-Corner"
 
-[node name="Layout_Minimal3x3" type="TileMapLayer" parent="."]
+[node name="Layout_Minimal3x3" type="TileMapLayer" parent="." unique_id=80745787]
+self_modulate = Color(1, 1, 1, 0)
 position = Vector2(0, 448)
+tile_set = SubResource("TileSet_3mq0t")
+collision_enabled = false
 script = ExtResource("1_layer")
 layout = SubResource("Resource_m3x3")
 _tile_set_is_fallback = true
 
-[node name="Label_Minimal3x3" type="Label" parent="."]
-offset_left = 0.0
+[node name="Label_Minimal3x3" type="Label" parent="." unique_id=1702860195]
 offset_top = 384.0
 offset_right = 512.0
 offset_bottom = 416.0
-text = "Minimal 3x3"
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 24
+text = "Minimal 3x3"
 
-[node name="Layout_Blob47Godot" type="TileMapLayer" parent="."]
+[node name="Layout_Blob47Godot" type="TileMapLayer" parent="." unique_id=702777493]
+self_modulate = Color(1, 1, 1, 0)
 position = Vector2(576, 448)
+tile_set = SubResource("TileSet_als1o")
+collision_enabled = false
 script = ExtResource("1_layer")
 layout = SubResource("Resource_b47")
 _tile_set_is_fallback = true
 
-[node name="Label_Blob47Godot" type="Label" parent="."]
+[node name="Label_Blob47Godot" type="Label" parent="." unique_id=1572971412]
 offset_left = 576.0
 offset_top = 384.0
 offset_right = 1088.0
 offset_bottom = 416.0
-text = "Blob47 (Godot)"
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 24
+text = "Blob47 (Godot)"
 
-[node name="Layout_PixelLabTopDown" type="TileMapLayer" parent="."]
+[node name="Layout_PixelLabTopDown" type="TileMapLayer" parent="." unique_id=2039762005]
+self_modulate = Color(1, 1, 1, 0)
 position = Vector2(1152, 448)
+tile_set = SubResource("TileSet_8642e")
+collision_enabled = false
 script = ExtResource("1_layer")
 layout = SubResource("Resource_pltd")
 _tile_set_is_fallback = true
 
-[node name="Label_PixelLabTopDown" type="Label" parent="."]
+[node name="Label_PixelLabTopDown" type="Label" parent="." unique_id=539129508]
 offset_left = 1152.0
 offset_top = 384.0
 offset_right = 1664.0
 offset_bottom = 416.0
-text = "PixelLab Top-Down"
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 24
+text = "PixelLab Top-Down"
 
-[node name="Layout_PixelLabSideScroller" type="TileMapLayer" parent="."]
+[node name="Layout_PixelLabSideScroller" type="TileMapLayer" parent="." unique_id=1602300965]
+self_modulate = Color(1, 1, 1, 0)
 position = Vector2(1728, 448)
+tile_set = SubResource("TileSet_0fohj")
+collision_enabled = false
 script = ExtResource("1_layer")
 layout = SubResource("Resource_plss")
 _tile_set_is_fallback = true
 
-[node name="Label_PixelLabSideScroller" type="Label" parent="."]
+[node name="Label_PixelLabSideScroller" type="Label" parent="." unique_id=850781200]
 offset_left = 1728.0
 offset_top = 384.0
 offset_right = 2240.0
 offset_bottom = 416.0
-text = "PixelLab Side-Scroller"
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 24
+text = "PixelLab Side-Scroller"
