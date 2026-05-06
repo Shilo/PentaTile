@@ -366,6 +366,11 @@ Full deferred-features inventory is in [`.planning/REQUIREMENTS.md`](.planning/R
 - <a href="https://kenney.nl/assets/pico-8-platformer" target="_blank" rel="noopener">Kenney's Pico-8 Platformer ↗︎</a> - Asset pack used for the demo ground texture (CC0).
 - The pixel-art Godot robot mascot in PentaTile's brand assets is an original drawing inspired by <a href="https://godotengine.org/press/" target="_blank" rel="noopener">Godot's official icon ↗︎</a> and <a href="https://toongoat.itch.io/godot-pixel-art-emoji-pack" target="_blank" rel="noopener">Krad's Godot Pixel Art Emoji Pack ↗︎</a>. It's a "powered by Godot" nod, not PentaTile branding — the Godot logo and name are trademarks of the Godot Foundation, and PentaTile claims no ownership of either.
 
+## Dependencies
+
+- [Tyle Map Editor](https://github.com/Shilo/tyle-map-editor) - Godot terrain-painting editor plugin used for faster TileMapLayer terrain editing workflows.
+- [Flyout Button](https://github.com/Shilo/flyout-button) - reusable Godot button control required by Tyle Map Editor's compact flyout toolbar controls.
+
 ## Maintainer: create the addon split branch
 
 The public subtree branch is always named `addon`. After changing files under `addons/penta_tile` on `main`, refresh and push the split branch from the PentaTile repo root:
