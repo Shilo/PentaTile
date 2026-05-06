@@ -447,6 +447,7 @@ The task still runs Git under the hood, but you can trigger it from VS Code with
 
 - [Tyle Map Editor](https://github.com/Shilo/tyle-map-editor) - Godot terrain-painting editor plugin used for faster TileMapLayer terrain editing workflows.
 - [Flyout Button](https://github.com/Shilo/flyout-button) - reusable Godot button control required by Tyle Map Editor's compact flyout toolbar controls.
+- [NeoCade Theme](https://github.com/Shilo/NeoCade-Theme) - shared Godot UI theme resources used by Tyle Map Editor for consistent editor-facing controls.
 
 ## 🔗 External Resources
 
