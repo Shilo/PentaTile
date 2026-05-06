@@ -1,0 +1,38 @@
+name: Sync addon branch
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "addons/penta_tile/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-addon-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  sync-addon:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Split addon directory
+        id: split
+        shell: bash
+        run: |
+          split_commit="$(git subtree split --prefix=addons/penta_tile "${GITHUB_SHA}")"
+          echo "split_commit=${split_commit}" >> "${GITHUB_OUTPUT}"
+
+      - name: Push addon branch
+        shell: bash
+        run: |
+          git push origin "${{ steps.split.outputs.split_commit }}:refs/heads/addon"
