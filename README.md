@@ -23,6 +23,7 @@
 15. [Implementation Notes](#-implementation-notes)
 16. [Roadmap](#-roadmap)
 17. [External Resources](#-external-resources)
+18. [Dependencies](#dependencies)
 
 ## 🚀 Why PentaTile?
 
